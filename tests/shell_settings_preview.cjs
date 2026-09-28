@@ -39,7 +39,9 @@ const {pathToFileURL} = require('url');
         },variant);
         await page.goto(pathToFileURL(variant==='before'?before:after).href);
         await page.waitForFunction(()=>document.body.classList.contains('ready'));
-        await page.locator('#settings-top').click();
+        const modelSettings = await page.locator('#nav-models').count() ? '#nav-models' : '#settings-top';
+        const secondaryEntry = await page.locator('#nav-workbench').count() ? '#nav-workbench' : '#browse-keyless';
+        await page.locator(modelSettings).click();
         await page.locator('#settings.open').waitFor();
         await page.waitForFunction(()=>{
           const drawer=getComputedStyle(document.querySelector('.drawer'));
@@ -47,6 +49,8 @@ const {pathToFileURL} = require('url');
             getComputedStyle(document.querySelector('#settings')).opacity==='1' &&
             getComputedStyle(document.querySelector('#home')).opacity==='1';
         });
+        // Compare pixels only after all finite entrance/hover transitions settle.
+        await page.evaluate(()=>Promise.all(document.getAnimations().filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{}))));
         await page.screenshot({path:path.join(output,`${variant}-${scenario.name}-settings.png`)});
         // The drawer artwork must never paint onto the dimmed home area.
         const rect = await page.locator('.drawer').boundingBox();
@@ -61,21 +65,21 @@ const {pathToFileURL} = require('url');
         await page.locator('.drawer').evaluate(el=>{el.scrollTop=el.scrollHeight});
         assert.equal(await page.locator('.drawer').evaluate(el=>el.scrollTop>0),true);
         await page.evaluate(()=>window.LeoShell.closeSettings());
-        await page.locator('#settings-top').click();
+        await page.locator(modelSettings).click();
         await page.locator('.drawer').evaluate(el=>{el.scrollTop=0});
         await page.locator('#settings-close').click();
         assert.equal(await page.locator('#settings').evaluate(el=>el.classList.contains('open')),false);
         for (const locale of ['zh','en']) {
           await page.evaluate(locale=>{window.__previewLocale=locale;dispatchEvent(new Event('pywebviewready'))},locale);
           await page.waitForFunction(locale=>document.documentElement.lang===locale,locale);
-          for(const button of ['#enter-studio','#browse-keyless']) {
+          for(const button of ['#enter-studio',secondaryEntry]) {
             await page.locator(button).click();
             if(variant==='after') {
               const note=await page.locator('#hero-note').innerText();
               assert.match(note,locale==='zh'?/缺少工作台启动文件/:/missing workbench files/);
               assert.doesNotMatch(note,/APP_PACKAGE_INCOMPLETE|模型连接失败/);
               assert.equal(await page.locator('#enter-studio').isEnabled(),true);
-              assert.equal(await page.locator('#browse-keyless').isEnabled(),true);
+              assert.equal(await page.locator(secondaryEntry).isEnabled(),true);
             }
           }
         }
