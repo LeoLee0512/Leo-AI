@@ -17,6 +17,7 @@ def test_chat_projects_one_answer_without_runtime_completion_checklists():
 const vm=require('node:vm'), assert=require('node:assert/strict');
 const source=JSON.parse(require('node:fs').readFileSync(0,'utf8'));
 class Element {
+  addEventListener(){}
   constructor(){this.children=[];this.value='';this.classList={add(){},remove(){}};this.lastChild={};}
   append(...items){this.children.push(...items)} replaceChildren(){this.children=[]}
   querySelector(){return this.child||(this.child=new Element())} focus(){} setAttribute(){} showModal(){} close(){}
@@ -32,7 +33,7 @@ async function scenario(messages,expected,expectedCopy=expected[0]){
     workbench_request:async p=>({data:{projects:{projects:[{id:'p-chat',name:'Project'}]},frames:{frames:[frame]},
       messages:{messages,has_earlier:false},execution:{owner:null},feedback:{feedback:{}}}[p.operation]})};
   const ctx=vm.createContext({window:{pywebview:{api},navigator:{clipboard:{writeText:async t=>copied.push(t)}},addEventListener(){}},
-    document:{getElementById:el,createElement:()=>new Element(),createTextNode:t=>({textContent:t}),addEventListener(){},querySelector(){return null}},
+    document:{getElementById:el,createElement:()=>new Element(),createTextNode:t=>({textContent:t}),addEventListener(){},querySelectorAll(){return []},querySelector(selector){return selector===".desktop-menu"?new Element():null}},
     setTimeout:fn=>{timer=fn;return 1},clearTimeout(){}});
   vm.runInContext(source,ctx);await flush();
   const check=()=>assert.deepEqual(el('messages').children.filter(n=>n.className?.startsWith('message assistant'))
@@ -77,6 +78,7 @@ def test_workbench_restores_credentials_and_freezes_every_turn():
 const vm=require('node:vm'), assert=require('node:assert/strict');
 const source=JSON.parse(require('node:fs').readFileSync(0,'utf8'));
 class Element {
+  addEventListener(){}
   constructor(){this.children=[];this.value='';this.classList={add(){},remove(){}};this.lastChild={};}
   append(...items){this.children.push(...items)} replaceChildren(){this.children=[]}
   querySelector(){return this.child||(this.child=new Element())} focus(){} showModal(){this.open=true} close(){this.open=false}
@@ -100,7 +102,7 @@ async function scenario(restoreFails=false,changed=false){
     }[payload.operation];return {data};}
   };
   const ctx=vm.createContext({window:{pywebview:{api},addEventListener(){}},document:{getElementById:el,
-    createElement:()=>new Element(),createTextNode:t=>({textContent:t}),addEventListener(){},querySelector(){return null}},
+    createElement:()=>new Element(),createTextNode:t=>({textContent:t}),addEventListener(){},querySelectorAll(){return []},querySelector(selector){return selector===".desktop-menu"?new Element():null}},
     setTimeout:()=>1,clearTimeout(){}});
   vm.runInContext(source,ctx);
   await new Promise(r=>setImmediate(r));
@@ -139,6 +141,7 @@ def test_notebook_view_reads_only_through_the_gateway():
 const vm=require('node:vm'), assert=require('node:assert/strict');
 const source=JSON.parse(require('node:fs').readFileSync(0,'utf8'));
 class Element {
+  addEventListener(){}
   constructor(){this.children=[];this.value='';this.hidden=false;this.classList={add(){},remove(){}};this.lastChild={};}
   append(...items){this.children.push(...items)} replaceChildren(...items){this.children=[...items]}
   querySelector(){return this.child||(this.child=new Element())} focus(){} showModal(){this.open=true} close(){this.open=false}
@@ -162,7 +165,7 @@ const flush=async()=>{for(let i=0;i<20;i++)await new Promise(r=>setImmediate(r))
     }[payload.operation];return {data};}
   },{get(target,name){methods.add(String(name));return target[name];}});
   const ctx=vm.createContext({window:{pywebview:{api:handler},addEventListener(){}},document:{getElementById:el,
-    createElement:()=>new Element(),createTextNode:t=>({textContent:t}),addEventListener(){},querySelector(){return null}},
+    createElement:()=>new Element(),createTextNode:t=>({textContent:t}),addEventListener(){},querySelectorAll(){return []},querySelector(selector){return selector===".desktop-menu"?new Element():null}},
     setTimeout:()=>1,clearTimeout(){}});
   vm.runInContext(source,ctx);
   await flush();
@@ -205,6 +208,7 @@ def test_message_actions_copy_rate_and_forward_without_sending():
 const vm=require('node:vm'), assert=require('node:assert/strict');
 const source=JSON.parse(require('node:fs').readFileSync(0,'utf8'));
 class Element {
+  addEventListener(){}
   constructor(){this.children=[];this.value='';this.hidden=false;this.attrs={};this.classList={add(){},remove(){}};this.lastChild={};this.style={};}
   append(...items){this.children.push(...items)} replaceChildren(...items){this.children=[...items]}
   setAttribute(k,v){this.attrs[k]=v} contains(n){return n===this||this.children.some(c=>c.contains&&c.contains(n))}
@@ -227,7 +231,7 @@ const find=(node,pred)=>{if(pred(node))return node;for(const c of node.children|
   };
   const ctx=vm.createContext({window:{pywebview:{api},addEventListener(){},getSelection:()=>selection,
       navigator:{clipboard:{writeText:async t=>{copied.push(t)}}}},
-    document:{getElementById:el,createElement:()=>new Element(),createTextNode:t=>({textContent:t}),addEventListener(){},querySelector(){return null}},
+    document:{getElementById:el,createElement:()=>new Element(),createTextNode:t=>({textContent:t}),addEventListener(){},querySelectorAll(){return []},querySelector(selector){return selector===".desktop-menu"?new Element():null}},
     setTimeout:()=>1,clearTimeout(){}});
   vm.runInContext(source,ctx);
   await flush();

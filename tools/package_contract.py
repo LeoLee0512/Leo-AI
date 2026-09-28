@@ -53,6 +53,7 @@ REQUIRED_FILES = (
 
 REQUIRED_ARCHIVE_MODULES = (
     "leo_shell.local_accounts",
+    "leo_shell.workspace_preferences",
     "leo_shell.workbench",
     "leo_shell.clipboard",
     "leo_shell.research",

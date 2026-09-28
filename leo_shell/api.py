@@ -213,6 +213,26 @@ class ShellApi:
             except Exception:
                 return _failure("ACCOUNT_UNAVAILABLE")
 
+    def workspace_preferences(self, payload: Any) -> dict:
+        with self._lock:
+            try:
+                from .workspace_preferences import WorkspacePreferences
+                if self._paths is None: return _failure("THEME_UNAVAILABLE")
+                return WorkspacePreferences(self._paths.user).request(payload)
+            except ValueError as exc:
+                code = str(exc)
+                return _failure(code if code in {"THEME_INVALID", "THEME_CONTRAST_LOW", "THEME_UNAVAILABLE"} else "THEME_UNAVAILABLE")
+            except Exception:
+                return _failure("THEME_UNAVAILABLE")
+
+    def paste_text(self) -> dict:
+        """Read text only in response to the user's explicit Edit > Paste action."""
+        try:
+            from .clipboard import get_text
+            return {"ok": True, "text": get_text()}
+        except Exception:
+            return _failure("CLIPBOARD_UNAVAILABLE")
+
     def purge_entity(self, payload: Any) -> dict:
         """Delete only an explicitly confirmed, revision-matched recycled item."""
         with self._lock:

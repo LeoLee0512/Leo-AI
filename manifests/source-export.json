@@ -1,13 +1,16 @@
 {
   "schema": 1,
   "version": "2.1.3",
-  "source_commit": "78c23513aa31362887152add703f7edd1ae3e9f2",
-  "source_branch": "astra/leo-2.1.3",
+  "source_commit": "d3865330f15cb852c869ba7fede7109b6827680a",
+  "source_branch": "astra/workspace-profile",
   "export_policy": "source, tests, build inputs and docs; no Git history, runtime binaries, user data or historical experiment outputs",
-  "copied_tracked_files": 396,
+  "copied_tracked_files": 399,
   "omitted_tracked_files": 704,
   "modified_for_publication": [
-    "README.md"
+    "CHANGELOG.md",
+    "README.md",
+    "docs/P0_FINAL_CLOSURE_REPORT.md",
+    "governance/PINN_CONSTITUTION_COMPLIANCE_AUDIT.md"
   ],
   "supplemental_files": {
     "bridge/leo_bridge.sh": {
@@ -25,5 +28,5 @@
   },
   "scientific_source_modified": false,
   "archive_tests_require_omitted_records": true,
-  "previous_source_commit": "afc4aa4645284c270ff69127117aefd97be193d9"
+  "previous_source_commit": "78c23513aa31362887152add703f7edd1ae3e9f2"
 }
