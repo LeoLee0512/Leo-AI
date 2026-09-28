@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN" data-leo-theme="ink-autumn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<title>Leo AI 2.1</title><style>__LEO_WORKBENCH_CSS__</style></head>
+<body>
+<aside class="rail" aria-label="工作区导航">
+  <a class="brand" href="#home" id="brand-home"><img src="__LEO_LION_DATA_URI__" alt=""><span>Leo <b>AI</b><small>2.1 · 科学研究工作台</small></span></a>
+  <button class="new-chat" id="new-chat"><span aria-hidden="true">＋</span> 开始新对话 <kbd>Ctrl N</kbd></button>
+  <nav class="primary-nav"><button id="nav-home" class="active"><span aria-hidden="true">◈</span> 工作台</button><button id="nav-research"><span aria-hidden="true">∂</span> 科研任务 <span class="nav-tag">1D</span></button><button id="nav-tools"><span aria-hidden="true">⌁</span> 笔记本与计算</button></nav>
+  <div class="rail-label">项目空间 <button id="new-project" aria-label="新建项目">＋</button></div>
+  <select id="project-select" aria-label="当前项目"><option>正在读取项目…</option></select>
+  <div class="rail-label history-label">最近对话 <span id="history-count"></span></div>
+  <label class="search-label"><span aria-hidden="true">⌕</span><input id="history-search" placeholder="搜索对话" aria-label="搜索对话"></label>
+  <div class="history" id="history" aria-label="历史会话"><p class="muted">正在读取会话…</p></div><button class="more-history" id="more-history" hidden>加载更多对话</button>
+  <footer class="rail-footer"><button id="settings-button"><span aria-hidden="true">⚙</span> 模型与设置</button><div class="identity-mark"><span class="avatar">L</span><span>Leo Li⁺ Studio<small>理解 · 模拟 · 探索</small></span></div></footer>
+</aside>
+<main class="workspace">
+  <header class="topbar"><div class="breadcrumbs"><span id="project-name">科研空间</span><span class="crumb-separator">/</span><strong id="page-title">工作台</strong></div><div class="top-actions"><span class="connection" id="connection"><i></i> 正在连接</span><button id="notebook-button" class="quiet" hidden>计算记录</button><button id="rename-chat" class="quiet" hidden aria-label="重命名对话">重命名</button><button id="home-button" class="quiet">返回工作台</button></div></header>
+  <div class="notice" id="notice" role="status" hidden><span></span><button aria-label="关闭提示">×</button></div>
+  <section id="home-view" class="home-view">
+    <div class="hero"><div class="hero-art" aria-hidden="true"></div><div><p class="eyebrow">LEO AI · RESEARCH STUDIO</p><h1>从一个好问题，<br>走向新的发现<span>。</span></h1><p class="hero-copy">把想法整理成模型，让计算留下证据。<br>与你一起理解、模拟和探索真实世界。</p><button class="primary" id="hero-research">开始一项研究 <span aria-hidden="true">↗</span></button></div><span class="art-caption" aria-hidden="true">x · y · possibility</span></div>
+    <div class="section-heading"><h2>今天，从哪里开始？</h2><span>一个问题，一步深入</span></div>
+    <div class="launch-grid"><button class="launch-card hue-cinnabar" id="card-research"><span class="card-icon">∂</span><strong>把问题变成研究</strong><p>梳理方程与假设，核对模型，<br>逐步完成计算与验证。</p><span class="card-foot">科研任务 <b>↗</b></span></button><button class="launch-card hue-ochre" id="card-chat"><span class="card-icon">✦</span><strong>一起推敲一个想法</strong><p>讨论原理、拆解难点，<br>寻找值得继续追问的方向。</p><span class="card-foot">开始对话 <b>↗</b></span></button><button class="launch-card hue-indigo" id="card-tools"><span class="card-icon">⌁</span><strong>打开计算笔记本</strong><p>回看对话中运行过的代码、输出与图表，<br>每一步都留有记录。</p><span class="card-foot">计算记录 <b>↗</b></span></button></div>
+    <div class="section-heading recent-heading"><h2>接着上次的思路</h2><span id="recent-caption">你的研究进展会留在这里</span></div><div class="recent-list" id="recent-list"></div>
+    <div class="home-note"><span>◎</span> 每一步都可以回看。科学结论以验证证据为准。<span class="trust-legend" aria-label="结论可信度的四种状态"><span class="trust-chip trust-exploratory">探索性</span><span class="trust-chip trust-verified">已验证</span><span class="trust-chip trust-claim">精度声明</span><span class="trust-chip trust-blocked">不可下结论</span></span></div>
+  </section>
+  <section id="chat-view" class="chat-view" hidden>
+    <div class="chat-scroll" id="chat-scroll"><button id="earlier-messages" class="quiet" hidden>查看更早消息</button><div id="messages" class="messages" aria-live="polite"></div><div id="working" class="working" hidden><span class="thinking-dots"><i></i><i></i><i></i></span><span>Leo 正在处理你的问题<span id="elapsed"></span></span></div></div>
+    <div class="composer-wrap"><div class="composer"><textarea id="message-input" rows="2" placeholder="写下你的问题、思路，或希望验证的假设…" aria-label="消息输入"></textarea><div class="composer-toolbar"><div class="composer-options"><select id="model-select" aria-label="本会话模型"><option>选择模型</option></select><button id="composer-research" class="quiet">科研任务 ↗</button></div><button id="send" class="send" aria-label="发送消息">↑</button><button id="stop" class="stop" hidden>停止</button></div></div><p class="composer-note">Enter 发送 · Shift + Enter 换行 <span>重要结论，请核对证据。</span></p></div>
+  </section>
+  <section id="notebook-view" class="notebook-view" hidden aria-label="笔记本与计算">
+    <div class="nb-head"><div><p class="eyebrow">NOTEBOOK · COMPUTATION RECORD</p><h1 id="nb-title">笔记本与计算</h1><p id="nb-subtitle">对话中由 Leo 实际执行的代码、输出与产物。记录只读，每一步保留原样。</p></div><div class="nb-head-actions"><span id="nb-kernel" class="trust-chip trust-blocked" hidden>内核未启动</span><button id="nb-refresh" class="quiet" hidden>刷新</button><button id="nb-open-chat" class="quiet" hidden>回到对话</button><button id="nb-switch" class="quiet">切换对话</button></div></div>
+    <div id="nb-empty" class="nb-empty" hidden></div>
+    <div id="nb-layout" class="nb-layout" hidden><div id="nb-cells" class="nb-cells" aria-live="polite"></div><aside class="nb-side"><section class="nb-panel"><h2>产物与文件 <small id="nb-artifact-count"></small></h2><div id="nb-artifacts" class="nb-artifacts"></div></section><section id="nb-preview" class="nb-panel nb-preview" hidden><h2 id="nb-preview-title">预览</h2><div id="nb-preview-body"></div></section></aside></div>
+    <p class="nb-note">笔记本不直接执行代码：计算由对话中的 Leo 完成，这里如实记录它运行过什么、得到了什么。</p>
+  </section>
+</main>
+<dialog id="input-dialog" class="input-dialog"><form method="dialog"><p class="eyebrow">工作区</p><h2 id="input-dialog-title"></h2><input id="dialog-value" required maxlength="160" autocomplete="off"><div class="dialog-actions"><button value="cancel" class="quiet" formnovalidate>取消</button><button value="save" class="primary">保存</button></div></form></dialog>
+<dialog id="settings-dialog" class="settings-dialog"><header><div><p class="eyebrow">PERSONAL WORKSPACE</p><h2>模型与设置</h2></div><button id="close-settings" class="quiet" aria-label="关闭设置">×</button></header><p class="muted">模型凭据由本机加密保存。修改配置不会改写历史消息。</p><div id="settings-profiles"></div><button id="configure-models" class="primary">管理模型配置</button><details class="about"><summary>关于 Leo AI 2.1</summary><p>Leo Li⁺ Studio · 面向科学研究与工程计算。</p><p>计算与会话后端基于 OpenAI4S（MIT License）。上游源码、署名和许可资料保留在安装目录；Leo 工作台提供独立的交互界面。</p><p>开场动画由 Seedance 2.5 模型生成。</p></details></dialog>
+<dialog id="forward-dialog" class="settings-dialog forward-dialog"><header><div><p class="eyebrow">FORWARD</p><h2 id="forward-kind">转发</h2></div><button id="forward-close" class="quiet" aria-label="关闭转发">×</button></header><p class="muted">内容会放进目标对话的输入框，由你核对后再发送，不会自动发出。</p><div id="forward-targets" class="forward-targets"></div><div class="dialog-actions"><button id="forward-copy" class="quiet">复制为分享文本</button></div></dialog>
+<script>__LEO_WORKBENCH_JS__</script><script>__LEO_RESEARCH_JS__</script>
+</body></html>

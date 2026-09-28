@@ -1,0 +1,458 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leo-ai.local/schemas/pinn/validation-protocol-v1.3.json",
+  "title": "Leo AI Poisson-1D validation protocol pre-lock schema",
+  "type": "object",
+  "required": [
+    "lockStatusAuthority",
+    "purpose",
+    "protocolId",
+    "version",
+    "specRef",
+    "manifestRef",
+    "constitutionVersion",
+    "canonicalExecutor",
+    "quadrature",
+    "pointwiseGrid",
+    "boundarySet",
+    "antiCollision",
+    "leakageProtocol",
+    "aliasingResolution",
+    "derivativeEvaluation",
+    "numerics",
+    "evaluationSeed",
+    "gate2a",
+    "fdmProtocol",
+    "seeds",
+    "acceptanceCriteriaBinding",
+    "provenancePolicy"
+  ],
+  "properties": {
+    "lockStatusAuthority": {
+      "const": "lock.json"
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 20
+    },
+    "protocolId": {
+      "const": "poisson-1d-eval-protocol"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "specRef": {
+      "const": "spec.json"
+    },
+    "manifestRef": {
+      "const": "adversarial/core_manifest.json"
+    },
+    "constitutionVersion": {
+      "enum": ["1.0", "1.1", "1.2"]
+    },
+    "canonicalExecutor": {
+      "type": "object"
+    },
+    "quadrature": {
+      "type": "object",
+      "required": [
+        "id",
+        "method",
+        "nodeCount",
+        "mapping",
+        "generator",
+        "combinedDataSha256",
+        "artifacts",
+        "generatorProvenance",
+        "usedBy"
+      ],
+      "properties": {
+        "id": {
+          "const": "GL512"
+        },
+        "method": {
+          "const": "Gauss-Legendre"
+        },
+        "nodeCount": {
+          "const": 512
+        },
+        "mapping": {
+          "type": "string"
+        },
+        "generator": {
+          "type": "string"
+        },
+        "combinedDataSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "artifacts": {
+          "type": "object",
+          "required": [
+            "nodes",
+            "weights"
+          ],
+          "properties": {
+            "nodes": {
+              "$ref": "#/$defs/f64Artifact"
+            },
+            "weights": {
+              "$ref": "#/$defs/f64Artifact"
+            }
+          },
+          "additionalProperties": false
+        },
+        "generatorProvenance": {
+          "$ref": "#/$defs/generatorProvenance"
+        },
+        "weightSumCheck": {
+          "type": "number"
+        },
+        "usedBy": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "alsoServesAs": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pointwiseGrid": {
+      "type": "object",
+      "required": [
+        "id",
+        "method",
+        "nodeCount",
+        "formula",
+        "includesEndpoints",
+        "artifact",
+        "generatorProvenance",
+        "usedBy",
+        "rejectedAlternatives"
+      ],
+      "properties": {
+        "id": {
+          "const": "CGL2000"
+        },
+        "method": {
+          "const": "Chebyshev-Gauss-Lobatto"
+        },
+        "nodeCount": {
+          "const": 2000
+        },
+        "formula": {
+          "type": "string"
+        },
+        "includesEndpoints": {
+          "const": true
+        },
+        "artifact": {
+          "$ref": "#/$defs/f64Artifact"
+        },
+        "generatorProvenance": {
+          "$ref": "#/$defs/generatorProvenance"
+        },
+        "usedBy": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "rejectedAlternatives": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "boundarySet": {
+      "type": "object"
+    },
+    "antiCollision": {
+      "type": "object",
+      "required": [
+        "requirement",
+        "dMax",
+        "tolerance",
+        "measured",
+        "status",
+        "rationale"
+      ],
+      "properties": {
+        "requirement": {
+          "type": "string"
+        },
+        "dMax": {
+          "const": 64
+        },
+        "tolerance": {
+          "const": 1e-12
+        },
+        "measured": {
+          "type": "object"
+        },
+        "status": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "leakageProtocol": {
+      "type": "object",
+      "required": [
+        "definition",
+        "checks",
+        "leakageIsEstablishedIfAny",
+        "onLeakage",
+        "auditNote"
+      ],
+      "properties": {
+        "definition": {
+          "type": "string"
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "test"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "leakageIsEstablishedIfAny": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "string"
+          }
+        },
+        "onLeakage": {
+          "const": "Gate 5 = FAIL and STOP THE LINE"
+        },
+        "auditNote": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "aliasingResolution": {
+      "type": "object"
+    },
+    "derivativeEvaluation": {
+      "type": "object"
+    },
+    "numerics": {
+      "type": "object"
+    },
+    "evaluationSeed": {
+      "type": "object"
+    },
+    "gate2a": {
+      "type": "object"
+    },
+    "fdmProtocol": {
+      "type": "object"
+    },
+    "seeds": {
+      "type": "object"
+    },
+    "acceptanceCriteriaBinding": {
+      "type": "object"
+    },
+    "provenancePolicy": {
+      "type": "object",
+      "required": [
+        "artifactRoles",
+        "producerTypes",
+        "captureMethods",
+        "analyticReference",
+        "eligibilityIsDerived"
+      ],
+      "properties": {
+        "artifactRoles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "producerTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "captureMethods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "analyticReference": {
+          "type": "object",
+          "required": [
+            "artifactRole",
+            "producerType",
+            "captureMethod",
+            "requiredBindings",
+            "validationInputEligible",
+            "claimEvidenceEligible"
+          ],
+          "properties": {
+            "artifactRole": {
+              "const": "REFERENCE"
+            },
+            "producerType": {
+              "const": "TRUSTED_ANALYTIC_REFERENCE"
+            },
+            "captureMethod": {
+              "const": "ANALYTIC_EVALUATION"
+            },
+            "requiredBindings": {
+              "type": "array",
+              "minItems": 4,
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "validationInputEligible": {
+              "const": true
+            },
+            "claimEvidenceEligible": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "eligibilityIsDerived": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "[0-9a-f]{64}"
+    },
+    "f64Artifact": {
+      "type": "object",
+      "required": [
+        "path",
+        "artifactSha256",
+        "dataSha256",
+        "format",
+        "dtype",
+        "shape",
+        "endianness",
+        "arrayOrder"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifactSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "dataSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "format": {
+          "const": "NPY-1.0"
+        },
+        "dtype": {
+          "const": "float64"
+        },
+        "shape": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "endianness": {
+          "const": "little"
+        },
+        "arrayOrder": {
+          "const": "C"
+        }
+      },
+      "additionalProperties": false
+    },
+    "generatorProvenance": {
+      "type": "object",
+      "required": [
+        "pythonVersion",
+        "numpyVersion",
+        "generatorImplementation",
+        "generatorSourcePath",
+        "generatorImplementationSha256",
+        "exactDtype",
+        "arrayOrder",
+        "endianness",
+        "hashInputBytes"
+      ],
+      "properties": {
+        "pythonVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "numpyVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generatorImplementation": {
+          "type": "string",
+          "minLength": 10
+        },
+        "generatorSourcePath": {
+          "const": "pinn/governance/nodes.py"
+        },
+        "generatorImplementationSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "exactDtype": {
+          "const": "<f8"
+        },
+        "arrayOrder": {
+          "const": "C"
+        },
+        "endianness": {
+          "const": "little"
+        },
+        "hashInputBytes": {
+          "type": "string",
+          "minLength": 10
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

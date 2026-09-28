@@ -1,0 +1,67 @@
+{
+  "lockState": "DRAFT",
+  "designRule": "This draft contains null candidate-input digests by design. Future lock.json binds final spec.json, protocol.json, adversarial/core_manifest.json and Constitution bytes without any input file referring to its own digest. Filling the nulls now would fabricate a lock (Article 40).",
+  "lockVersion": "1",
+  "constitutionVersion": "1.2",
+  "constitutionPath": "governance/PINN_RESEARCH_CONSTITUTION.md",
+  "constitutionSha256": "2f4484027cc95fc949b2df46ca3f76f1ecace8279db4b93d9d26ceaf8f15357e",
+  "specId": "poisson-1d-dirichlet",
+  "specVersion": "1.0",
+  "digestAlgorithm": "SHA-256",
+  "canonicalisation": "json-dumps-ensure-ascii-false-indent-2-single-lf",
+  "canonicalisationRules": [
+    "UTF-8, no BOM",
+    "LF line endings only; no CR byte anywhere in the file",
+    "file ends with exactly one LF",
+    "serialised as json.dumps(obj, ensure_ascii=False, indent=2) followed by a single newline",
+    "actual bytes must equal (json.dumps(obj, ensure_ascii=False, indent=2) + '\n').encode('utf-8')",
+    "the digest is taken over those final bytes on disk, so anyone can verify with sha256sum",
+    "enforced in-repo by the current explicit .gitattributes entries"
+  ],
+  "canonicalisationNote": "RFC 8785 (JCS) was considered and not adopted: exact-bytes hashing is verifiable with standard tools and is easier to audit. Switching to JCS later would be a protocol version change, not an in-place edit.",
+  "specPath": "spec.json",
+  "specSha256": null,
+  "protocolPath": "protocol.json",
+  "protocolSha256": null,
+  "adversarialManifestPath": "adversarial/core_manifest.json",
+  "adversarialManifestSha256": null,
+  "lockedAt": null,
+  "lockSha256": null,
+  "lockSha256Definition": {
+    "input": "UTF-8 bytes of the seven content fields, in the registered order, each followed by a single newline",
+    "fieldOrder": [
+      "specSha256",
+      "protocolSha256",
+      "adversarialManifestSha256",
+      "constitutionSha256",
+      "constitutionVersion",
+      "lockVersion",
+      "lockedAt"
+    ],
+    "formula": "lockSha256 = SHA256(specSha256 + LF + protocolSha256 + LF + adversarialManifestSha256 + LF + constitutionSha256 + LF + constitutionVersion + LF + lockVersion + LF + lockedAt + LF)",
+    "selfReferenceNote": "lockSha256 is excluded from its own input, so this is a checksum over the other fields rather than a self-referential hash.",
+    "shellEquivalent": "printf '%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n' \"$SPEC_SHA\" \"$PROTO_SHA\" \"$MANIFEST_SHA\" \"$CONSTITUTION_SHA\" \"1.2\" \"1\" \"$LOCKED_AT\" | sha256sum"
+  },
+  "preconditions": [
+    "PRELOCK_VALIDATION passes without requiring a final lock.json",
+    "spec.json, protocol.json and adversarial/core_manifest.json each equal the one canonical JSON serializer output",
+    "none of the three hash inputs contains a self digest",
+    "spec.json has lockedAt == null",
+    "spec, protocol, lock draft and adversarial manifest schemas and semantic constraints pass",
+    "the antiCollision check in protocol.json passes",
+    "all core-suite expected verdicts exist in adversarial/core_manifest.json before the suite is first executed",
+    "human approval to enter P2 has been recorded"
+  ],
+  "verification": {
+    "statement": "Re-runnable by anyone, at any time, with no state from the locking session.",
+    "steps": [
+      "sha256(bytes of spec.json)     == specSha256",
+      "sha256(bytes of protocol.json) == protocolSha256",
+      "sha256(bytes of adversarial/core_manifest.json) == adversarialManifestSha256",
+      "sha256(bytes of governance/PINN_RESEARCH_CONSTITUTION.md) == constitutionSha256",
+      "sha256(lockSha256Definition.input rebuilt from this file) == lockSha256"
+    ]
+  },
+  "postLockRule": "Any change to spec.json, protocol.json or adversarial/core_manifest.json requires a new versioned artifact set and new lock.json. In-place editing followed by recomputing the hash is forbidden (Articles 2 and 59). Adversarial case B8 exercises this path.",
+  "integrityNote": "lock.json's own file bytes are not hashed by anything. Its integrity comes from git history plus lockSha256 over its content fields. Making it hash itself would reintroduce exactly the self-reference this structure exists to remove."
+}

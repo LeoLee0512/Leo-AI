@@ -1,0 +1,155 @@
+{
+  "configId": "annulus-poisson-hard-bc-v1-r2-240k",
+  "description": "Revision 2 of the annular Poisson attempt: the r1 method with a 240k-step budget and the learning-rate schedule held at its 120k-step prefix (owner's ruling 2026-09-26). Everything else is byte-for-byte the r1 config; see EXPERIMENT_ANNULUS_R2_PREREGISTRATION_20260926.md.",
+  "geometry": {
+    "geometryId": "annulus-a035-R1-v1",
+    "innerRadius": 0.35,
+    "outerRadius": 1.0,
+    "membership": "a^2 < x^2 + y^2 < 1",
+    "boundaryComponents": [
+      "outer",
+      "inner"
+    ]
+  },
+  "network": {
+    "hiddenLayers": 4,
+    "width": 64,
+    "activation": "tanh",
+    "input": "x,y",
+    "output": "u",
+    "initialization": "torch default (Kaiming uniform) under init seed",
+    "outputParameterization": "(R^2-s)(s-a^2)N"
+  },
+  "optimizer": {
+    "name": "Adam",
+    "lr": 0.001,
+    "finalLr": 1e-05,
+    "schedule": "exponential decay lr -> finalLr over the first lrPrefixSteps, then held at finalLr",
+    "steps": 240000,
+    "batchSize": 512,
+    "threads": 1,
+    "stopping": "fixed step count; no early stopping (protocol L4)",
+    "lrPrefixSteps": 120000
+  },
+  "lossWeights": {
+    "pde": 1.0
+  },
+  "sampling": {
+    "poolSize": 2048,
+    "poolSeed": 20261330,
+    "collocationCount": 1024,
+    "rule": "collocationCount pool indices drawn without replacement by the run's sampling seed; the pool is area-uniform interior points of the annulus (r = sqrt(a^2 + (R^2 - a^2) U), theta = 2 pi V). The count is the square experiment's, UNCHANGED: the EXPLORATORY probes showed that matching the collocation density to the larger annulus area (2823 points) does not improve the error at any step budget (1.05e-02 vs 9.94e-03 at 10k, 2.358e-03 vs 2.230e-03 at 40k), so raising it would have been a method change with no evidence behind it."
+  },
+  "seedProtocol": {
+    "runs": 10,
+    "initBase": 20263200,
+    "sampleBase": 20263300,
+    "batchBase": 20263400,
+    "rule": "triplet i: init=initBase+i, sample=sampleBase+i, batch=batchBase+i, i in 0..runs-1. Revision 2 bases, disjoint from r1 (20261400/500/600), from every diagnosis base and from the smoke bases; the G6 reproduction adds reproduction.seedOffset (10000)."
+  },
+  "sets": {
+    "devSize": 1024,
+    "devSeed": 20261340,
+    "physRadialOrder": 40,
+    "physAngularCount": 128,
+    "boundaryNodes": 64,
+    "minSeparation": 1e-09
+  },
+  "preregistration": {
+    "errorNorm": "relativeL2",
+    "epsilonSpec": 0.001,
+    "worstSeedFactor": 3.0,
+    "dispersionLimit": 1.0,
+    "qoiBand": null
+  },
+  "physicsThresholds": {
+    "PH1": 0.01,
+    "PH2": 0.01,
+    "PH3": 0.001,
+    "PH6": 0.005,
+    "PH7_energyFloor": 1e-14
+  },
+  "signatureCriteria": {
+    "sPdeResidual": {
+      "normalizedResidualRms": 0.01
+    },
+    "sBcResidual": {
+      "maxBoundaryAbs": 0.0001
+    },
+    "sLocalizedError": {
+      "criterion": "ACA-9",
+      "statistic": "maxCellRmsErrorOverReferenceRms",
+      "normalization": "globalReferenceRms",
+      "partitionKind": "annulusEqualAreaCells",
+      "radialBins": 4,
+      "angularSectors": 16,
+      "operator": "<=",
+      "threshold": 0.001,
+      "evaluationSet": "dev",
+      "preregisteredIn": "experiments/annulus/EXPERIMENT_ANNULUS_PREREGISTRATION_20260917.md"
+    },
+    "sConservation": {
+      "PH1": 0.01
+    },
+    "sPinnCfd": {
+      "rule": "median dev relative L2 > epsilonSpec"
+    },
+    "sSeedSensitive": {
+      "rule": "Constitution 10.1 dispersion / worst-seed / divergence rules"
+    }
+  },
+  "claimPool": {
+    "label": "DAC",
+    "rule": "each member carries its own rotated geometry-native quadrature grid (integral criteria) and its own interior CGL-in-area-fraction pointwise grid (ACA-2, ACA-9). Angular counts are pairwise coprime and every member has a distinct angular offset, so no two members -- and no member and D_phys -- can share a node.",
+    "members": {
+      "DAC-M0": {
+        "quadratureRadialOrder": 34,
+        "quadratureAngularCount": 125,
+        "angularOffset": 0.011,
+        "pointwiseCglCount": 50,
+        "pointwiseAngularCount": 33,
+        "pointwiseAngularOffset": 0.007
+      },
+      "DAC-M1": {
+        "quadratureRadialOrder": 36,
+        "quadratureAngularCount": 127,
+        "angularOffset": 0.013,
+        "pointwiseCglCount": 54,
+        "pointwiseAngularCount": 35,
+        "pointwiseAngularOffset": 0.009
+      },
+      "DAC-M2": {
+        "quadratureRadialOrder": 38,
+        "quadratureAngularCount": 129,
+        "angularOffset": 0.017,
+        "pointwiseCglCount": 56,
+        "pointwiseAngularCount": 37,
+        "pointwiseAngularOffset": 0.011
+      },
+      "DAC-M3": {
+        "quadratureRadialOrder": 42,
+        "quadratureAngularCount": 131,
+        "angularOffset": 0.019,
+        "pointwiseCglCount": 60,
+        "pointwiseAngularCount": 39,
+        "pointwiseAngularOffset": 0.013
+      }
+    }
+  },
+  "reproduction": {
+    "devRelL2MedianAbsDiff": 0.0001,
+    "devRelL2MedianRelDiff": 0.5,
+    "seedProtocolVerdictMustAgree": true,
+    "seedOffset": 10000,
+    "rule": "C_repro PASS requires BOTH the inherited absolute limit (|median_A - median_B| <= 1e-4) AND the relative limit (|median_A - median_B| <= 0.5 * median_A), plus an identical k/N verdict. Preregistered before the formal run; not chosen after seeing either median."
+  },
+  "codeIdentityExtraFiles": [
+    "experiments/annulus/run_formal_annulus_r2.py"
+  ],
+  "thresholdSources": {
+    "acceptanceCriteria": "ACA-1..ACA-9 thresholds, their geometry verdict (GEOMETRY-INVARIANT / GEOMETRY-SENSITIVE / NEW-GEOMETRY METRIC) and their source are frozen in pinn/governance/annulus_contract.py (THRESHOLD_SOURCES) and reproduced in the preregistration. epsilonSpec = the ACA-1 threshold.",
+    "physics": "PH1/PH2 are the flux and energy identities of the annulus, normalised by their own exact values (int f dA and the Dirichlet energy), thresholds 1e-2 as inherited; PH3 positivity tolerance 1e-3; PH6 (discrete maximum bound) 5e-3; PH7 is an SPD witness with an energy floor, cross-checked by the smallest eigenvalue of the independent polar operator. PH4 (symmetry) and PH5 (monotonicity) are registered NOT_APPLICABLE with reasons. All frozen before any formal training and before the claim pool was sealed.",
+    "signatures": "sPdeResidual uses the ACA-4 threshold on the dev residual; sBcResidual the ACA-3 threshold over BOTH components; sLocalizedError fires exactly when the preregistered localized acceptance criterion ACA-9 fails, under its contract's every-seed policy; sConservation the PH1 threshold; sSeedSensitive the Constitution 10.1 rules.",
+    "stepBudget": "The ONLY method value that differs from the square-2D calibration (10000 -> 120000). Raised before the freeze on EXPLORATORY evidence (D_dev only, claim pool not yet sealed): the carried-over budget leaves dev relative L2 at 9.94e-03, an order of magnitude above the inherited epsilon_spec = 1e-3, and the normalized residual at 4.14e-02 against ACA-4's 1e-2. Density-matched collocation does not help (1.05e-02), so the geometry's larger area is not the cause; the error falls by about 2.1x per doubling of the steps (9.94e-03 -> 5.43e-03 -> 2.36e-03 at 10k / 20k / 40k), i.e. the shortfall is the optimisation budget. 120000 steps is that scaling extrapolated to roughly 7e-04, about 1.4x of margin against epsilon_spec -- less margin than the square calibration had (23x), which is recorded here rather than bought by touching a threshold. If the formal run misses ACA-1 it is reported as a FAIL (user ruling 2026-09-17)."
+  }
+}

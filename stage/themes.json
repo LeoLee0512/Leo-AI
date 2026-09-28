@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "default_theme": "ink-autumn",
+  "themes": [
+    {
+      "id": "ink-autumn",
+      "name": {
+        "zh": "淡墨浓秋",
+        "en": "Ink Autumn"
+      },
+      "primary": "#9C3A28",
+      "accent": "#E0CFB2",
+      "dark_primary": "#D2705A",
+      "dark_accent": "#3A2E24",
+      "builtin": true
+    },
+    {
+      "id": "deep-sea-molten-orange",
+      "name": {
+        "zh": "深海 × 熔橙",
+        "en": "Deep Sea × Molten Orange"
+      },
+      "primary": "#1E6B8A",
+      "accent": "#E0642E",
+      "dark_primary": "#5BB8D4",
+      "dark_accent": "#F08A4B",
+      "builtin": true
+    },
+    {
+      "id": "amethyst-teal",
+      "name": {
+        "zh": "紫晶 × 青绿",
+        "en": "Amethyst × Teal"
+      },
+      "primary": "#5B4FA6",
+      "accent": "#2AA198",
+      "dark_primary": "#9B8EF5",
+      "dark_accent": "#2DD4BF",
+      "builtin": true
+    }
+  ]
+}

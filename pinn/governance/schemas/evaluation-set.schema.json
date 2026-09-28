@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leo-ai.local/schemas/pinn/evaluation-set-1.0.json",
+  "title": "Leo AI PINN EvaluationSet manifest (Amendment A-0001, draft 3)",
+  "description": "One named evaluation set (train / dev / claim / phys) as the list of its samples. The canonical hash of this document is the artifact hash the ProblemDefinition references. Sample identity, finite coordinates, in-set duplicates and pairwise disjointness / minimum separation between sets are enforced by pinn.governance.evaluation_sets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "artifactId", "role", "inputNames", "samples"],
+  "properties": {
+    "schemaVersion": { "const": "pinn.evaluationSet/1.0" },
+    "artifactId": { "type": "string", "minLength": 1 },
+    "role": { "enum": ["train", "dev", "claim", "phys"] },
+    "inputNames": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generatorId", "generatorVersion"],
+      "properties": {
+        "generatorId": { "type": "string", "minLength": 1 },
+        "generatorVersion": { "type": "string", "minLength": 1 },
+        "seedRef": { "type": "string", "minLength": 1 }
+      }
+    },
+    "samples": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["inputs", "kind"],
+        "properties": {
+          "inputs": { "type": "array", "minItems": 1, "items": { "type": "number" } },
+          "kind": { "enum": ["interior", "boundary", "initial", "observation"] },
+          "quantity": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

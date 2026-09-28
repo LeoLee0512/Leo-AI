@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "scope": "F-008 runtime theme source/build/deployment provenance; not a whole-product license clearance",
+  "assets": {
+    "backgrounds/ink-autumn-branch-warm.webp": {
+      "asset_path": "theme/backgrounds/ink-autumn-branch-warm.webp",
+      "source_files": [
+        "stage/backgrounds/ink-autumn-branch-warm.webp"
+      ],
+      "source_origin": "Canonical Leo repository source; historical authorship is not newly inferred",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "c5b61872010144058f80f9da95d322c08d1d38f3",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "e69d204c43454a5f49e1e0d36e8f3ebda3fff6bd61fa6a6e8f18b83f190219b4",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "backgrounds/ink-autumn-branch.webp": {
+      "asset_path": "theme/backgrounds/ink-autumn-branch.webp",
+      "source_files": [
+        "stage/backgrounds/ink-autumn-branch.webp"
+      ],
+      "source_origin": "Canonical Leo repository source; historical authorship is not newly inferred",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "c5b61872010144058f80f9da95d322c08d1d38f3",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "b364cde704a09cbbff192f0c0c82e25c8db5ad8b26b8ff8a38dcf67a12ec6b4d",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "backgrounds/ink-autumn-tree.webp": {
+      "asset_path": "theme/backgrounds/ink-autumn-tree.webp",
+      "source_files": [
+        "stage/backgrounds/ink-autumn-tree.webp"
+      ],
+      "source_origin": "Canonical Leo repository source; historical authorship is not newly inferred",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "c5b61872010144058f80f9da95d322c08d1d38f3",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "c5ba1075985b20ca23780f7bb642a907b9f2f3d4061bcb93ada76445a4a6d676",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "backgrounds/manifest.json": {
+      "asset_path": "theme/backgrounds/manifest.json",
+      "source_files": [
+        "stage/backgrounds/manifest.json"
+      ],
+      "source_origin": "Canonical Leo repository source; historical authorship is not newly inferred",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "7c7a6b1957164ff55ac4ebeffed7df74b9eb26b6",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "51f7da1653d3f3a3358dd9882e1f3857287eadc009d0c311bfa5633b485c37c1",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "logos/leo-favicon.svg": {
+      "asset_path": "theme/logos/leo-favicon.svg",
+      "source_files": [
+        "stage/logos/leo-favicon.svg"
+      ],
+      "source_origin": "Owner-supplied \"Leo\" script logo (2026-09-27, replacing the lion): assets/logos/leo-script.original.webp (sha256 2b47a470515e3aab79241a23c2359fde53fe2afe9432752b602eeb6d42d7d0d1), a cream tile on black corners with no alpha; made transparent by tools/make_logo_master.py (corner flood fill, 2 px inset) into assets/logos/leo-script.source.png (sha256 9c7dd2e6b7d3b0101167b7aba7d4432459eaa6d382b6b11858a10e8c3de8342b), then encoded by tools/make_lion_icon.py. File names still say 'lion' for compatibility; the retired lion master stays in assets/logos.",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "Leo AI 2.1.2",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "d7e2b7a4faf0ef8b38fd16d96c8b77203da680a9def187b9fa7dbc3b84310f5a",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "logos/leo-lion-1024.png": {
+      "asset_path": "theme/logos/leo-lion-1024.png",
+      "source_files": [
+        "stage/logos/leo-lion-1024.png"
+      ],
+      "source_origin": "Owner-supplied \"Leo\" script logo (2026-09-27, replacing the lion): assets/logos/leo-script.original.webp (sha256 2b47a470515e3aab79241a23c2359fde53fe2afe9432752b602eeb6d42d7d0d1), a cream tile on black corners with no alpha; made transparent by tools/make_logo_master.py (corner flood fill, 2 px inset) into assets/logos/leo-script.source.png (sha256 9c7dd2e6b7d3b0101167b7aba7d4432459eaa6d382b6b11858a10e8c3de8342b), then encoded by tools/make_lion_icon.py. File names still say 'lion' for compatibility; the retired lion master stays in assets/logos.",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "Leo AI 2.1.2",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "4f560708dacbefa8bf7680f38d3aaec9584c1d322f81f6fff21a16cd0447791c",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "logos/leo-lion.ico": {
+      "asset_path": "theme/logos/leo-lion.ico",
+      "source_files": [
+        "stage/logos/leo-lion.ico"
+      ],
+      "source_origin": "Owner-supplied \"Leo\" script logo (2026-09-27, replacing the lion): assets/logos/leo-script.original.webp (sha256 2b47a470515e3aab79241a23c2359fde53fe2afe9432752b602eeb6d42d7d0d1), a cream tile on black corners with no alpha; made transparent by tools/make_logo_master.py (corner flood fill, 2 px inset) into assets/logos/leo-script.source.png (sha256 9c7dd2e6b7d3b0101167b7aba7d4432459eaa6d382b6b11858a10e8c3de8342b), then encoded by tools/make_lion_icon.py. File names still say 'lion' for compatibility; the retired lion master stays in assets/logos.",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "Leo AI 2.1.2",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "b4dde6cae51a9cc4c51f5fc25acf377f2f58efb8740abf9752a03964cced9362",
+      "runtime_consumer": "leo_shell/windows_branding.py::prepare_branding_resource; native Windows icon resources",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE",
+      "derived_resource": "theme/logos/leo-lion.<first16 SHA256 of source>.ico; exact source bytes; recognized by tools/theme_asset_provenance.py"
+    },
+    "logos/leo-lion.svg": {
+      "asset_path": "theme/logos/leo-lion.svg",
+      "source_files": [
+        "stage/logos/leo-lion.svg"
+      ],
+      "source_origin": "Owner-supplied \"Leo\" script logo (2026-09-27, replacing the lion): assets/logos/leo-script.original.webp (sha256 2b47a470515e3aab79241a23c2359fde53fe2afe9432752b602eeb6d42d7d0d1), a cream tile on black corners with no alpha; made transparent by tools/make_logo_master.py (corner flood fill, 2 px inset) into assets/logos/leo-script.source.png (sha256 9c7dd2e6b7d3b0101167b7aba7d4432459eaa6d382b6b11858a10e8c3de8342b), then encoded by tools/make_lion_icon.py. File names still say 'lion' for compatibility; the retired lion master stays in assets/logos.",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "Leo AI 2.1.2",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "d7e2b7a4faf0ef8b38fd16d96c8b77203da680a9def187b9fa7dbc3b84310f5a",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "shell.html": {
+      "asset_path": "theme/shell.html",
+      "source_files": [
+        "stage/shell.html"
+      ],
+      "source_origin": "Canonical Leo repository source; historical authorship is not newly inferred",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "Leo AI 2.1.2",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "39a707ae342cb183019f0978f423e2848088e09f39fb226925ff82816d77284e",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "themes.json": {
+      "asset_path": "theme/themes.json",
+      "source_files": [
+        "stage/themes.json"
+      ],
+      "source_origin": "Canonical Leo repository source; historical authorship is not newly inferred",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "c5b61872010144058f80f9da95d322c08d1d38f3",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "856c7c44107c25f0ca1c83155484a0e0083dfcee276a2df188def6b0737dbff3",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "workbench.html": {
+      "asset_path": "theme/workbench.html",
+      "source_files": [
+        "stage/workbench.html"
+      ],
+      "source_origin": "Canonical Leo repository source; historical authorship is not newly inferred",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "Leo AI 2.1.1",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "981b5f0ff7a9e24c22f76cb41a0a8894cd3ab37d9e73e8625a21515850e0b5dc",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "workbench.css": {
+      "asset_path": "theme/workbench.css",
+      "source_files": [
+        "stage/workbench.css"
+      ],
+      "source_origin": "Canonical Leo repository source; historical authorship is not newly inferred",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "leo-message-actions-20260926",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "20b185b8ac43588cf17b3ea65b3080c7252677a64bc578b628ec9ab8b399c383",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "workbench.js": {
+      "asset_path": "theme/workbench.js",
+      "source_files": [
+        "stage/workbench.js"
+      ],
+      "source_origin": "Canonical Leo repository source; historical authorship is not newly inferred",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "leo-message-actions-20260926",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "389a583fbc33fe835936293871bc0100655ff27feea711e208fc0a92672a51f0",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "research-panel.js": {
+      "asset_path": "theme/research-panel.js",
+      "source_files": [
+        "stage/research-panel.js"
+      ],
+      "source_origin": "Canonical Leo repository source; historical authorship is not newly inferred",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "leo-injection-removed-20260926",
+      "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
+      "expected_sha256": "05210e6a1fbde89c89695a0bc16a58c7a8cd518b3db989e34d52bd7dc6f90155",
+      "runtime_consumer": "leo_shell/theme_runtime.py",
+      "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    },
+    "intro/leo-intro.mp4": {
+      "asset_path": "theme/intro/leo-intro.mp4",
+      "source_files": [
+        "stage/intro/leo-intro.mp4"
+      ],
+      "source_origin": "Opening animation supplied by the owner on 2026-09-26, generated with the Seedance 2.5 model. The committed file is a lossless remux of the supplied MP4 (ffmpeg -c copy -movflags +faststart): the H.264 video and AAC audio streams are byte-identical (stream MD5 795462f4... / 7d03c9b7...); only the index moved to the front. Supplied file SHA-256 f21a8472487604af8f511f01d25593e0988dc840d8e954e0873206a123a2644a.",
+      "upstream_project": "Leo AI Studio",
+      "version_or_commit": "leo-opening-animation-20260926",
+      "license": "Owner-supplied AI-generated media; usage under the generating service's terms is the owner's responsibility. Attribution shown in Settings -> About: 开场动画由 Seedance 2.5 模型生成。",
+      "ai_generated": {
+        "model": "Seedance 2.5",
+        "disclosure": "Settings -> About (start page and workbench)",
+        "visible_watermark_added": false
+      },
+      "expected_sha256": "d39f3b6a6d9ad70e8cb61f0a828c4ba50e16873cb861bd705c7f4136b0cdf012",
+      "runtime_consumer": "leo_shell/intro.py (WebView2 virtual host mapping; played by stage/shell.html)",
+      "build_path": "tools/build_launcher.ps1: stage/intro/ -> package/theme/intro/",
+      "deployment_path": "tools/deploy_release.ps1: package/theme/intro/ -> app-root/theme/intro/",
+      "provenance_status": "COMMITTED_PROJECT_SOURCE"
+    }
+  }
+}

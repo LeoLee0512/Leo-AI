@@ -1,0 +1,25 @@
+{
+  "configId": "poisson1d-bad-sampling-n8",
+  "description": "Experiment 2 failure fixture: identical to poisson1d-baseline-v1 except sampling.collocationCount = 8 (scheme A, N_train_bad << N_baseline = 256). Registered 2026-09-15 before the failure run. Nothing else changes: same network, optimizer, schedule, loss weights, seeds, evaluation sets, thresholds.",
+  "network": {"hiddenLayers": 3, "width": 32, "activation": "tanh", "input": "x", "output": "u", "initialization": "torch default (Kaiming uniform) under init seed"},
+  "optimizer": {"name": "Adam", "lr": 0.001, "finalLr": 1e-05, "schedule": "exponential decay lr -> finalLr over steps", "steps": 6000, "batchSize": 128, "stopping": "fixed step count; no early stopping (protocol L4)"},
+  "lossWeights": {"pde": 1.0, "bc": 10.0},
+  "sampling": {"poolSize": 1024, "poolSeed": 20260915, "collocationCount": 8, "rule": "collocationCount pool indices drawn without replacement by the run's sampling seed"},
+  "seedProtocol": {"runs": 10, "initBase": 20260900, "sampleBase": 20261000, "batchBase": 20261100, "rule": "triplet i: init=initBase+i, sample=sampleBase+i, batch=batchBase+i, i in 0..runs-1; registered in seed_ledger.json before the first run"},
+  "sets": {"devSize": 1000, "devSeed": 20260916, "physOrder": 256, "minSeparation": 1e-09},
+  "preregistration": {"errorNorm": "relativeL2", "epsilonSpec": 0.001, "worstSeedFactor": 3.0, "dispersionLimit": 1.0, "qoiBand": null},
+  "physicsThresholds": {"PH1": 0.01, "PH2": 0.01, "PH3": 0.001, "PH4": 0.005, "PH5": 0.001, "PH6": 0.005, "PH7_energyFloor": 1e-14},
+  "signatureCriteria": {
+    "sPdeResidual": {"normalizedResidualRms": 0.01},
+    "sBcResidual": {"maxBoundaryAbs": 0.0001},
+    "sLocalizedError": {"bins": 10, "maxBinToMedianBinRatio": 3.0},
+    "sConservation": {"PH1": 0.01},
+    "sPinnCfd": {"rule": "median dev relative L2 > epsilonSpec"},
+    "sSeedSensitive": {"rule": "Constitution 10.1 dispersion / worst-seed / divergence rules"}
+  },
+  "thresholdSources": {
+    "acceptanceCriteria": "AC-1..AC-8 thresholds are the frozen governance/POISSON_1D_V1.0_spec.draft.json values (AC-1 1e-3, AC-2 5e-3, AC-3 1e-4, AC-4 1e-2, AC-5 1e-3, AC-6 5e-3, AC-7 1e-2, AC-8 5e-3 SHOULD); epsilonSpec = AC-1 threshold.",
+    "physics": "The protocol compilation section 3 lists analytic-fixture defaults (1e-8 / 1e-10) as the preregistration starting point and says the formal values are frozen before SPEC_LOCKED. For a neural approximation judged at AC-1 1e-3 those defaults are unattainable, so the formal PINN values were frozen here, consistent with the AC scale (PH1 1e-2 ~ 2 x AC-6, PH2 = AC-7, PH4 = AC-2, PH6 = AC-2), before any formal training and before D_claim was sealed.",
+    "signatures": "sPdeResidual uses the AC-4 threshold on the dev holdout residual; sBcResidual the AC-3 threshold; sLocalizedError a preregistered bin-ratio; sConservation the PH1 threshold; sSeedSensitive the Constitution 10.1 rules."
+  }
+}

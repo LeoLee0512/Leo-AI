@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leo-ai.local/schemas/pinn/claim-set-event-1.0.json",
+  "title": "Leo AI PINN ClaimSetEvent (Amendment A-0001, draft 3)",
+  "description": "One event of the append-only claim-set ledger. eventId is the canonical hash of every other field (including prevEventId), so the events form a hash chain. sampleSetHash (2026-09-16 protocol clarification) is the canonical hash of the sorted sample identities of the claim set -- blind to artifactId, metadata and ordering -- so that the burn rule follows the samples that were looked at, not the bytes they were wrapped in. Chain integrity, SEALED-before-OPENED, one OPENED per claim set ever (by artifact hash and by sample identity), one OPENED per problem revision and the burn rule are enforced by pinn.governance.claim_set_ledger.validate_claim_set_ledger.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "prevEventId", "problemId", "revision", "specHash", "claimSetSha256", "event", "actor", "at"],
+  "properties": {
+    "eventId": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "prevEventId": { "anyOf": [ { "type": "string", "pattern": "^[a-f0-9]{64}$" }, { "const": "GENESIS" } ] },
+    "problemId": { "type": "string", "pattern": "^pdef-[a-z0-9][a-z0-9.-]*$" },
+    "revision": { "type": "integer", "minimum": 1 },
+    "specHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "claimSetSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "sampleSetHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "event": { "enum": ["SEALED", "OPENED"] },
+    "codeHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "actor": { "type": "string", "minLength": 1 },
+    "at": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"
+    }
+  }
+}

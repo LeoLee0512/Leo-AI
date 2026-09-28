@@ -1,0 +1,116 @@
+{
+  "specId": "poisson-2d-dirichlet",
+  "version": "1.0",
+  "constitutionVersion": "1.2",
+  "createdAt": "2026-09-16",
+  "lockedAt": null,
+  "lockStatusAuthority": "the frozen ProblemDefinition of the attempt (experiments/poisson2d/problems/)",
+  "schemaNote": "Applicability-annotated specification of the 2D manufactured Poisson problem. Fields that this problem does not carry are marked NOT_APPLICABLE with a reason; fabricating a value to pass completeness would be a Gate 1 FAIL. Exactly three fields are NOT_APPLICABLE: initialConditions, dimensionalForm, referenceScales.",
+  "evidenceLevel": "A",
+  "evidenceLevelReason": "An exact closed-form solution exists and is verifiable by substitution; this is the highest evidence level in Article 2.",
+  "title": {
+    "applicability": "APPLICABLE",
+    "value": "Two-dimensional manufactured Poisson equation on the unit square with homogeneous Dirichlet boundaries"
+  },
+  "scientificQuestion": {
+    "applicability": "APPLICABLE",
+    "value": "The question under test is not whether a PINN can fit sin(pi x) sin(pi y). It is whether the Leo AI scientific governance, diagnosis, blind-validation and reproduction machinery, validated at C2 on the 1D calibration, carries to a genuinely two-dimensional PDE without distortion: sample identity in 2D, component-separated second-order automatic differentiation, spatial error structure, 2D physics identities, blind claim sets on tensor grids, Tier-1 perturbations whose applicability is re-judged for 2D, and an independent-environment reproduction."
+  },
+  "equations": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "governing": "-(u_xx(x,y) + u_yy(x,y)) = f(x,y),  (x,y) in (0,1)^2",
+      "forcing": "f(x,y) = 2 * pi^2 * sin(pi*x) * sin(pi*y)",
+      "type": "linear second-order elliptic boundary value problem",
+      "equationCount": 1,
+      "unknownCount": 1,
+      "wellPosedness": "Determined: one second-order elliptic PDE with Dirichlet data on the whole boundary of a bounded Lipschitz domain has a unique classical solution (Article 6-1)."
+    }
+  },
+  "domain": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "interior": "(0,1) x (0,1)",
+      "closure": "[0,1] x [0,1]",
+      "boundary": ["x = 0", "x = 1", "y = 0", "y = 1"],
+      "dimension": 2,
+      "domainType": "rectangle"
+    }
+  },
+  "boundaryConditions": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "type": "dirichlet",
+      "data": "u = 0 on all four edges",
+      "count": 4,
+      "enforcement": "hard",
+      "parameterization": "u_theta(x,y) = x (1 - x) y (1 - y) N_theta(x,y)",
+      "enforcementReason": "The 1D calibration established hard enforcement as a validated method at C2 for homogeneous Dirichlet data. Freezing it here isolates the dimension lift: soft-versus-hard is not a variable of this experiment."
+    }
+  },
+  "initialConditions": {
+    "applicability": "NOT_APPLICABLE",
+    "reason": "the problem is steady; there is no time variable"
+  },
+  "dimensionalForm": {
+    "applicability": "NOT_APPLICABLE",
+    "reason": "the problem is posed dimensionless by construction"
+  },
+  "referenceScales": {
+    "applicability": "NOT_APPLICABLE",
+    "reason": "no nondimensionalization is applied, so there are no reference scales to declare"
+  },
+  "manufacturedSolution": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "u": "u*(x,y) = sin(pi*x) * sin(pi*y)",
+      "u_xx": "-pi^2 * sin(pi*x) * sin(pi*y)",
+      "u_yy": "-pi^2 * sin(pi*x) * sin(pi*y)",
+      "verification": "-(u*_xx + u*_yy) = 2*pi^2*sin(pi*x)*sin(pi*y) = f; u* vanishes on all four edges. Verified machine-wise in Gate 2a on the registered D_phys and boundary nodes.",
+      "closedFormConstants": {
+        "integralU": "int int u* dA = 4/pi^2",
+        "integralF": "int int f dA = 8",
+        "dirichletEnergy": "int int |grad u*|^2 dA = int int f u* dA = pi^2/2",
+        "fRms": "||f||_rms = pi^2",
+        "maxAbsU": "max |u*| = u*(1/2,1/2) = 1",
+        "boundaryFlux": "closed boundary flux of the outward normal derivative = -8"
+      },
+      "symmetry": "u*(x,y) = u*(y,x) and u*(x,y) = u*(1-x,y) = u*(x,1-y); the swap symmetry is evidence (PH4), never a training constraint. A symmetric manufactured solution cannot by itself discriminate an x/y swap in the residual operator, which is why Gate 3 carries the asymmetric probe check T2."
+    }
+  },
+  "referenceSolution": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "primary": {"sourceId": "src-analytic", "method": "analytical", "evidenceLevel": "A", "module": "pinn/reference/analytic_poisson2d.py"},
+      "secondary": {"sourceId": "src-fdm2d", "method": "numerical", "evidenceLevel": "B", "module": "scientific_reference/poisson2d_fdm.py",
+                    "scheme": "five-point second-order finite differences, matrix-free conjugate gradients, refinement sequence 8/16/32/64, observed order p in [1.8, 2.2]",
+                    "role": "implementation sanity cross-check only; it never replaces the analytic reference"}
+    }
+  },
+  "acceptanceCriteria": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "registry": "pinn/governance/poisson2d_contract.py (values, thresholds, levels and the per-criterion dimension verdict and threshold source)",
+      "must": ["AC2D-1", "AC2D-2", "AC2D-3", "AC2D-4", "AC2D-5", "AC2D-6", "AC2D-7", "AC2D-9"],
+      "should": ["AC2D-8"],
+      "thresholds": {"AC2D-1": 1e-3, "AC2D-2": 5e-3, "AC2D-3": 1e-4, "AC2D-4": 1e-2, "AC2D-5": 1e-3,
+                     "AC2D-6": 5e-3, "AC2D-7": 1e-2, "AC2D-8": 5e-3, "AC2D-9": 1e-3},
+      "frozenBefore": "the claim pool was sealed and before any formal run; sources recorded per criterion (PART 10)"
+    }
+  },
+  "evaluationProtocol": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "claimGridFamily": "{tensor Gauss-Legendre of order n on (0,1)^2} union {interior tensor Chebyshev-Gauss-Lobatto of count m}",
+      "boundarySet": "Gauss-Legendre nodes of order 32 along each of the four edges, arc-length weights summing to the perimeter 4; spec-known boundary coordinates, identity-exempt (protocol L1)",
+      "claimIdentity": "sampleSetHash = canonical_sha256(sorted(sample identities)); a claim set burns by its samples, not by its artifact bytes",
+      "derivatives": "first and second order by automatic differentiation, components evaluated separately (u_xx and u_yy never only as their sum)",
+      "precision": "float64 throughout; deterministic algorithms; the thread count is part of the frozen configuration"
+    }
+  },
+  "outOfScope": {
+    "applicability": "APPLICABLE",
+    "value": ["irregular geometry", "nonlinear PDE", "CFD reference", "corner singularity", "mixed boundary conditions",
+              "time dependence", "inverse problems", "UCM / viscoelasticity", "architecture sweeps"]
+  }
+}

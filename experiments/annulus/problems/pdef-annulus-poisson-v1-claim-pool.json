@@ -1,0 +1,82 @@
+{
+  "problemId": "pdef-annulus-poisson-v1",
+  "registeredAt": "2026-09-17T07:13:36Z",
+  "registeredBy": "pinn.experiments_annulus.runner_annulus (Claude, captain)",
+  "geometryId": "annulus-a035-R1-v1",
+  "rule": "each member has its own rotated quadrature grid and its own CGL-in-area-fraction pointwise grid; angular counts are pairwise coprime and each member carries a distinct angular offset, so no two members and no member and D_phys can share a node",
+  "note": "initialStatus is registration-time information only; the runtime lifecycle state is derived from the ledger (derived_claim_status), never read from here",
+  "pairwiseSharedSamples": {
+    "DAC-M0|DAC-M1": 0,
+    "DAC-M0|DAC-M2": 0,
+    "DAC-M0|DAC-M3": 0,
+    "DAC-M1|DAC-M2": 0,
+    "DAC-M1|DAC-M3": 0,
+    "DAC-M2|DAC-M3": 0
+  },
+  "members": {
+    "DAC-M0": {
+      "grid": {
+        "quadratureRadialOrder": 34,
+        "quadratureAngularCount": 125,
+        "angularOffset": 0.011,
+        "pointwiseCglCount": 50,
+        "pointwiseAngularCount": 33,
+        "pointwiseAngularOffset": 0.007
+      },
+      "artifactId": "set-claim-pdef-annulus-poisson-v1-DAC-M0",
+      "artifactHash": "84877d8b1eec35ab85c5ea7674205e3b56775c932e16bd682982f73513238e47",
+      "sampleSetHash": "cb3a15010f912698f001214f235aad761927d6c82c21e9b4ff1bbab0b0c5a072",
+      "sampleCount": 5834,
+      "designatedRevision": 1,
+      "initialStatus": "SEALED"
+    },
+    "DAC-M1": {
+      "grid": {
+        "quadratureRadialOrder": 36,
+        "quadratureAngularCount": 127,
+        "angularOffset": 0.013,
+        "pointwiseCglCount": 54,
+        "pointwiseAngularCount": 35,
+        "pointwiseAngularOffset": 0.009
+      },
+      "artifactId": "set-claim-pdef-annulus-poisson-v1-DAC-M1",
+      "artifactHash": "d2136f592858a6c39f26630408c5aa406e5c3180a5a5b8d7a7cd67e5f2fea1e8",
+      "sampleSetHash": "5a1e2a4e3c7903b5f3ef17dd1d76639cd9e020f497eec0ec2dfc5abf22a3e5fa",
+      "sampleCount": 6392,
+      "designatedRevision": 2,
+      "initialStatus": "SEALED"
+    },
+    "DAC-M2": {
+      "grid": {
+        "quadratureRadialOrder": 38,
+        "quadratureAngularCount": 129,
+        "angularOffset": 0.017,
+        "pointwiseCglCount": 56,
+        "pointwiseAngularCount": 37,
+        "pointwiseAngularOffset": 0.011
+      },
+      "artifactId": "set-claim-pdef-annulus-poisson-v1-DAC-M2",
+      "artifactHash": "2fa600119a7d51ed46b91005b8558644b84bef20e87a7572f8c8be21f9a5139d",
+      "sampleSetHash": "e70e36e5ee2b8050c8f546bfcb4e8ad83a953fbd28392283b4b25d1e26ddf899",
+      "sampleCount": 6900,
+      "designatedRevision": 3,
+      "initialStatus": "SEALED"
+    },
+    "DAC-M3": {
+      "grid": {
+        "quadratureRadialOrder": 42,
+        "quadratureAngularCount": 131,
+        "angularOffset": 0.019,
+        "pointwiseCglCount": 60,
+        "pointwiseAngularCount": 39,
+        "pointwiseAngularOffset": 0.013
+      },
+      "artifactId": "set-claim-pdef-annulus-poisson-v1-DAC-M3",
+      "artifactHash": "b9e36f4fdcaab076f1944c1e1f3009fd201c2838ef721b8a887da1572f80a8b5",
+      "sampleSetHash": "94802a337a56e773b4e5f695aed06ae4f7c3f1e654ef0c524b43ef00c1b95a6a",
+      "sampleCount": 7764,
+      "designatedRevision": 4,
+      "initialStatus": "SEALED"
+    }
+  }
+}

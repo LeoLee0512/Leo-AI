@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leo-ai.local/schemas/pinn/scientific-spec-v1.3.json",
+  "title": "Leo AI Poisson-1D ScientificSpec pre-lock schema",
+  "type": "object",
+  "required": [
+    "lockStatusAuthority",
+    "schemaNote",
+    "specId",
+    "version",
+    "constitutionVersion",
+    "evidenceLevel",
+    "evidenceLevelReason",
+    "protocolRef",
+    "lockRef",
+    "title",
+    "scientificQuestion",
+    "equations",
+    "dependentVariables",
+    "independentVariables",
+    "domain",
+    "geometry",
+    "initialConditions",
+    "boundaryConditions",
+    "parameters",
+    "units",
+    "dimensionalForm",
+    "nondimensionalForm",
+    "referenceScales",
+    "assumptions",
+    "targetQuantities",
+    "referenceSolution",
+    "trainingDomain",
+    "validationDomain",
+    "validationMetrics",
+    "acceptanceCriteria",
+    "knownSingularities",
+    "knownNumericalRisks",
+    "createdAt",
+    "lockedAt"
+  ],
+  "properties": {
+    "lockStatusAuthority": {
+      "const": "lock.json"
+    },
+    "schemaNote": {
+      "type": "string",
+      "minLength": 20
+    },
+    "specId": {
+      "const": "poisson-1d-dirichlet"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "constitutionVersion": {
+      "enum": ["1.0", "1.1", "1.2"]
+    },
+    "evidenceLevel": {
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "evidenceLevelReason": {
+      "type": "string",
+      "minLength": 20
+    },
+    "protocolRef": {
+      "const": "protocol.json"
+    },
+    "lockRef": {
+      "const": "lock.json"
+    },
+    "title": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "scientificQuestion": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "equations": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "dependentVariables": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "independentVariables": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "domain": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "geometry": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "initialConditions": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "boundaryConditions": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "parameters": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "units": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "dimensionalForm": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "nondimensionalForm": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "referenceScales": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "assumptions": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "targetQuantities": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "referenceSolution": {
+      "type": "object",
+      "required": [
+        "applicability",
+        "value"
+      ],
+      "properties": {
+        "applicability": {
+          "const": "APPLICABLE"
+        },
+        "value": {
+          "type": "object",
+          "required": [
+            "primary",
+            "numericalBaseline"
+          ],
+          "properties": {
+            "primary": {
+              "type": "object",
+              "required": [
+                "role",
+                "evidenceLevel",
+                "form",
+                "derivative",
+                "verification",
+                "usedBy",
+                "provenance"
+              ],
+              "properties": {
+                "provenance": {
+                  "type": "object",
+                  "required": [
+                    "artifactRole",
+                    "producerType",
+                    "captureMethod",
+                    "registeredBy",
+                    "evaluatorSourcePath",
+                    "evaluatorCodeSha256",
+                    "equationBinding",
+                    "specBinding",
+                    "transformation"
+                  ],
+                  "properties": {
+                    "artifactRole": {
+                      "const": "REFERENCE"
+                    },
+                    "producerType": {
+                      "const": "TRUSTED_ANALYTIC_REFERENCE"
+                    },
+                    "captureMethod": {
+                      "const": "ANALYTIC_EVALUATION"
+                    },
+                    "registeredBy": {
+                      "const": "pinn.reference.analytic_poisson"
+                    },
+                    "evaluatorSourcePath": {
+                      "const": "pinn/reference/analytic_poisson.py"
+                    },
+                    "evaluatorCodeSha256": {
+                      "$ref": "#/$defs/sha256"
+                    },
+                    "equationBinding": {
+                      "type": "string",
+                      "minLength": 20
+                    },
+                    "specBinding": {
+                      "const": "poisson-1d-dirichlet@1.0"
+                    },
+                    "transformation": {
+                      "const": "IDENTITY"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": true
+            },
+            "numericalBaseline": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "trainingDomain": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "validationDomain": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "validationMetrics": {
+      "type": "object",
+      "required": [
+        "applicability",
+        "value"
+      ],
+      "properties": {
+        "applicability": {
+          "const": "APPLICABLE"
+        },
+        "value": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "definition",
+              "grid"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "AC-[1-9][0-9]*"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "definition": {
+                "type": "string",
+                "minLength": 1
+              },
+              "grid": {
+                "enum": [
+                  "GL512",
+                  "CGL2000",
+                  "boundarySet"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "perFieldReporting": {
+          "type": "string"
+        },
+        "derivativeEvaluation": {
+          "type": "string"
+        },
+        "referenceConstants": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "acceptanceCriteria": {
+      "type": "object",
+      "required": [
+        "applicability",
+        "declaredBeforeTraining",
+        "value",
+        "scope",
+        "multiSeedNote",
+        "immutability"
+      ],
+      "properties": {
+        "applicability": {
+          "const": "APPLICABLE"
+        },
+        "declaredBeforeTraining": {
+          "const": true
+        },
+        "value": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "metricRef",
+              "comparator",
+              "threshold",
+              "level"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "AC-[1-9][0-9]*"
+              },
+              "metricRef": {
+                "type": "string",
+                "pattern": "AC-[1-9][0-9]*"
+              },
+              "comparator": {
+                "enum": [
+                  "<",
+                  "<=",
+                  ">",
+                  ">="
+                ]
+              },
+              "threshold": {
+                "type": "number",
+                "minimum": 0
+              },
+              "level": {
+                "enum": [
+                  "MUST",
+                  "SHOULD"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "scope": {
+          "type": "string"
+        },
+        "multiSeedNote": {
+          "type": "string"
+        },
+        "immutability": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "knownSingularities": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "knownNumericalRisks": {
+      "$ref": "#/$defs/applicabilityObject"
+    },
+    "createdAt": {
+      "type": "string",
+      "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}"
+    },
+    "lockedAt": {
+      "type": "null"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "applicabilityObject": {
+      "type": "object",
+      "required": [
+        "applicability"
+      ],
+      "properties": {
+        "applicability": {
+          "enum": [
+            "APPLICABLE",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "value": {},
+        "reason": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "completeness": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "[0-9a-f]{64}"
+    }
+  }
+}

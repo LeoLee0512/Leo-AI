@@ -1,0 +1,25 @@
+# Normalise to LF in the repository; Git checks out CRLF on Windows where the
+# platform expects it. Without this, every file touched on Windows shows as
+# fully rewritten and the history stops being readable.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.png binary
+*.ico binary
+*.webp binary
+*.woff2 binary
+*.zip binary
+
+# PINN governance artifacts: make lock inputs byte-stable and node assets binary.
+specs/**/spec.json      text eol=lf
+specs/**/protocol.json  text eol=lf
+specs/**/lock.json      text eol=lf
+adversarial/**/core_manifest.json text eol=lf
+*.npy binary
+
+# Historical rollback evidence must retain its original bytes on checkout too.
+docs/rollback/** -text
+
+# Upstream license notices retain the exact bytes bound by the font manifest.
+LICENSES/fonts/* -text
+*.mp4 binary

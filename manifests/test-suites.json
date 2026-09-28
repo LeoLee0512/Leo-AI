@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "_comment": "Provenance of the test suites that carry the P0-2 verdict. The point of this file is that 'a suite of adversarial tests passes' is not one claim but two: who wrote the tests, and whether the party that raised the findings has confirmed them independently. Recording the second as ABSENT is what keeps a reconstructed suite from being read as reviewer confirmation.",
+  "provenance_kinds": {
+    "leo-authored": "written in this repository against the behaviour it specifies",
+    "reconstructed": "independently rebuilt from a third party's written description of a failure, without their test file",
+    "reviewer-original": "supplied by the reviewing party; the only kind that constitutes independent confirmation"
+  },
+  "statuses": {
+    "PRESENT": "the file is in this repository and runs",
+    "ABSENT": "not in this repository; NOT PROVIDED by the party that referenced it",
+    "SUPERSEDED": "kept for history, no longer run"
+  },
+  "suites": [
+    {
+      "id": "research-sop-core",
+      "path": "tests/skills/test_research_sop.py",
+      "provenance": "leo-authored",
+      "status": "PRESENT",
+      "covers": "P0-2 Case A-E, run/task binding, manifest shape",
+      "minimum_test_functions": 12,
+      "minimum_collected_cases": 12,
+      "locked_test_functions": [
+        "test_blocked_stage_reports_blocked_not_complete",
+        "test_case_a_second_task_never_reads_the_first_tasks_stages",
+        "test_case_b_partial_role_subset_is_not_complete",
+        "test_case_c_without_validator_there_is_no_pass",
+        "test_case_d_without_paper_writer_no_paper_path",
+        "test_case_e_same_task_resumes_in_place",
+        "test_manifest_binds_the_run_to_its_task_and_pipeline",
+        "test_manifest_with_a_mismatched_task_is_refused",
+        "test_rework_forks_a_new_run_and_keeps_the_old_evidence",
+        "test_stage_records_are_stamped_and_cross_task_reads_are_refused",
+        "test_task_hash_ignores_whitespace_but_not_wording",
+        "test_validator_failure_is_not_reported_as_pass"
+      ]
+    },
+    {
+      "id": "research-sop-adversarial-reconstructed",
+      "path": "tests/skills/test_research_sop_integrity_adversarial.py",
+      "provenance": "reconstructed",
+      "status": "PRESENT",
+      "rebuilt_from": "LeoAIStudio-P0-Gate二次复核报告.md §2.4 and §5",
+      "evidence": "32 of these 41 fail against docs/rollback/research-sop-kernel.pre-P0-2-round2.py",
+      "covers": "P0-2 evidence-chain integrity: state, schema, artifacts, history, version compatibility, path safety",
+      "must_not": [
+        "be renamed to the reviewer-original file name",
+        "be deleted or shrunk when the reviewer's own file arrives",
+        "be described anywhere as the reviewer's tests"
+      ],
+      "source_sha256": "93509dc38e39e63bc14ab5dae0a869bb7c373ee27a5478bfe66f625f4280efb3",
+      "minimum_test_functions": 26,
+      "minimum_collected_cases": 41,
+      "reconstructed_cases_at_registration": 41,
+      "locked_test_functions": [
+        "test_changed_role_prompt_does_not_silently_reuse_old_stages",
+        "test_corrupt_manifest_fails_closed_and_is_not_overwritten",
+        "test_empty_manifest_is_corrupt_not_missing",
+        "test_explicit_run_id_from_another_task_is_refused",
+        "test_explicit_run_id_resumes_exactly_that_run",
+        "test_failed_delegate_is_never_complete",
+        "test_failure_signals_block_completion",
+        "test_incompatible_run_can_be_made_to_fail_closed",
+        "test_legacy_fixed_path_stages_are_never_adopted",
+        "test_lineage_is_walkable",
+        "test_manifest_write_failure_is_not_swallowed",
+        "test_missing_paper_document_forces_a_rerun_rather_than_a_stale_claim",
+        "test_missing_paper_document_is_not_reported_as_complete_without_a_rerun",
+        "test_ordered_subsequence_is_accepted",
+        "test_output_schema_is_revalidated_locally",
+        "test_paper_path_only_when_the_document_exists",
+        "test_resume_continues_the_latest_branch_not_the_base",
+        "test_roles_must_be_an_ordered_unique_subsequence",
+        "test_rollback_archives_evidence_instead_of_blanking_it",
+        "test_rollback_fails_closed_when_archiving_fails",
+        "test_run_id_cannot_escape_the_runs_directory",
+        "test_stage_suffix_is_an_enum",
+        "test_stage_without_binding_fields_is_not_evidence",
+        "test_unbound_stage_is_rerun_rather_than_trusted",
+        "test_valid_run_id_stays_inside_its_directory",
+        "test_validator_verdict_must_be_a_known_value"
+      ],
+      "source_sha256_note": "Records which bytes the '32 of 41 fail on the pre-fix kernel' evidence was measured against. It is informational: editing the file's docstring changes it, and the guarantee that matters is locked_test_functions, which is enforced."
+    },
+    {
+      "id": "research-sop-adversarial-reviewer-original",
+      "path": null,
+      "provenance": "reviewer-original",
+      "status": "ABSENT",
+      "referenced_as": "test_research_sop_integrity_adversarial.py",
+      "referenced_in": "LeoAIStudio-P0-Gate二次复核报告.md §2.4",
+      "note": "Referenced by the review but never supplied. When it arrives it must be added at the reserved path and both suites run. It does not replace the reconstructed one.",
+      "reserved_path": "tests/skills/test_research_sop_integrity_adversarial_reviewer.py",
+      "minimum_test_functions": null,
+      "minimum_collected_cases": null
+    },
+    {
+      "id": "research-sop-corrected-semantics",
+      "path": "tests/skills/test_research_sop_semantics.py",
+      "provenance": "leo-authored",
+      "status": "PRESENT",
+      "covers": "the two review statements that were wrong as written (missing stage document -> re-run, changed prompt -> incompatible-but-auditable), and the run/manifest/history properties around them",
+      "evidence": "15 of 20 fail against docs/rollback/research-sop-kernel.pre-P0-2-round2.py; 20 of 20 against pre-P0-2",
+      "minimum_test_functions": 19,
+      "minimum_collected_cases": 20,
+      "locked_test_functions": [
+        "test_a_rerun_never_silently_overwrites_the_original_evidence",
+        "test_artifact_hash_is_recorded_and_tracks_the_document",
+        "test_correction_a_a_missing_mid_pipeline_document_re_runs_from_that_stage",
+        "test_correction_a_a_stale_paper_path_is_never_reported_without_the_work",
+        "test_correction_a_missing_paper_document_is_re_run_and_a_real_document_returned",
+        "test_correction_a_paper_none_is_reserved_for_a_writer_that_produced_nothing",
+        "test_correction_a_upstream_evidence_is_not_re_run_when_it_is_still_valid",
+        "test_correction_b_an_incompatible_run_is_never_read_as_a_completed_stage",
+        "test_correction_b_incompatible_run_stays_readable_and_auditable",
+        "test_correction_b_new_prompt_evidence_is_produced_fresh_not_inherited",
+        "test_correction_b_old_run_bytes_survive_a_prompt_change_untouched",
+        "test_correction_b_old_run_is_classified_incompatible_not_valid",
+        "test_correction_b_read_manifest_returns_none_and_that_is_the_point",
+        "test_history_accumulates_and_earlier_events_are_not_disturbed",
+        "test_manifest_records_the_prompt_hashes_the_run_was_produced_under",
+        "test_rollback_is_refused_on_a_run_whose_manifest_is_not_valid",
+        "test_rollback_keeps_the_superseded_bytes_and_history_reads_back",
+        "test_stage_binding_covers_run_task_and_role",
+        "test_status_reports_the_manifest_state_rather_than_hiding_it"
+      ]
+    },
+    {
+      "id": "research-sop-mutation",
+      "path": "tests/skills/test_research_sop_mutation.py",
+      "provenance": "leo-authored",
+      "status": "PRESENT",
+      "minimum_test_functions": 9,
+      "minimum_collected_cases": 13,
+      "covers": "each evidence-chain guarantee is load-bearing: one guarantee is removed per case and the property must break",
+      "evidence": "6 of 7 mutants are killed; the seventh -- relabelling a corrupt manifest as missing -- survives because sop_run_branches finds the run by directory contents rather than by manifest validity. The surviving mutant is recorded in the file, with a second mutation that does break the property",
+      "locked_test_functions": [
+        "test_mutation_clearing_without_archiving_is_caught",
+        "test_mutation_dropping_the_document_requirement_is_caught",
+        "test_mutation_hiding_a_damaged_run_from_branch_discovery_is_caught",
+        "test_mutation_ignoring_prompt_hashes_is_caught",
+        "test_mutation_read_manifest_ignoring_state_is_caught",
+        "test_mutation_resuming_an_incompatible_run_is_caught",
+        "test_mutation_treating_corrupt_as_missing_survives_on_a_second_defence",
+        "test_mutation_unverified_archive_is_caught",
+        "test_the_pristine_kernel_holds_every_mutated_property"
+      ]
+    }
+  ],
+  "pending_confirmations": [
+    {
+      "id": "reviewer-original-adversarial-tests",
+      "gate": "P0-2",
+      "state": "NOT PROVIDED",
+      "effect_on_gate": "P0-2 stays PASS on the evidence in this repository. Independent confirmation by the reviewing party is a separate thing and has not happened. This is carried as a release caveat until their file is run here."
+    }
+  ],
+  "_counting": "minimum_test_functions counts `def test_*` in the file. minimum_collected_cases counts what pytest actually runs, which is larger wherever @pytest.mark.parametrize expands one function into several. The headline '41 adversarial tests' is a collected-case count, and both numbers are recorded so neither can be quoted as the other."
+}

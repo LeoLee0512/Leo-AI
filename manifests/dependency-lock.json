@@ -1,0 +1,128 @@
+{
+  "_comment": "Declared build inputs. Versions are pinned in requirements.lock; the wheels that satisfy them are vendored into a wheelhouse and described, hash by hash, in manifests/wheelhouse.json. Installation runs with --no-index so nothing is resolved against a live index at build time. Generating and verifying a wheelhouse here is not the same as a clean-machine build from a fresh clone, which stays a manual acceptance item (F1/F2).",
+  "python": "3.12.9",
+  "python_base_prefix_required_for": "python312.dll (PyInstaller bootloader ABI)",
+  "index": "https://pypi.org/simple",
+  "vendored_wheelhouse": true,
+  "packages": [
+    {
+      "name": "altgraph",
+      "version": "0.17.5",
+      "origin": "pypi"
+    },
+    {
+      "name": "bottle",
+      "version": "0.13.4",
+      "origin": "pypi"
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1",
+      "origin": "pypi"
+    },
+    {
+      "name": "clr_loader",
+      "version": "0.3.1",
+      "origin": "pypi"
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6",
+      "origin": "pypi"
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.0",
+      "origin": "pypi"
+    },
+    {
+      "name": "iniconfig",
+      "version": "2.3.0",
+      "origin": "pypi"
+    },
+    {
+      "name": "packaging",
+      "version": "26.3",
+      "origin": "pypi"
+    },
+    {
+      "name": "pefile",
+      "version": "2024.8.26",
+      "origin": "pypi"
+    },
+    {
+      "name": "pluggy",
+      "version": "1.6.0",
+      "origin": "pypi"
+    },
+    {
+      "name": "proxy_tools",
+      "version": "0.1.0",
+      "origin": "pypi"
+    },
+    {
+      "name": "pycparser",
+      "version": "3.0",
+      "origin": "pypi"
+    },
+    {
+      "name": "Pygments",
+      "version": "2.21.0",
+      "origin": "pypi"
+    },
+    {
+      "name": "pyinstaller-hooks-contrib",
+      "version": "2026.7",
+      "origin": "pypi"
+    },
+    {
+      "name": "pyinstaller",
+      "version": "6.22.2",
+      "origin": "pypi"
+    },
+    {
+      "name": "pytest",
+      "version": "9.1.1",
+      "origin": "pypi"
+    },
+    {
+      "name": "pythonnet",
+      "version": "3.1.0",
+      "origin": "pypi"
+    },
+    {
+      "name": "pywebview",
+      "version": "6.2.1",
+      "origin": "pypi"
+    },
+    {
+      "name": "pywin32-ctypes",
+      "version": "0.2.3",
+      "origin": "pypi"
+    },
+    {
+      "name": "setuptools",
+      "version": "84.0.0",
+      "origin": "pypi"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "origin": "pypi"
+    }
+  ],
+  "wheelhouse": {
+    "manifest": "manifests/wheelhouse.json",
+    "directory": "wheelhouse/",
+    "committed": false,
+    "why_not_committed": "wheel binaries are large and do not belong in git history; the manifest carries a SHA-256 for every one of them, which is what makes a wheelhouse someone else built checkable",
+    "build": "python tools/build_wheelhouse.py build",
+    "verify": "python tools/build_wheelhouse.py verify",
+    "offline_install": "python -m pip install --no-index --find-links wheelhouse -r requirements.lock"
+  },
+  "index_note": "The declared index. The wheelhouse manifest records the index actually used when it was built, which on a machine with a configured mirror is not the same string.",
+  "sdist_build_allowed": [
+    "proxy_tools"
+  ],
+  "sdist_build_allowed_note": "proxy_tools 0.1.0 is published only as a source distribution, so a wheelhouse for this dependency set cannot be assembled from published wheels alone. Rather than let that reintroduce an index at install time, it is built locally from its pinned sdist and the sdist's SHA-256 is recorded in the wheelhouse manifest. Any package NOT on this list that has no wheel is a hard build failure. Adding a name here is a deliberate reduction in what the build can promise and should be argued for."
+}

@@ -1,0 +1,96 @@
+{
+  "configId": "poisson2d-hard-bc-v1",
+  "description": "Frozen configuration of the 2D manufactured Poisson calibration (Constitution 1.2). Hard Dirichlet enforcement u = x(1-x)y(1-y)N is fixed by the preregistration (PART 2) and is not a variable of this experiment. Architecture and training budget were selected by the preregistered rule 'smallest pilot variant whose D_dev error is at least one order of magnitude below epsilon_spec and whose 10-seed cost stays under one hour', applied to the EXPLORATORY performance pilot; no claim data, no seed selection, no threshold tuning entered that choice.",
+  "network": {
+    "hiddenLayers": 4,
+    "width": 64,
+    "activation": "tanh",
+    "input": "x,y",
+    "output": "u",
+    "initialization": "torch default (Kaiming uniform) under init seed",
+    "outputParameterization": "x(1-x)y(1-y)N"
+  },
+  "optimizer": {
+    "name": "Adam",
+    "lr": 0.001,
+    "finalLr": 1e-05,
+    "schedule": "exponential decay lr -> finalLr over steps",
+    "steps": 10000,
+    "batchSize": 512,
+    "threads": 1,
+    "stopping": "fixed step count; no early stopping (protocol L4)"
+  },
+  "lossWeights": {
+    "pde": 1.0
+  },
+  "sampling": {
+    "poolSize": 2048,
+    "poolSeed": 20260917,
+    "collocationCount": 1024,
+    "rule": "collocationCount pool indices drawn without replacement by the run's sampling seed; the pool is uniform random interior points of (0,1)^2"
+  },
+  "seedProtocol": {
+    "runs": 10,
+    "initBase": 20260920,
+    "sampleBase": 20261020,
+    "batchBase": 20261120,
+    "rule": "triplet i: init=initBase+i, sample=sampleBase+i, batch=batchBase+i, i in 0..runs-1; registered in seed_ledger.json before the first run. These bases are disjoint from the EXPLORATORY pilot bases (20260800 / 20260810 / 20260820)."
+  },
+  "sets": {
+    "devSize": 1024,
+    "devSeed": 20260918,
+    "physOrder": 40,
+    "boundaryOrder": 32,
+    "minSeparation": 1e-09
+  },
+  "preregistration": {
+    "errorNorm": "relativeL2",
+    "epsilonSpec": 0.001,
+    "worstSeedFactor": 3.0,
+    "dispersionLimit": 1.0,
+    "qoiBand": null
+  },
+  "physicsThresholds": {
+    "PH1": 0.01,
+    "PH2": 0.01,
+    "PH3": 0.001,
+    "PH4": 0.005,
+    "PH5": 0.001,
+    "PH6": 0.005,
+    "PH7_energyFloor": 1e-14
+  },
+  "signatureCriteria": {
+    "sPdeResidual": {
+      "normalizedResidualRms": 0.01
+    },
+    "sBcResidual": {
+      "maxBoundaryAbs": 0.0001
+    },
+    "sLocalizedError": {
+      "tilesPerAxis": 8,
+      "bins": 64,
+      "maxBinToMedianBinRatio": 3.0
+    },
+    "sConservation": {
+      "PH1": 0.01
+    },
+    "sPinnCfd": {
+      "rule": "median dev relative L2 > epsilonSpec"
+    },
+    "sSeedSensitive": {
+      "rule": "Constitution 10.1 dispersion / worst-seed / divergence rules"
+    }
+  },
+  "reproduction": {
+    "devRelL2MedianAbsDiff": 0.0001,
+    "devRelL2MedianRelDiff": 0.5,
+    "seedProtocolVerdictMustAgree": true,
+    "seedOffset": 10000,
+    "rule": "C_repro PASS requires BOTH the 1D-inherited absolute limit (|median_A - median_B| <= 1e-4) AND the tightened relative limit (|median_A - median_B| <= 0.5 * median_A), plus an identical k/N verdict. The relative limit is the natural tightening of Constitution 10.1's dispersion rule (an IQR above 1.0 * median is excessive within one environment, so a cross-environment median shift above 0.5 * median is excessive too); it is preregistered here because the inherited absolute limit alone is loose at the 2D error scale."
+  },
+  "thresholdSources": {
+    "acceptanceCriteria": "AC2D-1..AC2D-9 thresholds and their per-criterion dimension verdict and source are frozen in pinn/governance/poisson2d_contract.py (THRESHOLD_SOURCES) and reproduced in the preregistration PART 10 table. epsilonSpec = the AC2D-1 threshold.",
+    "physics": "PH1/PH2 are the 2D forms of the flux and energy identities, normalised by their own exact values (int int f = 8, pi^2/2), thresholds 1e-2 as in 1D; PH3/PH5 positivity and monotonicity tolerances 1e-3; PH4 (swap symmetry) and PH6 (discrete maximum bound) 5e-3 = the AC2D-2 scale; PH7 is an SPD witness with an energy floor. All frozen before any formal training and before the claim pool was sealed.",
+    "signatures": "sPdeResidual uses the AC2D-4 threshold on the dev holdout residual; sBcResidual the AC2D-3 threshold; sLocalizedError the 1D symptom ratio 3.0 on an 8x8 tile partition (symptom rule, not an acceptance threshold; the acceptance form of localization is AC2D-9); sConservation the PH1 threshold; sSeedSensitive the Constitution 10.1 rules."
+  }
+}

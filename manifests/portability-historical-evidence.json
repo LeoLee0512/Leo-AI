@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "_comment": "Human-approved, fail-closed classifications for immutable historical evidence. The scanner still scans each file and emits every matching finding, and the human-readable output keeps every classified finding visible. Classification applies only when file, SHA-256, finding type and occurrence count all match; any byte change invalidates it. Scope (external review ruling 2026-09-16): one literal .md or .json file under governance/ or experiments/ -- never a wildcard, a directory, a machine-path pattern, or any source file, script or executable.",
+  "entries": [
+    {
+      "file": "governance/PINN_CONSTITUTION_COMPLIANCE_AUDIT.md",
+      "sha256": "018ff149d95df09eafded81e0274ded0e4ba39fd3023039b9bb1b67883acf8cf",
+      "classification": "immutable-historical-evidence",
+      "finding_type": "windows-user-home",
+      "expected_occurrences": 3,
+      "ruling": "Human review ruling 2026-09-05 for P0-4-FINDING-001",
+      "constraint": "Do not edit the evidence file or broaden this entry to governance/** or a Markdown class."
+    },
+    {
+      "file": "experiments/poisson1d/environment_b_qualification.json",
+      "sha256": "df1ea41f5119ee18cc11d5bea7d44db8b5639289c8ef2cc4523f6e141c7093d6",
+      "classification": "immutable-historical-evidence",
+      "finding_type": "windows-user-home",
+      "expected_occurrences": 1,
+      "ruling": "External review ruling 2026-09-16 (portability policy extension APPROVED WITH STRICT SCOPE) on the Poisson Final Closure Audit issue 3A",
+      "constraint": "Do not edit the evidence file, do not widen this entry to a directory, a pattern or another finding type, and do not copy this classification to a script or any other executed file.",
+      "reason": "Poisson 1D Gate 6 environment qualification (CLOSED, immutable): the construction note records the out-of-repo venv it was built at. Constitution 28.1 -- a path is not an identity; environmentId / installationId carry it."
+    },
+    {
+      "file": "experiments/poisson1d/runs/repro-envb-frozen-r2/PROVENANCE_MANIFEST.json",
+      "sha256": "cc3ea19192d5bb4aaa89966f75ce8959f87ff7ac53661737d7d69613d8095c84",
+      "classification": "immutable-historical-evidence",
+      "finding_type": "windows-user-home",
+      "expected_occurrences": 1,
+      "ruling": "External review ruling 2026-09-16 (portability policy extension APPROVED WITH STRICT SCOPE) on the Poisson Final Closure Audit issue 3A",
+      "constraint": "Do not edit the evidence file, do not widen this entry to a directory, a pattern or another finding type, and do not copy this classification to a script or any other executed file.",
+      "reason": "Poisson 1D frozen-checkout reproduction provenance (CLOSED, immutable): the ledger path passed to the runner was absolute in that reproduction."
+    },
+    {
+      "file": "experiments/poisson1d/runs/repro-envb-frozen-r2/PROVENANCE_MANIFEST.json",
+      "sha256": "cc3ea19192d5bb4aaa89966f75ce8959f87ff7ac53661737d7d69613d8095c84",
+      "classification": "immutable-historical-evidence",
+      "finding_type": "desktop-path",
+      "expected_occurrences": 1,
+      "ruling": "External review ruling 2026-09-16 (portability policy extension APPROVED WITH STRICT SCOPE) on the Poisson Final Closure Audit issue 3A",
+      "constraint": "Do not edit the evidence file, do not widen this entry to a directory, a pattern or another finding type, and do not copy this classification to a script or any other executed file.",
+      "reason": "Same line of the same immutable provenance record, matched by the second rule."
+    },
+    {
+      "file": "experiments/poisson1d/runs/repro-envb-r2/POST_AUDIT_ANNOTATION.md",
+      "sha256": "a6bece2cfbe17c263cc0830455b8d3bcfdf0f28c1b98976a8d080a4e8106d327",
+      "classification": "immutable-historical-evidence",
+      "finding_type": "windows-user-home",
+      "expected_occurrences": 1,
+      "ruling": "External review ruling 2026-09-16 (portability policy extension APPROVED WITH STRICT SCOPE) on the Poisson Final Closure Audit issue 3A",
+      "constraint": "Do not edit the evidence file, do not widen this entry to a directory, a pattern or another finding type, and do not copy this classification to a script or any other executed file.",
+      "reason": "Poisson 1D post-audit annotation (CLOSED, append-only evidence): quotes the Environment B prefix it audited."
+    },
+    {
+      "file": "experiments/poisson2d/environment_b_qualification.json",
+      "sha256": "f315790a8461027b9d1ffbf8c895217133955dfd31517c0892edc5b0b082cd3c",
+      "classification": "immutable-historical-evidence",
+      "finding_type": "windows-user-home",
+      "expected_occurrences": 1,
+      "ruling": "External review ruling 2026-09-16 (portability policy extension APPROVED WITH STRICT SCOPE) on the Poisson Final Closure Audit issue 3A",
+      "constraint": "Do not edit the evidence file, do not widen this entry to a directory, a pattern or another finding type, and do not copy this classification to a script or any other executed file.",
+      "reason": "Poisson 2D Gate 6 environment qualification (evidence of the ACCEPTED run exp2d-poisson-calibration-r1): the construction note records the out-of-repo venv. The generating script now records installationId instead (prospective rule, Final Closure Audit 4.1); this record predates that fix and is not rewritten."
+    }
+  ]
+}

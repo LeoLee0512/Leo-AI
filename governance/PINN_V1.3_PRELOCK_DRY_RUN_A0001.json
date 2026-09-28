@@ -1,0 +1,46 @@
+{
+  "reportType": "PINN_V1.3_PRELOCK_DRY_RUN",
+  "reportDate": "2026-09-15",
+  "supersedes": "governance/PINN_V1.3_PRELOCK_DRY_RUN.json (2026-09-05, Constitution 1.0; kept as evidence)",
+  "reason": "Constitution amended 1.0 -> 1.1 by A-0001 (ACCEPTED 2026-09-15); the Poisson 1D v1.0 drafts were re-bound to 1.1 with user approval before any lock or training",
+  "prelockStatus": "PASS",
+  "hashLockExecuted": false,
+  "trainingExecuted": false,
+  "p2Entered": false,
+  "constitution": {
+    "version": "1.1",
+    "sha256": "943484850d6487b310f2afe9dae86074c27adaa4c9915d85fa0b8708ee73b547",
+    "unchangedFromBaseline": false,
+    "baselineVersion": "1.0",
+    "baselineSha256": "4300bb848cc968e96c6b9de318796f6791a6cccea518bff2faac96e8f0c87018",
+    "amendedBy": "A-0001"
+  },
+  "checks": {
+    "constitutionBinding": "PASS",
+    "spec": "PASS",
+    "protocol": "PASS",
+    "adversarialManifest": "PASS",
+    "lockDraft": "PASS",
+    "repository": "PASS"
+  },
+  "candidateDigests": {
+    "candidateSpecSha256": "023b8e01619fd6b723a226d488a858ddeda0a1c29480566b0dddbf8a82608eb1",
+    "candidateProtocolSha256": "9463f3095c9c1aeb6e52993a6251dc28f404eadba53923b70f7b4d1d7f8a4821",
+    "candidateManifestSha256": "72b3a741d2f8bf0bb3867af5befafe0f7c517d2973172ce5792aa728ddb8130d",
+    "candidateLockPayloadSha256": "9b4d77b4135652432ee00fc18335b10bd492a993d803f6bfd37cc68980f84162",
+    "label": "DRY-RUN ONLY - NOT A LOCK"
+  },
+  "tests": {
+    "pinnGovernance": {
+      "passed": 449,
+      "failed": 0,
+      "skipped": 0
+    },
+    "fullSuite": {
+      "passed": 1033,
+      "failed": 0,
+      "skipped": 2
+    }
+  },
+  "stop": "WAITING_FOR_HUMAN_APPROVAL"
+}

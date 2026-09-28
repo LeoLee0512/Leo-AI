@@ -1,0 +1,418 @@
+{
+  "lockStatusAuthority": "lock.json",
+  "purpose": "Freezing thresholds without freezing how they are measured leaves the measurement method as an open loophole. This file freezes the measurement while lock.json remains the sole lifecycle authority.",
+  "protocolId": "poisson-1d-eval-protocol",
+  "version": "1.0",
+  "specRef": "spec.json",
+  "manifestRef": "adversarial/core_manifest.json",
+  "constitutionVersion": "1.2",
+  "canonicalExecutor": {
+    "device": "cpu",
+    "dtype": "float64",
+    "appliesTo": [
+      "model parameters",
+      "training",
+      "forward",
+      "autograd",
+      "baseline solver",
+      "validation",
+      "metrics"
+    ],
+    "mixedPrecision": false,
+    "dtypeWidenUsed": false,
+    "dtypeWidenNote": "DTYPE_WIDEN remains in the artifact transformation enum for future protocols but is not used in this MVP: nothing is ever narrower than float64, so there is nothing to widen and no derivative-precision ambiguity to argue about.",
+    "determinism": {
+      "torchUseDeterministicAlgorithms": true,
+      "threadCount": "fixed and recorded in each ExperimentRun",
+      "crossHardwareDrift": "Bitwise drift across different hardware is a Gate 6 finding, not a suite failure."
+    },
+    "rationale": "The problem is tiny; there is no performance case for float32. Unifying on float64 removes the DTYPE_WIDEN and derivative-precision semantics disputes entirely. Complex PINNs may reintroduce mixed precision under a future protocol version — not this one."
+  },
+  "quadrature": {
+    "id": "GL512",
+    "method": "Gauss-Legendre",
+    "nodeCount": 512,
+    "mapping": "[-1,1] -> [0,1] via x = 0.5*(t+1), w = 0.5*w_ref",
+    "generator": "numpy.polynomial.legendre.leggauss(512), float64",
+    "combinedDataSha256": "f0a29f490f7ebd79979e91ab23eea870791f9b7e1578154d7e3b6ce432adf2eb",
+    "artifacts": {
+      "nodes": {
+        "path": "specs/poisson-1d/v1.0/assets/GL512_nodes.npy",
+        "artifactSha256": "1d50c2db39cdfa8d741e23e9152a3cb8665991a8885c2e3ea5a505eae4e993db",
+        "dataSha256": "803f12cb60359b02e14e57b4676a04baab5dd27042e259265d5b3c476b13a6c3",
+        "format": "NPY-1.0",
+        "dtype": "float64",
+        "shape": [
+          512
+        ],
+        "endianness": "little",
+        "arrayOrder": "C"
+      },
+      "weights": {
+        "path": "specs/poisson-1d/v1.0/assets/GL512_weights.npy",
+        "artifactSha256": "f1fc34beda32cf34e6a0e7b6b9f98486d4833b2aed94a04a189bda203deb8ebd",
+        "dataSha256": "d37cccc49beb2db5e27532b82796ca2424efc3908e94db1bc82431579d1f7048",
+        "format": "NPY-1.0",
+        "dtype": "float64",
+        "shape": [
+          512
+        ],
+        "endianness": "little",
+        "arrayOrder": "C"
+      }
+    },
+    "generatorProvenance": {
+      "pythonVersion": "3.12.9 (conda-forge build, MSC v.1943 64 bit AMD64)",
+      "numpyVersion": "2.4.5",
+      "generatorImplementation": "numpy.polynomial.legendre.leggauss(512); mapped_nodes=0.5*(nodes+1.0); mapped_weights=0.5*weights",
+      "generatorSourcePath": "pinn/governance/nodes.py",
+      "generatorImplementationSha256": "b22e754fe5173d4cf5e40d8b9bc40416f1627d6919b30ae60d35c2c27155c3b7",
+      "exactDtype": "<f8",
+      "arrayOrder": "C",
+      "endianness": "little",
+      "hashInputBytes": "C-order little-endian float64 node payload immediately followed by the weight payload"
+    },
+    "weightSumCheck": 1.0,
+    "usedBy": [
+      "AC-1",
+      "AC-4",
+      "AC-5",
+      "AC-7",
+      "AC-8"
+    ],
+    "alsoServesAs": "holdout residual set for AC-4",
+    "rationale": "A continuous (quadrature) norm rather than a bare discrete sum: a discrete sum drifts with grid density, which would leave the measurement method open."
+  },
+  "pointwiseGrid": {
+    "id": "CGL2000",
+    "method": "Chebyshev-Gauss-Lobatto",
+    "nodeCount": 2000,
+    "formula": "x_j = 0.5*(1 - cos(j*pi/1999)), j = 0..1999",
+    "includesEndpoints": true,
+    "artifact": {
+      "path": "specs/poisson-1d/v1.0/assets/CGL2000.npy",
+      "artifactSha256": "81e98be345a69e0859097557533defa0b533b57f930b60db9fd9200482d23773",
+      "dataSha256": "59d84b0eaf599b81d9add5fcb99fcd105d5922ae5c044a2ee589ef9971f5b6ff",
+      "format": "NPY-1.0",
+      "dtype": "float64",
+      "shape": [
+        2000
+      ],
+      "endianness": "little",
+      "arrayOrder": "C"
+    },
+    "generatorProvenance": {
+      "pythonVersion": "3.12.9 (conda-forge build, MSC v.1943 64 bit AMD64)",
+      "numpyVersion": "2.4.5 (independent recomputation only; frozen-artifact validation does not call NumPy)",
+      "generatorImplementation": "tuple(0.5*(1.0-math.cos(j*math.pi/1999.0)) for j in range(2000))",
+      "generatorSourcePath": "pinn/governance/nodes.py",
+      "generatorImplementationSha256": "b22e754fe5173d4cf5e40d8b9bc40416f1627d6919b30ae60d35c2c27155c3b7",
+      "exactDtype": "<f8",
+      "arrayOrder": "C",
+      "endianness": "little",
+      "hashInputBytes": "exact 16000-byte C-order little-endian float64 data payload; runtime validation reads the frozen NPY artifact rather than calling cos"
+    },
+    "usedBy": [
+      "AC-2"
+    ],
+    "rejectedAlternatives": [
+      {
+        "nodeCount": 2001,
+        "reason": "Contains x = 1/2 at j=1000 (measured deviation 5.551e-17, about one ULP) because the interval count 2000 is even and cos(pi/2) is hit exactly. That collides with the B4 collocation set {1/4, 1/2, 3/4} and would false-trigger the L1 leakage identity check."
+      },
+      {
+        "nodeCount": 1999,
+        "reason": "Interval count 1998 is even; contains x = 1/2 for the same reason."
+      }
+    ]
+  },
+  "boundarySet": {
+    "id": "BOUNDARY",
+    "points": [
+      0.0,
+      1.0
+    ],
+    "evaluation": "exact endpoint values; a nearby grid node must never be substituted",
+    "usedBy": [
+      "AC-3",
+      "AC-6"
+    ]
+  },
+  "antiCollision": {
+    "requirement": "min over v in (GL512 union CGL2000), over 2 <= d <= 64, over 1 <= i < d, of |v - i/d|  >  1e-12",
+    "dMax": 64,
+    "tolerance": 1e-12,
+    "measured": {
+      "CGL2000": {
+        "dLe12": {
+          "minDistance": 2.470681482524828e-05,
+          "worstDenominator": 5,
+          "worstNumerator": 4,
+          "nodeIndex": 1409
+        },
+        "dLe64": {
+          "minDistance": 2.2686906353541758e-08,
+          "worstDenominator": 45,
+          "worstNumerator": 31,
+          "nodeIndex": 1246
+        },
+        "verdict": "PASS"
+      },
+      "GL512": {
+        "dLe12": {
+          "minDistance": 6.074841409231535e-05,
+          "worstDenominator": 11,
+          "worstNumerator": 2,
+          "nodeIndex": 143
+        },
+        "dLe64": {
+          "minDistance": 4.285184799557307e-06,
+          "worstDenominator": 19,
+          "worstNumerator": 14,
+          "nodeIndex": 336
+        },
+        "verdict": "PASS"
+      }
+    },
+    "status": "MUST, checked by PRELOCK_VALIDATION and re-run whenever any frozen node artifact changes",
+    "rationale": "It is not sufficient to assume quadrature nodes are irrational and therefore safe. CGL with 2001 nodes is a counterexample."
+  },
+  "leakageProtocol": {
+    "definition": "The delta_min = 1e-6 exclusion zone from an earlier draft is withdrawn. PINNs live on a continuous domain; a training point being geometrically near a validation point is not data leakage. Leakage is an information-flow property.",
+    "checks": [
+      {
+        "id": "L1",
+        "name": "sample identity",
+        "test": "No holdout validation coordinate appears in a training-side set after removing spec-known boundary coordinates.",
+        "criterion": "canonical float64 bit-pattern equality, or ulp_distance <= 8 to absorb benign re-serialisation only",
+        "holdoutValidationSets": [
+          "GL512",
+          "CGL2000"
+        ],
+        "specKnownBoundarySet": "BOUNDARY",
+        "boundaryIdentityExempt": true,
+        "trainingSideSets": [
+          "collocation",
+          "adaptivePool",
+          "diagnostic"
+        ],
+        "boundaryRule": "Training BC may reuse {0,1}; CGL endpoints {0,1} are excluded from L1 identity comparison. This exception never permits a boundary validation metric to feed a forbidden L4 consumer."
+      },
+      {
+        "id": "L2",
+        "name": "coordinate provenance",
+        "test": "Validation coordinates must come from this protocol's deterministic generator.",
+        "criterion": "generatorId equals GL512 or CGL2000 or BOUNDARY; never a training-side generator"
+      },
+      {
+        "id": "L3",
+        "name": "generation provenance",
+        "test": "The validation set must not be derived from any training artifact.",
+        "criterion": "parentArtifactIds of the validation set contain no training-side artifact"
+      },
+      {
+        "id": "L4",
+        "name": "consumer provenance",
+        "test": "Recorded readers of validation coordinates and validation metrics.",
+        "forbiddenConsumers": [
+          "optimizer",
+          "adaptive sampler",
+          "early-stopping controller",
+          "loss-weight scheduler",
+          "architecture selector",
+          "hyperparameter tuner"
+        ]
+      }
+    ],
+    "leakageIsEstablishedIfAny": [
+      "a non-boundary holdout coordinate from GL512 or CGL2000 was added to training (L1)",
+      "a validation artifact was read by the optimizer or adaptive sampler (L4)",
+      "a validation metric influenced early stopping (L4)",
+      "a validation result influenced loss weighting, architecture or hyperparameter selection (L4)"
+    ],
+    "onLeakage": "Gate 5 = FAIL and STOP THE LINE",
+    "auditNote": "The third condition is exactly the defect found in pinns/main.py:1036-1040, where should_stop() depended on profile_ok computed on the plotting grid. The withdrawn distance-based definition would not have caught it; this one does."
+  },
+  "aliasingResolution": {
+    "_separateFrom": "leakageProtocol — one asks whether information flowed back from validation to training, the other asks whether the validation grid can see the error at all",
+    "minResolvedMode": 64,
+    "adversarialModesInSuite": [
+      4,
+      5
+    ],
+    "requirement": "Both node sets must resolve sinusoidal modes up to minResolvedMode, and must satisfy antiCollision."
+  },
+  "derivativeEvaluation": {
+    "method": "AUTOGRAD_FIRST_ORDER",
+    "syntheticPredictors": "closed-form symbolic derivative",
+    "forbidden": "finite differences — they would mix discretisation error into AC-6, AC-7 and AC-8"
+  },
+  "numerics": {
+    "epsilon": 1e-30,
+    "epsilonAssertion": "denominator > 1e6 * epsilon must hold for every ratio, so epsilon never materially affects a reported value",
+    "endpointTreatment": "Gauss-Legendre is an open rule and excludes endpoints, which is correct for integrals; endpoints are checked separately and exactly by AC-3 and AC-6"
+  },
+  "evaluationSeed": {
+    "applicability": "NOT_APPLICABLE",
+    "reason": "All evaluation grids are deterministic quadrature and interpolation nodes; no sampling is performed at evaluation time, so there is no seed to record."
+  },
+  "gate2a": {
+    "name": "primary reference verification",
+    "target": "u*(x) = sin(pi*x)",
+    "checks": [
+      {
+        "id": "res",
+        "quantity": "max |-u*'' - f| over GL512",
+        "tolerance": 1e-12,
+        "toleranceId": "tol_residual"
+      },
+      {
+        "id": "bc",
+        "quantity": "max(|u*(0)|, |u*(1)|)",
+        "tolerance": 1e-14,
+        "toleranceId": "tol_bc"
+      }
+    ],
+    "literalZeroProhibited": true,
+    "note": "Mathematically u*(0) = u*(1) = 0 exactly. Numerically sin(pi_float64) = 1.224647e-16, so the implementation must NOT require a literal == 0 comparison. tol_bc = 1e-14 leaves an 81.7x margin over the measured value."
+  },
+  "fdmProtocol": {
+    "name": "Gate 2b — independent numerical baseline subsystem verification",
+    "role": "BASELINE_SUBSYSTEM_CHECK",
+    "neverEntersAcceptanceCriteria": true,
+    "roleNote": "The primary reference is the analytic solution. The FDM baseline verifies that the baseline subsystem itself works; a discretised solution with truncation error must never replace an exact solution that already exists.",
+    "discretisation": {
+      "N": "number of uniform subintervals",
+      "h": "1/N",
+      "interiorNodes": "x_i = i/N, i = 1..N-1",
+      "scheme": "(-u_{i-1} + 2u_i - u_{i+1}) / h^2 = f(x_i)",
+      "boundary": "u_0 = u_N = 0"
+    },
+    "error": {
+      "definition": "E(N) = max over i in 1..N-1 of |u_i - u*(x_i)|",
+      "norm": "discrete maximum error at interior nodes"
+    },
+    "observedOrder": "p_k = log2( E(N_k) / E(2*N_k) )",
+    "nSequence": [
+      32,
+      64,
+      128,
+      256,
+      512,
+      1024,
+      2048
+    ],
+    "refinementPairCount": 6,
+    "K": 4,
+    "finalPairs": [
+      [
+        128,
+        256
+      ],
+      [
+        256,
+        512
+      ],
+      [
+        512,
+        1024
+      ],
+      [
+        1024,
+        2048
+      ]
+    ],
+    "must": [
+      "E(N) strictly decreasing across the whole sequence",
+      "1.8 <= p_k <= 2.2 for each of the final K=4 refinement pairs"
+    ],
+    "orderInterval": [
+      1.8,
+      2.2
+    ],
+    "roundoffNote": "At N <= 2048 in float64 the rounding floor is far from reached, so the order estimates are not contaminated by roundoff.",
+    "independence": "The baseline module must not import any PINN module; enforced by a CI dependency-direction check.",
+    "b11Note": "A single grid has no convergence order at all. The strawman case B11 (N=4 only) must therefore be judged 'Gate 2 FAIL: required refinement sequence absent, convergence evidence does not exist'. It must NOT be reported as 'measured order outside [1.8, 2.2]' — that would be reporting a quantity that was never computed (Articles 39 and 40)."
+  },
+  "seeds": {
+    "rule": "seed_i = 20260904 + i, i in 0..4",
+    "values": [
+      20260904,
+      20260905,
+      20260906,
+      20260907,
+      20260908
+    ],
+    "preregistered": true,
+    "note": "The generating rule is declared alongside the values so the choice is evidently not post-hoc."
+  },
+  "acceptanceCriteriaBinding": {
+    "scope": "run-level, one seed",
+    "must": [
+      "AC-1",
+      "AC-2",
+      "AC-3",
+      "AC-4",
+      "AC-5",
+      "AC-6",
+      "AC-7"
+    ],
+    "should": [
+      "AC-8"
+    ],
+    "suiteLevelRequirement": {
+      "id": "SR-1",
+      "statement": "All five preregistered seeds pass Gate 5 independently.",
+      "onPartialPass": "Each passing run still reaches SUPPORTED @ C2; each failing run is a Gate 5 FAIL with a FailureRecord; the C3 robustness claim is NOT_SUPPORTED (not REFUTED); the core suite is FAIL. A failing seed must not downgrade the C2 status of the seeds that passed.",
+      "c3Scope": [
+        "Poisson-1D v1.0 (this spec, this protocol)",
+        "fixed architecture as recorded in the run",
+        "fixed optimizer and schedule as recorded in the run",
+        "fixed training protocol",
+        "five preregistered seeds 20260904..20260908"
+      ],
+      "c3ScopeProhibition": "Must not be generalised to 'PINN generally robust' (Article 35)."
+    }
+  },
+  "provenancePolicy": {
+    "artifactRoles": [
+      "RAW_MODEL_PREDICTION",
+      "REFERENCE",
+      "VALIDATION_METRIC",
+      "DISPLAY_ONLY",
+      "DERIVED_DISPLAY",
+      "UNTRUSTED_IMPORT"
+    ],
+    "producerTypes": [
+      "TRUSTED_RUNNER",
+      "TRUSTED_VALIDATOR",
+      "TRUSTED_BASELINE_SOLVER",
+      "TRUSTED_ANALYTIC_REFERENCE",
+      "MANUAL_IMPORT",
+      "UNKNOWN"
+    ],
+    "captureMethods": [
+      "DIRECT_FORWARD_EVAL",
+      "SOLVER_OUTPUT",
+      "ANALYTIC_EVALUATION",
+      "METRIC_COMPUTATION",
+      "PLOT_RENDER",
+      "FILE_IMPORT"
+    ],
+    "analyticReference": {
+      "artifactRole": "REFERENCE",
+      "producerType": "TRUSTED_ANALYTIC_REFERENCE",
+      "captureMethod": "ANALYTIC_EVALUATION",
+      "requiredBindings": [
+        "registeredBy",
+        "evaluatorSourcePath",
+        "evaluatorCodeSha256",
+        "equationBinding",
+        "specBinding"
+      ],
+      "validationInputEligible": true,
+      "claimEvidenceEligible": true
+    },
+    "eligibilityIsDerived": true
+  }
+}

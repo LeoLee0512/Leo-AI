@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leo-ai.local/schemas/pinn/claim-gate-decision-1.2.json",
+  "title": "Leo AI PINN ClaimGateDecision (Amendment A-0001, draft 3)",
+  "description": "Structural rules only. Consistency with the frozen ProblemDefinition (spec hash, revision, primary reference evidence level, claim set), with the claim-set ledger (the named claim set was SEALED for this spec and OPENED for this revision with this code identity; ledgerHead is the last event), with the trust vector and the weakest-link calculus (allowed levels never looser than computed, every level given a verdict, weakest link derived not declared) and with the run identities (environmentId and seedSetId recomputed from the environment fingerprint and the seed values; C3 only from independently qualified C2 runs of the same spec and code identity) is enforced by pinn.governance.trust_loop.validate_claim_gate_decision. Levels are closed to C0-C3; C4/C5 are outside the MVP.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "decisionId",
+    "problemId",
+    "revision",
+    "specHash",
+    "codeHash",
+    "claimSetSha256",
+    "ledgerHead",
+    "trustVectorRef",
+    "referenceEvidenceLevel",
+    "runMode",
+    "allowedClaims",
+    "blockedClaims",
+    "weakestLink",
+    "generatedAt",
+    "decidedBy"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "pinn.claimGateDecision/1.2" },
+    "decisionId": { "type": "string", "pattern": "^cgd-[a-z0-9][a-z0-9-]*$" },
+    "problemId": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 1 },
+    "specHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "codeHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "claimSetSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "ledgerHead": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "trustVectorRef": { "$ref": "#/$defs/artifactRef" },
+    "referenceEvidenceLevel": { "enum": ["A", "B", "C", "D"] },
+    "runMode": { "enum": ["FORMAL", "EXPLORATORY"] },
+    "qualifiedC2Runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["runId", "specHash", "codeHash", "environment", "environmentId", "seeds", "seedSetId"],
+        "properties": {
+          "runId": { "type": "string", "pattern": "^run-[a-z0-9][a-z0-9-]*$" },
+          "specHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "codeHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "environment": { "$ref": "#/$defs/environment" },
+          "environmentId": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "seeds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "integer", "minimum": 0 } },
+          "seedSetId": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    "allowedClaims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "statementRef", "evidenceRefs", "failureConditions"],
+        "properties": {
+          "level": { "enum": ["C0", "C1", "C2", "C3"] },
+          "statementRef": { "$ref": "#/$defs/artifactRef" },
+          "evidenceRefs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/artifactRef" } },
+          "failureConditions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["condition", "consequence"],
+              "properties": {
+                "condition": { "type": "string", "minLength": 1 },
+                "consequence": { "enum": ["BLOCK_CLAIM", "DOWNGRADE", "INVALIDATE_DECISION"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "blockedClaims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "reason"],
+        "properties": {
+          "level": { "enum": ["C0", "C1", "C2", "C3"] },
+          "reason": { "type": "string", "minLength": 1 },
+          "missingPreconditions": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "weakestLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimensions", "status", "evidenceRef"],
+      "properties": {
+        "dimensions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["math", "impl", "train", "physics", "external", "repro"] }
+        },
+        "status": { "enum": ["PASS", "PARTIAL", "FAIL", "BLOCKED", "NOT_CHECKED"] },
+        "evidenceRef": { "$ref": "#/$defs/artifactRef" }
+      }
+    },
+    "generatedAt": { "$ref": "#/$defs/dateTime" },
+    "decidedBy": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["machineId", "osFamily", "acceleratorClass", "frameworkVersion", "blasBackend", "dependencyLockHash", "installationId"],
+      "properties": {
+        "machineId": { "type": "string", "minLength": 1 },
+        "osFamily": { "enum": ["windows", "linux", "macos"] },
+        "acceleratorClass": { "type": "string", "minLength": 1 },
+        "frameworkVersion": { "type": "string", "minLength": 1 },
+        "blasBackend": { "type": "string", "minLength": 1 },
+        "dependencyLockHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "installationId": { "type": "string", "minLength": 1 },
+        "osVersion": { "type": "string" },
+        "pythonVersion": { "type": "string" },
+        "acceleratorDriver": { "type": "string" }
+      }
+    },
+    "artifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifactId", "sha256"],
+      "properties": {
+        "artifactId": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "dateTime": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    }
+  }
+}

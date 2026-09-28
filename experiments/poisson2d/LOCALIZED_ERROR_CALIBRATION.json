@@ -1,0 +1,3273 @@
+{
+  "purpose": "dimension-aware calibration of the localized-error failure signature (Final Closure Audit issue 5)",
+  "calibratedAt": "2026-09-17T03:54:36Z",
+  "prospective": true,
+  "appliesTo": "future experiments' signatureCriteria; the completed 2D calibration is NOT re-judged",
+  "oldRule": {
+    "statistic": "max block RMS / median block RMS",
+    "threshold": 3.0,
+    "bins": 10,
+    "problem": "fires on a correct 2D solution (the 2D calibration measured 3.94 with every acceptance criterion satisfied by more than an order of magnitude)"
+  },
+  "decisionRule": [
+    "separate both fixture families at every grid / block / amplitude combination",
+    "maximise the worst-case separation ratio",
+    "threshold = geometric mean of (worst non-localized, weakest localized)",
+    "the completed run's value never enters the calibration"
+  ],
+  "fixtures": {
+    "nonLocalized": [
+      "smoothUniform",
+      "heterogeneous",
+      "heterogeneousAnisotropic",
+      "heterogeneousJitter",
+      "heterogeneousOscillatory",
+      "globalIncrease"
+    ],
+    "localized": [
+      "singleHotspot",
+      "multipleHotspots"
+    ],
+    "pointSets": [
+      "uniform-32x32",
+      "uniform-48x48",
+      "uniform-64x64",
+      "random-512",
+      "random-1024",
+      "random-2048"
+    ],
+    "blocksPerAxis": [
+      4,
+      8,
+      16
+    ],
+    "amplitudes": [
+      1e-06,
+      1e-05,
+      0.0001
+    ],
+    "cases": 54
+  },
+  "candidates": {
+    "A-maxOverMedian": {
+      "separatesEverywhere": true,
+      "worstNonLocalized": 3.6612014499515175,
+      "weakestLocalized": 4.278320476943057,
+      "separationRatio": 1.1685564248314475,
+      "nonLocalizedRange": [
+        1.0,
+        3.6612014499515175
+      ],
+      "localizedRange": [
+        4.278320476943057,
+        29.723389860856514
+      ]
+    },
+    "B-robustZ": {
+      "separatesEverywhere": false,
+      "worstNonLocalized": 6.933628103218874,
+      "weakestLocalized": 5.476458450677342,
+      "separationRatio": 0.7898402350329325,
+      "nonLocalizedRange": [
+        0.0,
+        6.933628103218874
+      ],
+      "localizedRange": [
+        5.476458450677342,
+        44.19975923641186
+      ]
+    },
+    "C-topKConcentration": {
+      "separatesEverywhere": true,
+      "worstNonLocalized": 0.19220863797110022,
+      "weakestLocalized": 0.25791985460242756,
+      "separationRatio": 1.3418744200310468,
+      "nonLocalizedRange": [
+        0.011904761904761904,
+        0.19220863797110022
+      ],
+      "localizedRange": [
+        0.25791985460242756,
+        0.7195169269944629
+      ]
+    },
+    "D-referenceConditionedZ": {
+      "separatesEverywhere": true,
+      "worstNonLocalized": 19.74679718471121,
+      "weakestLocalized": 34.793568645862734,
+      "separationRatio": 1.761985415680542,
+      "nonLocalizedRange": [
+        0.0,
+        19.74679718471121
+      ],
+      "localizedRange": [
+        34.793568645862734,
+        5.499222412324865e+16
+      ]
+    }
+  },
+  "chosen": {
+    "candidate": "D-referenceConditionedZ",
+    "threshold": 26.211858831112654,
+    "worstNonLocalized": 19.74679718471121,
+    "weakestLocalized": 34.793568645862734,
+    "marginBelow": 1.3273979869204797,
+    "marginAbove": 1.3273979869204797
+  },
+  "completedRunCheck": {
+    "note": "check only -- the threshold was fixed by the synthetic fixtures before this ran; the completed run's values never entered the calibration",
+    "set": "dev",
+    "blocksPerAxis": 8,
+    "seeds": 10,
+    "chosenCandidate": "D-referenceConditionedZ",
+    "threshold": 26.211858831112654,
+    "chosenStatisticRange": [
+      4.241591122276827,
+      38.14671568455874
+    ],
+    "oldRuleStatisticRange": [
+      2.9462581182176533,
+      4.814586096977901
+    ],
+    "anySeedFiresUnderChosenRule": true,
+    "seedsFiringUnderOld1DRule": 9,
+    "perSeed": [
+      {
+        "run": "run-00.json",
+        "A-maxOverMedian": 3.809985017551923,
+        "B-robustZ": 8.76946901329451,
+        "C-topKConcentration": 0.13356612650316368,
+        "D-referenceConditionedZ": 16.522090713483543,
+        "firesUnderChosenRule": false,
+        "firesUnderOld1DRule": true
+      },
+      {
+        "run": "run-01.json",
+        "A-maxOverMedian": 3.8864692127529343,
+        "B-robustZ": 8.178764448725675,
+        "C-topKConcentration": 0.10647723718553095,
+        "D-referenceConditionedZ": 4.241591122276827,
+        "firesUnderChosenRule": false,
+        "firesUnderOld1DRule": true
+      },
+      {
+        "run": "run-02.json",
+        "A-maxOverMedian": 3.3084300836774023,
+        "B-robustZ": 5.820362813438467,
+        "C-topKConcentration": 0.06863033175324626,
+        "D-referenceConditionedZ": 12.208091756775463,
+        "firesUnderChosenRule": false,
+        "firesUnderOld1DRule": true
+      },
+      {
+        "run": "run-03.json",
+        "A-maxOverMedian": 3.505021103643406,
+        "B-robustZ": 8.361443917564037,
+        "C-topKConcentration": 0.08346592836407661,
+        "D-referenceConditionedZ": 8.998283885554393,
+        "firesUnderChosenRule": false,
+        "firesUnderOld1DRule": true
+      },
+      {
+        "run": "run-04.json",
+        "A-maxOverMedian": 3.6313906455226643,
+        "B-robustZ": 6.68007834093754,
+        "C-topKConcentration": 0.10892909618401882,
+        "D-referenceConditionedZ": 27.14867553655722,
+        "firesUnderChosenRule": true,
+        "firesUnderOld1DRule": true
+      },
+      {
+        "run": "run-05.json",
+        "A-maxOverMedian": 3.2428989330613858,
+        "B-robustZ": 5.126976791976696,
+        "C-topKConcentration": 0.09567350323443817,
+        "D-referenceConditionedZ": 12.417519991847191,
+        "firesUnderChosenRule": false,
+        "firesUnderOld1DRule": true
+      },
+      {
+        "run": "run-06.json",
+        "A-maxOverMedian": 3.0713206781094673,
+        "B-robustZ": 4.554399535753832,
+        "C-topKConcentration": 0.08530342954591695,
+        "D-referenceConditionedZ": 9.428603565667283,
+        "firesUnderChosenRule": false,
+        "firesUnderOld1DRule": true
+      },
+      {
+        "run": "run-07.json",
+        "A-maxOverMedian": 3.811801553585614,
+        "B-robustZ": 7.31580082493225,
+        "C-topKConcentration": 0.10421427546998382,
+        "D-referenceConditionedZ": 8.654662344103391,
+        "firesUnderChosenRule": false,
+        "firesUnderOld1DRule": true
+      },
+      {
+        "run": "run-08.json",
+        "A-maxOverMedian": 4.814586096977901,
+        "B-robustZ": 7.390441208437846,
+        "C-topKConcentration": 0.15179817615622657,
+        "D-referenceConditionedZ": 38.14671568455874,
+        "firesUnderChosenRule": true,
+        "firesUnderOld1DRule": true
+      },
+      {
+        "run": "run-09.json",
+        "A-maxOverMedian": 2.9462581182176533,
+        "B-robustZ": 3.7728162281857816,
+        "C-topKConcentration": 0.0693860936187217,
+        "D-referenceConditionedZ": 8.21058228808988,
+        "firesUnderChosenRule": false,
+        "firesUnderOld1DRule": false
+      }
+    ],
+    "checkedAt": "2026-09-17T03:56:15Z"
+  },
+  "governanceClassification": {
+    "verdict": "PROTOCOL CALIBRATION, not a constitutional semantic change",
+    "reason": "only the symptom statistic and its threshold change, and both live in the protocol and in each experiment's preregistered signatureCriteria; FailureSignature names, RootCause classes, TrustStatus values and Claim semantics are untouched",
+    "amendmentNeeded": false
+  },
+  "sweep": [
+    {
+      "pointSet": "uniform-32x32",
+      "pointCount": 1024,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.041450810528324
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.020725405264161,
+          "B-robustZ": 4.041450810528321,
+          "C-topKConcentration": 0.16131412913307547,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.0970895194437444,
+          "B-robustZ": 6.09759484936011,
+          "C-topKConcentration": 0.16124497338122565,
+          "D-referenceConditionedZ": 5.038905309941021
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.031813716336715,
+          "B-robustZ": 3.9213799707815613,
+          "C-topKConcentration": 0.16506356670757016,
+          "D-referenceConditionedZ": 1.7266276414836148
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7756524326265293,
+          "B-robustZ": 4.468752124182237,
+          "C-topKConcentration": 0.1403651400256311,
+          "D-referenceConditionedZ": 4.9793874213627785
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 7.9470671360003635,
+          "B-robustZ": 13.753078302044191,
+          "C-topKConcentration": 0.6816560054416516,
+          "D-referenceConditionedZ": 29447580.13558276
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.278320476943057,
+          "B-robustZ": 5.6726876805058275,
+          "C-topKConcentration": 0.2947854947805623,
+          "D-referenceConditionedZ": 56.97392260809569
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.020725405264161,
+          "B-robustZ": 4.041450810528319,
+          "C-topKConcentration": 0.16131412913307547,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-32x32",
+      "pointCount": 1024,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.041450810528322
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.0207254052641614,
+          "B-robustZ": 4.041450810528324,
+          "C-topKConcentration": 0.16131412913307547,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.097089519443745,
+          "B-robustZ": 6.097594849360115,
+          "C-topKConcentration": 0.16124497338122568,
+          "D-referenceConditionedZ": 5.038905309941019
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.031813716336715,
+          "B-robustZ": 3.92137997078156,
+          "C-topKConcentration": 0.16506356670757014,
+          "D-referenceConditionedZ": 1.7266276414835868
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7756524326265295,
+          "B-robustZ": 4.468752124182237,
+          "C-topKConcentration": 0.14036514002563108,
+          "D-referenceConditionedZ": 4.979387421362774
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 7.947067136000363,
+          "B-robustZ": 13.75307830204419,
+          "C-topKConcentration": 0.6816560054416517,
+          "D-referenceConditionedZ": 29447580.17315019
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.278320476943058,
+          "B-robustZ": 5.6726876805058275,
+          "C-topKConcentration": 0.2947854947805624,
+          "D-referenceConditionedZ": 56.973922608095734
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.0207254052641614,
+          "B-robustZ": 4.041450810528324,
+          "C-topKConcentration": 0.16131412913307547,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-32x32",
+      "pointCount": 1024,
+      "blocksPerAxis": 4,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.041450810528322
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.0207254052641614,
+          "B-robustZ": 4.041450810528324,
+          "C-topKConcentration": 0.1613141291330755,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.097089519443745,
+          "B-robustZ": 6.0975948493601155,
+          "C-topKConcentration": 0.16124497338122568,
+          "D-referenceConditionedZ": 5.0389053099410175
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.031813716336715,
+          "B-robustZ": 3.9213799707815595,
+          "C-topKConcentration": 0.16506356670757016,
+          "D-referenceConditionedZ": 1.7266276414835788
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7756524326265293,
+          "B-robustZ": 4.468752124182238,
+          "C-topKConcentration": 0.14036514002563108,
+          "D-referenceConditionedZ": 4.979387421362774
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 7.947067136000363,
+          "B-robustZ": 13.75307830204419,
+          "C-topKConcentration": 0.6816560054416517,
+          "D-referenceConditionedZ": 29447580.13307827
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.278320476943057,
+          "B-robustZ": 5.6726876805058275,
+          "C-topKConcentration": 0.2947854947805624,
+          "D-referenceConditionedZ": 56.97392260809581
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.0207254052641614,
+          "B-robustZ": 4.041450810528322,
+          "C-topKConcentration": 0.1613141291330755,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-32x32",
+      "pointCount": 1024,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 9.394905544863274
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.300470180193962,
+          "B-robustZ": 2.6978358076881754,
+          "C-topKConcentration": 0.053456991285171285,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.8676500677999823,
+          "B-robustZ": 5.136008293053094,
+          "C-topKConcentration": 0.07579622976911353,
+          "D-referenceConditionedZ": 8.531341787461027
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.4149802534282583,
+          "B-robustZ": 3.0213986876074577,
+          "C-topKConcentration": 0.05705050496524867,
+          "D-referenceConditionedZ": 1.8408740252615812
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.9890242270820047,
+          "B-robustZ": 3.150307567579174,
+          "C-topKConcentration": 0.045068014141158026,
+          "D-referenceConditionedZ": 17.214058443241523
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 15.174293329850041,
+          "B-robustZ": 29.404681398581257,
+          "C-topKConcentration": 0.6354509646168246,
+          "D-referenceConditionedZ": 9016714132535930.0
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.66631506569648,
+          "B-robustZ": 19.183061990151828,
+          "C-topKConcentration": 0.27480389741983857,
+          "D-referenceConditionedZ": 91633.82470083376
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.300470180193962,
+          "B-robustZ": 2.6978358076881763,
+          "C-topKConcentration": 0.05345699128517128,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-32x32",
+      "pointCount": 1024,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 9.394905544863274
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.300470180193962,
+          "B-robustZ": 2.697835807688176,
+          "C-topKConcentration": 0.05345699128517127,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.8676500677999823,
+          "B-robustZ": 5.136008293053096,
+          "C-topKConcentration": 0.07579622976911352,
+          "D-referenceConditionedZ": 8.531341787461027
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.4149802534282583,
+          "B-robustZ": 3.0213986876074586,
+          "C-topKConcentration": 0.05705050496524867,
+          "D-referenceConditionedZ": 1.8408740252615867
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.9890242270820049,
+          "B-robustZ": 3.150307567579175,
+          "C-topKConcentration": 0.04506801414115803,
+          "D-referenceConditionedZ": 17.214058443241527
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 15.17429332985004,
+          "B-robustZ": 29.40468139858125,
+          "C-topKConcentration": 0.6354509646168246,
+          "D-referenceConditionedZ": 9862031082461172.0
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.666315065696482,
+          "B-robustZ": 19.183061990151824,
+          "C-topKConcentration": 0.27480389741983857,
+          "D-referenceConditionedZ": 91633.8247008855
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.300470180193962,
+          "B-robustZ": 2.697835807688176,
+          "C-topKConcentration": 0.053456991285171285,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-32x32",
+      "pointCount": 1024,
+      "blocksPerAxis": 8,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 9.394905544863272
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.300470180193962,
+          "B-robustZ": 2.6978358076881754,
+          "C-topKConcentration": 0.05345699128517129,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.8676500677999828,
+          "B-robustZ": 5.136008293053096,
+          "C-topKConcentration": 0.07579622976911354,
+          "D-referenceConditionedZ": 8.531341787461024
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.4149802534282587,
+          "B-robustZ": 3.021398687607459,
+          "C-topKConcentration": 0.05705050496524867,
+          "D-referenceConditionedZ": 1.8408740252615805
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.9890242270820044,
+          "B-robustZ": 3.1503075675791723,
+          "C-topKConcentration": 0.04506801414115802,
+          "D-referenceConditionedZ": 17.21405844324151
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 15.174293329850041,
+          "B-robustZ": 29.404681398581253,
+          "C-topKConcentration": 0.6354509646168246,
+          "D-referenceConditionedZ": 1.2327538853076466e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.666315065696482,
+          "B-robustZ": 19.18306199015182,
+          "C-topKConcentration": 0.27480389741983857,
+          "D-referenceConditionedZ": 91633.82470087169
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.300470180193962,
+          "B-robustZ": 2.697835807688175,
+          "C-topKConcentration": 0.05345699128517128,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-32x32",
+      "pointCount": 1024,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 10.35105031833488
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.511119516845056,
+          "B-robustZ": 2.4301622860513747,
+          "C-topKConcentration": 0.05745361737401672,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.3749828514059517,
+          "B-robustZ": 5.814563676345383,
+          "C-topKConcentration": 0.09456135675953753,
+          "D-referenceConditionedZ": 10.97516862883872
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.655757493640165,
+          "B-robustZ": 2.6753459800534274,
+          "C-topKConcentration": 0.06080762332410472,
+          "D-referenceConditionedZ": 3.0368839286618177
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.8614364383757027,
+          "B-robustZ": 4.359900192714187,
+          "C-topKConcentration": 0.0727774102741747,
+          "D-referenceConditionedZ": 14.20846092441536
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 21.247137386604592,
+          "B-robustZ": 32.56117674937847,
+          "C-topKConcentration": 0.6354509646168246,
+          "D-referenceConditionedZ": 4.584494189951944e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 18.795927820266108,
+          "B-robustZ": 26.266616120285217,
+          "C-topKConcentration": 0.4107633649547821,
+          "D-referenceConditionedZ": 1812611.4864555893
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.511119516845056,
+          "B-robustZ": 2.4301622860513747,
+          "C-topKConcentration": 0.05745361737401672,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-32x32",
+      "pointCount": 1024,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 10.351050318334881
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.5111195168450564,
+          "B-robustZ": 2.430162286051375,
+          "C-topKConcentration": 0.05745361737401672,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.3749828514059517,
+          "B-robustZ": 5.814563676345383,
+          "C-topKConcentration": 0.09456135675953754,
+          "D-referenceConditionedZ": 10.975168628838718
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.6557574936401656,
+          "B-robustZ": 2.6753459800534274,
+          "C-topKConcentration": 0.06080762332410473,
+          "D-referenceConditionedZ": 3.0368839286618154
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.8614364383757027,
+          "B-robustZ": 4.359900192714188,
+          "C-topKConcentration": 0.0727774102741747,
+          "D-referenceConditionedZ": 14.208460924415364
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 21.2471373866046,
+          "B-robustZ": 32.56117674937849,
+          "C-topKConcentration": 0.6354509646168246,
+          "D-referenceConditionedZ": 2.865308868719966e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 18.79592782026611,
+          "B-robustZ": 26.266616120285228,
+          "C-topKConcentration": 0.41076336495478216,
+          "D-referenceConditionedZ": 1812611.4864265663
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.511119516845056,
+          "B-robustZ": 2.4301622860513747,
+          "C-topKConcentration": 0.0574536173740167,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-32x32",
+      "pointCount": 1024,
+      "blocksPerAxis": 16,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 10.351050318334883
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.511119516845056,
+          "B-robustZ": 2.4301622860513747,
+          "C-topKConcentration": 0.05745361737401671,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.374982851405952,
+          "B-robustZ": 5.814563676345382,
+          "C-topKConcentration": 0.09456135675953756,
+          "D-referenceConditionedZ": 10.975168628838714
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.6557574936401656,
+          "B-robustZ": 2.6753459800534283,
+          "C-topKConcentration": 0.06080762332410471,
+          "D-referenceConditionedZ": 3.0368839286618146
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.8614364383757027,
+          "B-robustZ": 4.359900192714188,
+          "C-topKConcentration": 0.07277741027417468,
+          "D-referenceConditionedZ": 14.208460924415375
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 21.247137386604596,
+          "B-robustZ": 32.561176749378475,
+          "C-topKConcentration": 0.6354509646168246,
+          "D-referenceConditionedZ": 3.581636085899957e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 18.795927820266108,
+          "B-robustZ": 26.26661612028522,
+          "C-topKConcentration": 0.41076336495478216,
+          "D-referenceConditionedZ": 1812611.4864265663
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.511119516845056,
+          "B-robustZ": 2.4301622860513743,
+          "C-topKConcentration": 0.05745361737401672,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-48x48",
+      "pointCount": 2304,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.104965868501447
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.052482934250722,
+          "B-robustZ": 4.104965868501444,
+          "C-topKConcentration": 0.16328077971055632,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.119584929013912,
+          "B-robustZ": 6.2619823247978825,
+          "C-topKConcentration": 0.16224317299282065,
+          "D-referenceConditionedZ": 5.316896474513959
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.0533803874173877,
+          "B-robustZ": 4.097625231893023,
+          "C-topKConcentration": 0.16356718444450377,
+          "D-referenceConditionedZ": 1.3133402768543165
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7881363097102698,
+          "B-robustZ": 4.619731957272824,
+          "C-topKConcentration": 0.14157433140015116,
+          "D-referenceConditionedZ": 5.191772824635137
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 8.016667587244811,
+          "B-robustZ": 13.683444467427535,
+          "C-topKConcentration": 0.6805458866841183,
+          "D-referenceConditionedZ": 30454189.73326801
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.287488385813512,
+          "B-robustZ": 5.476458450677343,
+          "C-topKConcentration": 0.29430541660673487,
+          "D-referenceConditionedZ": 51.78977752918976
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.052482934250722,
+          "B-robustZ": 4.104965868501444,
+          "C-topKConcentration": 0.1632807797105563,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-48x48",
+      "pointCount": 2304,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.104965868501447
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.052482934250722,
+          "B-robustZ": 4.104965868501443,
+          "C-topKConcentration": 0.16328077971055632,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.119584929013912,
+          "B-robustZ": 6.261982324797885,
+          "C-topKConcentration": 0.16224317299282065,
+          "D-referenceConditionedZ": 5.316896474513959
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.0533803874173873,
+          "B-robustZ": 4.0976252318930175,
+          "C-topKConcentration": 0.16356718444450377,
+          "D-referenceConditionedZ": 1.313340276854287
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.78813630971027,
+          "B-robustZ": 4.619731957272827,
+          "C-topKConcentration": 0.1415743314001512,
+          "D-referenceConditionedZ": 5.1917728246351365
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 8.016667587244813,
+          "B-robustZ": 13.683444467427538,
+          "C-topKConcentration": 0.6805458866841184,
+          "D-referenceConditionedZ": 30454189.7738202
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.287488385813513,
+          "B-robustZ": 5.476458450677343,
+          "C-topKConcentration": 0.2943054166067348,
+          "D-referenceConditionedZ": 51.78977752918966
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.052482934250722,
+          "B-robustZ": 4.104965868501442,
+          "C-topKConcentration": 0.1632807797105563,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-48x48",
+      "pointCount": 2304,
+      "blocksPerAxis": 4,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.104965868501448
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.0524829342507216,
+          "B-robustZ": 4.1049658685014405,
+          "C-topKConcentration": 0.1632807797105563,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.1195849290139126,
+          "B-robustZ": 6.2619823247978825,
+          "C-topKConcentration": 0.16224317299282068,
+          "D-referenceConditionedZ": 5.316896474513955
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.0533803874173873,
+          "B-robustZ": 4.097625231893019,
+          "C-topKConcentration": 0.1635671844445038,
+          "D-referenceConditionedZ": 1.3133402768544158
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.78813630971027,
+          "B-robustZ": 4.619731957272826,
+          "C-topKConcentration": 0.14157433140015116,
+          "D-referenceConditionedZ": 5.191772824635139
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 8.016667587244813,
+          "B-robustZ": 13.683444467427536,
+          "C-topKConcentration": 0.6805458866841183,
+          "D-referenceConditionedZ": 30454189.741378456
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.287488385813512,
+          "B-robustZ": 5.476458450677342,
+          "C-topKConcentration": 0.2943054166067348,
+          "D-referenceConditionedZ": 51.78977752918972
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.052482934250722,
+          "B-robustZ": 4.104965868501444,
+          "C-topKConcentration": 0.1632807797105563,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-48x48",
+      "pointCount": 2304,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 9.964591618274566
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.3451214532396985,
+          "B-robustZ": 2.716094210503466,
+          "C-topKConcentration": 0.05440378436805058,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.904604879537745,
+          "B-robustZ": 5.03868289675945,
+          "C-topKConcentration": 0.07670624099951932,
+          "D-referenceConditionedZ": 9.207035634620826
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.3571328774416136,
+          "B-robustZ": 2.743819051255442,
+          "C-topKConcentration": 0.05476779692241128,
+          "D-referenceConditionedZ": 2.4217471640997803
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.030777620117719,
+          "B-robustZ": 3.285506633104893,
+          "C-topKConcentration": 0.045783281311653344,
+          "D-referenceConditionedZ": 18.912987843409873
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 15.293079370456859,
+          "B-robustZ": 28.860848016501894,
+          "C-topKConcentration": 0.6320946528159193,
+          "D-referenceConditionedZ": 1.5630818923634288e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.916465223168885,
+          "B-robustZ": 18.710185661929373,
+          "C-topKConcentration": 0.2733524421214363,
+          "D-referenceConditionedZ": 97025.56892182774
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.345121453239698,
+          "B-robustZ": 2.7160942105034644,
+          "C-topKConcentration": 0.05440378436805058,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-48x48",
+      "pointCount": 2304,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 9.964591618274566
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.3451214532396985,
+          "B-robustZ": 2.716094210503466,
+          "C-topKConcentration": 0.05440378436805058,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.904604879537745,
+          "B-robustZ": 5.038682896759451,
+          "C-topKConcentration": 0.07670624099951934,
+          "D-referenceConditionedZ": 9.207035634620826
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.357132877441613,
+          "B-robustZ": 2.7438190512554406,
+          "C-topKConcentration": 0.05476779692241126,
+          "D-referenceConditionedZ": 2.421747164099665
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.0307776201177186,
+          "B-robustZ": 3.285506633104893,
+          "C-topKConcentration": 0.04578328131165334,
+          "D-referenceConditionedZ": 18.912987843409876
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 15.293079370456859,
+          "B-robustZ": 28.860848016501894,
+          "C-topKConcentration": 0.6320946528159194,
+          "D-referenceConditionedZ": 9769261827271432.0
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.916465223168887,
+          "B-robustZ": 18.710185661929373,
+          "C-topKConcentration": 0.2733524421214363,
+          "D-referenceConditionedZ": 97025.56892163822
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.3451214532396985,
+          "B-robustZ": 2.7160942105034658,
+          "C-topKConcentration": 0.054403784368050594,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-48x48",
+      "pointCount": 2304,
+      "blocksPerAxis": 8,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 9.964591618274568
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.3451214532396985,
+          "B-robustZ": 2.7160942105034658,
+          "C-topKConcentration": 0.0544037843680506,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.904604879537745,
+          "B-robustZ": 5.03868289675945,
+          "C-topKConcentration": 0.07670624099951935,
+          "D-referenceConditionedZ": 9.207035634620826
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.3571328774416136,
+          "B-robustZ": 2.743819051255441,
+          "C-topKConcentration": 0.05476779692241128,
+          "D-referenceConditionedZ": 2.4217471640997976
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.030777620117719,
+          "B-robustZ": 3.285506633104894,
+          "C-topKConcentration": 0.04578328131165334,
+          "D-referenceConditionedZ": 18.912987843409873
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 15.293079370456857,
+          "B-robustZ": 28.860848016501887,
+          "C-topKConcentration": 0.6320946528159193,
+          "D-referenceConditionedZ": 1.221157728408929e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.916465223168887,
+          "B-robustZ": 18.710185661929373,
+          "C-topKConcentration": 0.2733524421214363,
+          "D-referenceConditionedZ": 97025.56892163822
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.3451214532396985,
+          "B-robustZ": 2.7160942105034653,
+          "C-topKConcentration": 0.05440378436805058,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-48x48",
+      "pointCount": 2304,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 11.212549162311321
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.569177685825626,
+          "B-robustZ": 2.437600933771131,
+          "C-topKConcentration": 0.05855531393956682,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.3940415256423777,
+          "B-robustZ": 5.703080824961008,
+          "C-topKConcentration": 0.09601888039912601,
+          "D-referenceConditionedZ": 10.136662766079777
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.588494989508086,
+          "B-robustZ": 2.4683247515793214,
+          "C-topKConcentration": 0.05879040563975245,
+          "D-referenceConditionedZ": 6.0182655775915705
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.9021565163103564,
+          "B-robustZ": 4.700451913787574,
+          "C-topKConcentration": 0.07268438645993791,
+          "D-referenceConditionedZ": 13.332832437584646
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 21.00091504959141,
+          "B-robustZ": 31.069935318070065,
+          "C-topKConcentration": 0.6320946528159193,
+          "D-referenceConditionedZ": 2.219020473905777e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 18.526653282863826,
+          "B-robustZ": 25.136074834931446,
+          "C-topKConcentration": 0.3948843269143483,
+          "D-referenceConditionedZ": 1529387.6825317354
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.5691776858256268,
+          "B-robustZ": 2.437600933771132,
+          "C-topKConcentration": 0.05855531393956683,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-48x48",
+      "pointCount": 2304,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 11.21254916231132
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.5691776858256263,
+          "B-robustZ": 2.4376009337711317,
+          "C-topKConcentration": 0.058555313939566825,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.3940415256423777,
+          "B-robustZ": 5.703080824961008,
+          "C-topKConcentration": 0.09601888039912601,
+          "D-referenceConditionedZ": 10.136662766079784
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.588494989508086,
+          "B-robustZ": 2.468324751579321,
+          "C-topKConcentration": 0.05879040563975245,
+          "D-referenceConditionedZ": 6.018265577591458
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.9021565163103555,
+          "B-robustZ": 4.700451913787571,
+          "C-topKConcentration": 0.0726843864599379,
+          "D-referenceConditionedZ": 13.332832437584653
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 21.000915049591413,
+          "B-robustZ": 31.069935318070073,
+          "C-topKConcentration": 0.6320946528159191,
+          "D-referenceConditionedZ": 2.773775592382222e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 18.526653282863826,
+          "B-robustZ": 25.136074834931446,
+          "C-topKConcentration": 0.3948843269143484,
+          "D-referenceConditionedZ": 1529387.6825211497
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.569177685825626,
+          "B-robustZ": 2.437600933771131,
+          "C-topKConcentration": 0.05855531393956683,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-48x48",
+      "pointCount": 2304,
+      "blocksPerAxis": 16,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 11.212549162311323
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.569177685825626,
+          "B-robustZ": 2.437600933771131,
+          "C-topKConcentration": 0.05855531393956683,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.3940415256423777,
+          "B-robustZ": 5.703080824961009,
+          "C-topKConcentration": 0.096018880399126,
+          "D-referenceConditionedZ": 10.136662766079779
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.588494989508086,
+          "B-robustZ": 2.4683247515793214,
+          "C-topKConcentration": 0.05879040563975245,
+          "D-referenceConditionedZ": 6.018265577591478
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.902156516310356,
+          "B-robustZ": 4.700451913787573,
+          "C-topKConcentration": 0.0726843864599379,
+          "D-referenceConditionedZ": 13.332832437584647
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 21.00091504959141,
+          "B-robustZ": 31.06993531807007,
+          "C-topKConcentration": 0.6320946528159193,
+          "D-referenceConditionedZ": 3.467219490477777e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 18.526653282863826,
+          "B-robustZ": 25.136074834931442,
+          "C-topKConcentration": 0.3948843269143483,
+          "D-referenceConditionedZ": 1529387.682538087
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.5691776858256263,
+          "B-robustZ": 2.4376009337711313,
+          "C-topKConcentration": 0.05855531393956682,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-64x64",
+      "pointCount": 4096,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.138205001461475
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.069102500730738,
+          "B-robustZ": 4.1382050014614755,
+          "C-topKConcentration": 0.16428777308375397,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.131596868983243,
+          "B-robustZ": 6.345341303638683,
+          "C-topKConcentration": 0.16277932729927735,
+          "D-referenceConditionedZ": 5.461822504849661
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.069609366249426,
+          "B-robustZ": 4.129480216456216,
+          "C-topKConcentration": 0.16449152021821664,
+          "D-referenceConditionedZ": 1.4859857182128497
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7933759621462346,
+          "B-robustZ": 4.693810796188516,
+          "C-topKConcentration": 0.14220532935395008,
+          "D-referenceConditionedZ": 5.288061736143209
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 8.057977218938394,
+          "B-robustZ": 13.659756217507827,
+          "C-topKConcentration": 0.6807489932413686,
+          "D-referenceConditionedZ": 32468002.790078007
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.31174312909582,
+          "B-robustZ": 5.490752168358084,
+          "C-topKConcentration": 0.29439325086074525,
+          "D-referenceConditionedZ": 49.82974316473159
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.0691025007307386,
+          "B-robustZ": 4.138205001461479,
+          "C-topKConcentration": 0.164287773083754,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-64x64",
+      "pointCount": 4096,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.138205001461477
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.069102500730738,
+          "B-robustZ": 4.138205001461475,
+          "C-topKConcentration": 0.16428777308375397,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.1315968689832436,
+          "B-robustZ": 6.345341303638689,
+          "C-topKConcentration": 0.16277932729927735,
+          "D-referenceConditionedZ": 5.461822504849659
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.0696093662494257,
+          "B-robustZ": 4.129480216456212,
+          "C-topKConcentration": 0.16449152021821667,
+          "D-referenceConditionedZ": 1.4859857182126657
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7933759621462344,
+          "B-robustZ": 4.693810796188516,
+          "C-topKConcentration": 0.14220532935395008,
+          "D-referenceConditionedZ": 5.288061736143208
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 8.057977218938392,
+          "B-robustZ": 13.659756217507823,
+          "C-topKConcentration": 0.6807489932413687,
+          "D-referenceConditionedZ": 32468002.774653252
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.311743129095821,
+          "B-robustZ": 5.4907521683580836,
+          "C-topKConcentration": 0.29439325086074525,
+          "D-referenceConditionedZ": 49.82974316473151
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.0691025007307386,
+          "B-robustZ": 4.138205001461476,
+          "C-topKConcentration": 0.16428777308375397,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-64x64",
+      "pointCount": 4096,
+      "blocksPerAxis": 4,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.138205001461478
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.069102500730738,
+          "B-robustZ": 4.138205001461475,
+          "C-topKConcentration": 0.16428777308375397,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.131596868983243,
+          "B-robustZ": 6.345341303638684,
+          "C-topKConcentration": 0.16277932729927735,
+          "D-referenceConditionedZ": 5.4618225048496605
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.069609366249426,
+          "B-robustZ": 4.129480216456213,
+          "C-topKConcentration": 0.16449152021821664,
+          "D-referenceConditionedZ": 1.4859857182127263
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7933759621462342,
+          "B-robustZ": 4.693810796188514,
+          "C-topKConcentration": 0.14220532935395006,
+          "D-referenceConditionedZ": 5.288061736143204
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 8.057977218938394,
+          "B-robustZ": 13.65975621750783,
+          "C-topKConcentration": 0.6807489932413687,
+          "D-referenceConditionedZ": 32468002.811672658
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.31174312909582,
+          "B-robustZ": 5.4907521683580836,
+          "C-topKConcentration": 0.29439325086074525,
+          "D-referenceConditionedZ": 49.829743164731475
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.0691025007307386,
+          "B-robustZ": 4.1382050014614755,
+          "C-topKConcentration": 0.16428777308375397,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-64x64",
+      "pointCount": 4096,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 10.281008552513496
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.368607438606029,
+          "B-robustZ": 2.725557024106338,
+          "C-topKConcentration": 0.054892626116706804,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.924931963278193,
+          "B-robustZ": 4.992355065795553,
+          "C-topKConcentration": 0.07719780387851108,
+          "D-referenceConditionedZ": 9.48226988215817
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.375608444843681,
+          "B-robustZ": 2.7430487754340307,
+          "C-topKConcentration": 0.055044608842943224,
+          "D-referenceConditionedZ": 3.388730614831119
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.0520721557451624,
+          "B-robustZ": 3.320607716277395,
+          "C-topKConcentration": 0.04614536020633613,
+          "D-referenceConditionedZ": 19.746797184711205
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 15.367051387451582,
+          "B-robustZ": 28.61172080758356,
+          "C-topKConcentration": 0.6312519178431171,
+          "D-referenceConditionedZ": 3.113648139147809e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.95395562963493,
+          "B-robustZ": 18.587057629387758,
+          "C-topKConcentration": 0.27298799706281296,
+          "D-referenceConditionedZ": 102714.27547547659
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.3686074386060296,
+          "B-robustZ": 2.7255570241063385,
+          "C-topKConcentration": 0.0548926261167068,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-64x64",
+      "pointCount": 4096,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 10.281008552513496
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.368607438606029,
+          "B-robustZ": 2.725557024106339,
+          "C-topKConcentration": 0.05489262611670679,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.9249319632781927,
+          "B-robustZ": 4.992355065795549,
+          "C-topKConcentration": 0.07719780387851109,
+          "D-referenceConditionedZ": 9.482269882158167
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.3756084448436807,
+          "B-robustZ": 2.743048775434029,
+          "C-topKConcentration": 0.05504460884294321,
+          "D-referenceConditionedZ": 3.388730614831037
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.052072155745162,
+          "B-robustZ": 3.3206077162773933,
+          "C-topKConcentration": 0.04614536020633612,
+          "D-referenceConditionedZ": 19.74679718471121
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 15.36705138745158,
+          "B-robustZ": 28.61172080758356,
+          "C-topKConcentration": 0.631251917843117,
+          "D-referenceConditionedZ": 1.297353391311587e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.953955629634928,
+          "B-robustZ": 18.587057629387758,
+          "C-topKConcentration": 0.27298799706281285,
+          "D-referenceConditionedZ": 102714.27547556073
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.368607438606029,
+          "B-robustZ": 2.725557024106338,
+          "C-topKConcentration": 0.05489262611670679,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-64x64",
+      "pointCount": 4096,
+      "blocksPerAxis": 8,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 10.281008552513494
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.368607438606029,
+          "B-robustZ": 2.725557024106338,
+          "C-topKConcentration": 0.05489262611670679,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.924931963278193,
+          "B-robustZ": 4.992355065795551,
+          "C-topKConcentration": 0.07719780387851109,
+          "D-referenceConditionedZ": 9.482269882158167
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.3756084448436807,
+          "B-robustZ": 2.7430487754340294,
+          "C-topKConcentration": 0.05504460884294322,
+          "D-referenceConditionedZ": 3.388730614830913
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.0520721557451624,
+          "B-robustZ": 3.3206077162773946,
+          "C-topKConcentration": 0.04614536020633613,
+          "D-referenceConditionedZ": 19.746797184711205
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 15.36705138745158,
+          "B-robustZ": 28.61172080758356,
+          "C-topKConcentration": 0.6312519178431171,
+          "D-referenceConditionedZ": 1.216268804354613e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.953955629634931,
+          "B-robustZ": 18.58705762938776,
+          "C-topKConcentration": 0.2729879970628129,
+          "D-referenceConditionedZ": 102714.27547554394
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.368607438606029,
+          "B-robustZ": 2.725557024106338,
+          "C-topKConcentration": 0.0548926261167068,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-64x64",
+      "pointCount": 4096,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 11.713551061225465
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.5999202069541103,
+          "B-robustZ": 2.4413610742140324,
+          "C-topKConcentration": 0.05912517337739884,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.405013957911028,
+          "B-robustZ": 5.698202423311359,
+          "C-topKConcentration": 0.09680893803873963,
+          "D-referenceConditionedZ": 9.90856881133315
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.6092059914594494,
+          "B-robustZ": 2.456205812757738,
+          "C-topKConcentration": 0.05928767705385274,
+          "D-referenceConditionedZ": 5.426025819888088
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.871615087395074,
+          "B-robustZ": 4.6503046328009665,
+          "C-topKConcentration": 0.07282367025203128,
+          "D-referenceConditionedZ": 13.440674269644148
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 20.921258188091137,
+          "B-robustZ": 30.398381168248,
+          "C-topKConcentration": 0.6312519178431171,
+          "D-referenceConditionedZ": 4.374381968154818e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 18.42997994674015,
+          "B-robustZ": 24.630446162794964,
+          "C-topKConcentration": 0.38994218282306375,
+          "D-referenceConditionedZ": 1350598.1761166197
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.59992020695411,
+          "B-robustZ": 2.441361074214032,
+          "C-topKConcentration": 0.059125173377398844,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-64x64",
+      "pointCount": 4096,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 11.713551061225463
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.59992020695411,
+          "B-robustZ": 2.441361074214032,
+          "C-topKConcentration": 0.05912517337739883,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.4050139579110272,
+          "B-robustZ": 5.698202423311356,
+          "C-topKConcentration": 0.09680893803873963,
+          "D-referenceConditionedZ": 9.908568811333152
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.6092059914594494,
+          "B-robustZ": 2.456205812757738,
+          "C-topKConcentration": 0.05928767705385274,
+          "D-referenceConditionedZ": 5.426025819888124
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.8716150873950737,
+          "B-robustZ": 4.650304632800966,
+          "C-topKConcentration": 0.07282367025203126,
+          "D-referenceConditionedZ": 13.440674269644148
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 20.92125818809114,
+          "B-robustZ": 30.398381168248005,
+          "C-topKConcentration": 0.6312519178431171,
+          "D-referenceConditionedZ": 2.733988730096762e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 18.42997994674015,
+          "B-robustZ": 24.63044616279497,
+          "C-topKConcentration": 0.3899421828230638,
+          "D-referenceConditionedZ": 1350598.176112443
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.5999202069541094,
+          "B-robustZ": 2.441361074214031,
+          "C-topKConcentration": 0.05912517337739884,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "uniform-64x64",
+      "pointCount": 4096,
+      "blocksPerAxis": 16,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 11.713551061225461
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.59992020695411,
+          "B-robustZ": 2.441361074214032,
+          "C-topKConcentration": 0.05912517337739884,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.4050139579110277,
+          "B-robustZ": 5.698202423311356,
+          "C-topKConcentration": 0.09680893803873962,
+          "D-referenceConditionedZ": 9.90856881133315
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.6092059914594494,
+          "B-robustZ": 2.4562058127577377,
+          "C-topKConcentration": 0.05928767705385275,
+          "D-referenceConditionedZ": 5.4260258198879106
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.871615087395074,
+          "B-robustZ": 4.650304632800967,
+          "C-topKConcentration": 0.07282367025203128,
+          "D-referenceConditionedZ": 13.440674269644148
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 20.92125818809114,
+          "B-robustZ": 30.398381168247997,
+          "C-topKConcentration": 0.6312519178431172,
+          "D-referenceConditionedZ": 3.417485912620953e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 18.42997994674015,
+          "B-robustZ": 24.63044616279497,
+          "C-topKConcentration": 0.38994218282306375,
+          "D-referenceConditionedZ": 1350598.1761024185
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.5999202069541094,
+          "B-robustZ": 2.4413610742140315,
+          "C-topKConcentration": 0.05912517337739883,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-512",
+      "pointCount": 512,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.368758209743281
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 1.999675075521722,
+          "B-robustZ": 2.815755809152399,
+          "C-topKConcentration": 0.16952100752572435,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.3542927024883338,
+          "B-robustZ": 6.833346197279507,
+          "C-topKConcentration": 0.1922086379711002,
+          "D-referenceConditionedZ": 5.117219204521996
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.00812030791579,
+          "B-robustZ": 2.7306669028500625,
+          "C-topKConcentration": 0.16626131988262557,
+          "D-referenceConditionedZ": 1.9742127011269288
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7420144456139688,
+          "B-robustZ": 4.022859806978827,
+          "C-topKConcentration": 0.1530777666494472,
+          "D-referenceConditionedZ": 4.603068060535734
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 8.015854366430476,
+          "B-robustZ": 15.322480079276602,
+          "C-topKConcentration": 0.7195169269944629,
+          "D-referenceConditionedZ": 104343972.4233017
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.875058324066679,
+          "B-robustZ": 7.580208618013751,
+          "C-topKConcentration": 0.38813181302970234,
+          "D-referenceConditionedZ": 37.471851621878834
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 1.9996750755217219,
+          "B-robustZ": 2.815755809152398,
+          "C-topKConcentration": 0.16952100752572433,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-512",
+      "pointCount": 512,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.368758209743282
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 1.9996750755217219,
+          "B-robustZ": 2.815755809152398,
+          "C-topKConcentration": 0.16952100752572438,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.354292702488334,
+          "B-robustZ": 6.833346197279509,
+          "C-topKConcentration": 0.1922086379711002,
+          "D-referenceConditionedZ": 5.117219204521998
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.0081203079157905,
+          "B-robustZ": 2.7306669028500643,
+          "C-topKConcentration": 0.16626131988262557,
+          "D-referenceConditionedZ": 1.9742127011269235
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7420144456139688,
+          "B-robustZ": 4.022859806978825,
+          "C-topKConcentration": 0.15307776664944717,
+          "D-referenceConditionedZ": 4.603068060535733
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 8.015854366430474,
+          "B-robustZ": 15.322480079276602,
+          "C-topKConcentration": 0.7195169269944629,
+          "D-referenceConditionedZ": 104343971.91915588
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.875058324066679,
+          "B-robustZ": 7.580208618013754,
+          "C-topKConcentration": 0.3881318130297024,
+          "D-referenceConditionedZ": 37.471851621878834
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 1.9996750755217219,
+          "B-robustZ": 2.8157558091523986,
+          "C-topKConcentration": 0.16952100752572433,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-512",
+      "pointCount": 512,
+      "blocksPerAxis": 4,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.368758209743282
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 1.9996750755217219,
+          "B-robustZ": 2.8157558091523986,
+          "C-topKConcentration": 0.16952100752572435,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.354292702488334,
+          "B-robustZ": 6.8333461972795115,
+          "C-topKConcentration": 0.19220863797110022,
+          "D-referenceConditionedZ": 5.117219204521999
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.0081203079157905,
+          "B-robustZ": 2.730666902850064,
+          "C-topKConcentration": 0.16626131988262557,
+          "D-referenceConditionedZ": 1.974212701126929
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7420144456139688,
+          "B-robustZ": 4.022859806978826,
+          "C-topKConcentration": 0.1530777666494472,
+          "D-referenceConditionedZ": 4.603068060535741
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 8.015854366430474,
+          "B-robustZ": 15.3224800792766,
+          "C-topKConcentration": 0.7195169269944628,
+          "D-referenceConditionedZ": 104343972.32247251
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.875058324066679,
+          "B-robustZ": 7.580208618013752,
+          "C-topKConcentration": 0.3881318130297024,
+          "D-referenceConditionedZ": 37.47185162187883
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 1.9996750755217219,
+          "B-robustZ": 2.815755809152399,
+          "C-topKConcentration": 0.16952100752572433,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-512",
+      "pointCount": 512,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 15.03575669785702
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.5234691415494326,
+          "B-robustZ": 2.7711505496887052,
+          "C-topKConcentration": 0.05707739412246805,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.184067771032508,
+          "B-robustZ": 5.30355705779448,
+          "C-topKConcentration": 0.08558140915870503,
+          "D-referenceConditionedZ": 12.18142909378449
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.621909747538965,
+          "B-robustZ": 3.0300562400516218,
+          "C-topKConcentration": 0.06154323451290444,
+          "D-referenceConditionedZ": 4.552215773797183
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.047693635595869,
+          "B-robustZ": 3.299745833721574,
+          "C-topKConcentration": 0.053218881135874745,
+          "D-referenceConditionedZ": 16.046973484244678
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 13.942465311274217,
+          "B-robustZ": 22.641133269175217,
+          "C-topKConcentration": 0.5659165261111263,
+          "D-referenceConditionedZ": 1.36211466609694e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.593017749149393,
+          "B-robustZ": 17.594966114746764,
+          "C-topKConcentration": 0.29605870539096607,
+          "D-referenceConditionedZ": 717627.1838621506
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.523469141549432,
+          "B-robustZ": 2.771150549688705,
+          "C-topKConcentration": 0.05707739412246804,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-512",
+      "pointCount": 512,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 15.035756697857025
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.5234691415494326,
+          "B-robustZ": 2.771150549688705,
+          "C-topKConcentration": 0.057077394122468046,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.1840677710325074,
+          "B-robustZ": 5.303557057794482,
+          "C-topKConcentration": 0.08558140915870502,
+          "D-referenceConditionedZ": 12.181429093784502
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.6219097475389646,
+          "B-robustZ": 3.0300562400516213,
+          "C-topKConcentration": 0.06154323451290444,
+          "D-referenceConditionedZ": 4.552215773797209
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.047693635595869,
+          "B-robustZ": 3.2997458337215737,
+          "C-topKConcentration": 0.05321888113587474,
+          "D-referenceConditionedZ": 16.046973484244695
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 13.942465311274217,
+          "B-robustZ": 22.64113326917522,
+          "C-topKConcentration": 0.5659165261111264,
+          "D-referenceConditionedZ": 1.1350955550807836e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.593017749149393,
+          "B-robustZ": 17.594966114746764,
+          "C-topKConcentration": 0.29605870539096607,
+          "D-referenceConditionedZ": 717627.1838684514
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.5234691415494326,
+          "B-robustZ": 2.771150549688705,
+          "C-topKConcentration": 0.057077394122468046,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-512",
+      "pointCount": 512,
+      "blocksPerAxis": 8,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 15.03575669785702
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.5234691415494326,
+          "B-robustZ": 2.7711505496887052,
+          "C-topKConcentration": 0.057077394122468046,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.1840677710325074,
+          "B-robustZ": 5.303557057794482,
+          "C-topKConcentration": 0.08558140915870502,
+          "D-referenceConditionedZ": 12.181429093784502
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.621909747538965,
+          "B-robustZ": 3.0300562400516218,
+          "C-topKConcentration": 0.06154323451290444,
+          "D-referenceConditionedZ": 4.552215773797211
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.047693635595869,
+          "B-robustZ": 3.299745833721574,
+          "C-topKConcentration": 0.053218881135874745,
+          "D-referenceConditionedZ": 16.046973484244674
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 13.942465311274216,
+          "B-robustZ": 22.641133269175217,
+          "C-topKConcentration": 0.5659165261111263,
+          "D-referenceConditionedZ": 1.216173809015125e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 12.593017749149395,
+          "B-robustZ": 17.594966114746768,
+          "C-topKConcentration": 0.29605870539096607,
+          "D-referenceConditionedZ": 717627.1838684514
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.523469141549433,
+          "B-robustZ": 2.7711505496887052,
+          "C-topKConcentration": 0.05707739412246804,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-512",
+      "pointCount": 512,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.013513513513513516,
+          "D-referenceConditionedZ": 13.530435767201727
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.8320772444365048,
+          "B-robustZ": 2.8192136617169834,
+          "C-topKConcentration": 0.05571866555770742,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.6612014499515175,
+          "B-robustZ": 5.767985672634163,
+          "C-topKConcentration": 0.09213449592744553,
+          "D-referenceConditionedZ": 12.421802959769357
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 3.3950540515678607,
+          "B-robustZ": 3.588683806214186,
+          "C-topKConcentration": 0.0704590540191287,
+          "D-referenceConditionedZ": 2.387055573361492
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 3.072610352484555,
+          "B-robustZ": 4.496862517728544,
+          "C-topKConcentration": 0.06834072295427014,
+          "D-referenceConditionedZ": 17.761624239719684
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 29.72338986085651,
+          "B-robustZ": 44.19975923641184,
+          "C-topKConcentration": 0.6749429516843837,
+          "D-referenceConditionedZ": 5.499222412324865e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 27.441612283148046,
+          "B-robustZ": 37.83701747335626,
+          "C-topKConcentration": 0.4464577684721335,
+          "D-referenceConditionedZ": 6943748.4363662
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.8320772444365048,
+          "B-robustZ": 2.819213661716984,
+          "C-topKConcentration": 0.055718665557707416,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-512",
+      "pointCount": 512,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.013513513513513514,
+          "D-referenceConditionedZ": 13.530435767201725
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.8320772444365048,
+          "B-robustZ": 2.8192136617169843,
+          "C-topKConcentration": 0.05571866555770741,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.661201449951517,
+          "B-robustZ": 5.767985672634161,
+          "C-topKConcentration": 0.09213449592744552,
+          "D-referenceConditionedZ": 12.42180295976936
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 3.3950540515678607,
+          "B-robustZ": 3.5886838062141844,
+          "C-topKConcentration": 0.07045905401912872,
+          "D-referenceConditionedZ": 2.3870555733615064
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 3.0726103524845545,
+          "B-robustZ": 4.496862517728541,
+          "C-topKConcentration": 0.06834072295427014,
+          "D-referenceConditionedZ": 17.761624239719687
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 29.723389860856514,
+          "B-robustZ": 44.19975923641186,
+          "C-topKConcentration": 0.6749429516843837,
+          "D-referenceConditionedZ": 3.4370140077030416e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 27.44161228314805,
+          "B-robustZ": 37.83701747335627,
+          "C-topKConcentration": 0.44645776847213353,
+          "D-referenceConditionedZ": 6943748.435938877
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.8320772444365048,
+          "B-robustZ": 2.819213661716984,
+          "C-topKConcentration": 0.05571866555770741,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-512",
+      "pointCount": 512,
+      "blocksPerAxis": 16,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.013513513513513516,
+          "D-referenceConditionedZ": 13.530435767201727
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.832077244436505,
+          "B-robustZ": 2.819213661716984,
+          "C-topKConcentration": 0.055718665557707416,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.661201449951516,
+          "B-robustZ": 5.76798567263416,
+          "C-topKConcentration": 0.09213449592744553,
+          "D-referenceConditionedZ": 12.421802959769353
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 3.395054051567861,
+          "B-robustZ": 3.588683806214186,
+          "C-topKConcentration": 0.07045905401912872,
+          "D-referenceConditionedZ": 2.3870555733614958
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 3.0726103524845545,
+          "B-robustZ": 4.496862517728541,
+          "C-topKConcentration": 0.06834072295427014,
+          "D-referenceConditionedZ": 17.761624239719673
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 29.723389860856514,
+          "B-robustZ": 44.19975923641186,
+          "C-topKConcentration": 0.6749429516843838,
+          "D-referenceConditionedZ": 4.296267509628802e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 27.441612283148046,
+          "B-robustZ": 37.83701747335626,
+          "C-topKConcentration": 0.44645776847213353,
+          "D-referenceConditionedZ": 6943748.436451665
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.8320772444365048,
+          "B-robustZ": 2.8192136617169843,
+          "C-topKConcentration": 0.05571866555770741,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-1024",
+      "pointCount": 1024,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.223953183574924
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.1926209999721027,
+          "B-robustZ": 3.8532940973037624,
+          "C-topKConcentration": 0.17253896895818993,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.1914252118398823,
+          "B-robustZ": 5.783477488910536,
+          "C-topKConcentration": 0.17373899092530007,
+          "D-referenceConditionedZ": 5.901605403542853
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.1747684335729396,
+          "B-robustZ": 3.6963845382920235,
+          "C-topKConcentration": 0.17566412619633937,
+          "D-referenceConditionedZ": 2.5717438721417016
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7498200863459241,
+          "B-robustZ": 3.3620379904037003,
+          "C-topKConcentration": 0.14441260087159544,
+          "D-referenceConditionedZ": 3.718274394218842
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 7.79277291544977,
+          "B-robustZ": 21.477223233766466,
+          "C-topKConcentration": 0.6274334709360383,
+          "D-referenceConditionedZ": 34733634.46737658
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 5.751464577825467,
+          "B-robustZ": 7.094897141943712,
+          "C-topKConcentration": 0.2999281652086235,
+          "D-referenceConditionedZ": 55.02798900738779
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.192620999972103,
+          "B-robustZ": 3.853294097303763,
+          "C-topKConcentration": 0.17253896895818993,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-1024",
+      "pointCount": 1024,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.223953183574925
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.192620999972103,
+          "B-robustZ": 3.8532940973037615,
+          "C-topKConcentration": 0.17253896895818988,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.1914252118398823,
+          "B-robustZ": 5.783477488910533,
+          "C-topKConcentration": 0.17373899092530004,
+          "D-referenceConditionedZ": 5.901605403542855
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.1747684335729396,
+          "B-robustZ": 3.6963845382920235,
+          "C-topKConcentration": 0.1756641261963394,
+          "D-referenceConditionedZ": 2.571743872141701
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7498200863459243,
+          "B-robustZ": 3.3620379904037025,
+          "C-topKConcentration": 0.1444126008715954,
+          "D-referenceConditionedZ": 3.718274394218847
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 7.792772915449771,
+          "B-robustZ": 21.477223233766473,
+          "C-topKConcentration": 0.6274334709360383,
+          "D-referenceConditionedZ": 34733634.44881009
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 5.751464577825466,
+          "B-robustZ": 7.094897141943714,
+          "C-topKConcentration": 0.2999281652086234,
+          "D-referenceConditionedZ": 55.02798900738785
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.1926209999721027,
+          "B-robustZ": 3.853294097303762,
+          "C-topKConcentration": 0.17253896895818996,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-1024",
+      "pointCount": 1024,
+      "blocksPerAxis": 4,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.2239531835749276
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.1926209999721022,
+          "B-robustZ": 3.853294097303761,
+          "C-topKConcentration": 0.17253896895818988,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.1914252118398823,
+          "B-robustZ": 5.783477488910535,
+          "C-topKConcentration": 0.17373899092530004,
+          "D-referenceConditionedZ": 5.901605403542852
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.17476843357294,
+          "B-robustZ": 3.696384538292024,
+          "C-topKConcentration": 0.1756641261963394,
+          "D-referenceConditionedZ": 2.5717438721416985
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.7498200863459241,
+          "B-robustZ": 3.3620379904036994,
+          "C-topKConcentration": 0.14441260087159546,
+          "D-referenceConditionedZ": 3.7182743942188443
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 7.7927729154497705,
+          "B-robustZ": 21.477223233766473,
+          "C-topKConcentration": 0.6274334709360382,
+          "D-referenceConditionedZ": 34733634.50822288
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 5.751464577825467,
+          "B-robustZ": 7.094897141943714,
+          "C-topKConcentration": 0.2999281652086234,
+          "D-referenceConditionedZ": 55.02798900738787
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.192620999972103,
+          "B-robustZ": 3.853294097303763,
+          "C-topKConcentration": 0.17253896895818993,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-1024",
+      "pointCount": 1024,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 12.641161158839315
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.622570410449978,
+          "B-robustZ": 3.0344565064055864,
+          "C-topKConcentration": 0.058670966117371534,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.312873800533675,
+          "B-robustZ": 5.376532851419316,
+          "C-topKConcentration": 0.0870281820105375,
+          "D-referenceConditionedZ": 10.298441731343768
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.5330717732772823,
+          "B-robustZ": 2.797365443102352,
+          "C-topKConcentration": 0.058459702041465174,
+          "D-referenceConditionedZ": 4.115384251510856
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.1987827986385327,
+          "B-robustZ": 3.455461770876112,
+          "C-topKConcentration": 0.048216191729420765,
+          "D-referenceConditionedZ": 13.380365521935552
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 17.55824761866058,
+          "B-robustZ": 30.215105102361687,
+          "C-topKConcentration": 0.609405483383107,
+          "D-referenceConditionedZ": 1.6981938488839052e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 14.378155110177588,
+          "B-robustZ": 22.105181880858648,
+          "C-topKConcentration": 0.293960033255181,
+          "D-referenceConditionedZ": 347446.64333292877
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.622570410449978,
+          "B-robustZ": 3.0344565064055877,
+          "C-topKConcentration": 0.05867096611737157,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-1024",
+      "pointCount": 1024,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 12.641161158839317
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.622570410449978,
+          "B-robustZ": 3.034456506405587,
+          "C-topKConcentration": 0.058670966117371555,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.3128738005336738,
+          "B-robustZ": 5.376532851419315,
+          "C-topKConcentration": 0.08702818201053747,
+          "D-referenceConditionedZ": 10.298441731343772
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.5330717732772823,
+          "B-robustZ": 2.7973654431023514,
+          "C-topKConcentration": 0.05845970204146516,
+          "D-referenceConditionedZ": 4.115384251510848
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.1987827986385327,
+          "B-robustZ": 3.455461770876112,
+          "C-topKConcentration": 0.04821619172942075,
+          "D-referenceConditionedZ": 13.380365521935543
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 17.55824761866058,
+          "B-robustZ": 30.215105102361676,
+          "C-topKConcentration": 0.6094054833831068,
+          "D-referenceConditionedZ": 2.122742311104882e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 14.378155110177586,
+          "B-robustZ": 22.105181880858645,
+          "C-topKConcentration": 0.293960033255181,
+          "D-referenceConditionedZ": 347446.64333513845
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.622570410449978,
+          "B-robustZ": 3.0344565064055873,
+          "C-topKConcentration": 0.058670966117371555,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-1024",
+      "pointCount": 1024,
+      "blocksPerAxis": 8,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 12.641161158839317
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.622570410449978,
+          "B-robustZ": 3.0344565064055873,
+          "C-topKConcentration": 0.05867096611737156,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.3128738005336746,
+          "B-robustZ": 5.376532851419316,
+          "C-topKConcentration": 0.0870281820105375,
+          "D-referenceConditionedZ": 10.298441731343775
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.533071773277282,
+          "B-robustZ": 2.797365443102352,
+          "C-topKConcentration": 0.05845970204146516,
+          "D-referenceConditionedZ": 4.115384251510876
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.1987827986385327,
+          "B-robustZ": 3.455461770876112,
+          "C-topKConcentration": 0.04821619172942075,
+          "D-referenceConditionedZ": 13.38036552193554
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 17.55824761866058,
+          "B-robustZ": 30.215105102361694,
+          "C-topKConcentration": 0.609405483383107,
+          "D-referenceConditionedZ": 2.6534278888811024e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 14.378155110177586,
+          "B-robustZ": 22.105181880858645,
+          "C-topKConcentration": 0.293960033255181,
+          "D-referenceConditionedZ": 347446.64333372435
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.6225704104499776,
+          "B-robustZ": 3.0344565064055864,
+          "C-topKConcentration": 0.05867096611737153,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-1024",
+      "pointCount": 1024,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.011904761904761904,
+          "D-referenceConditionedZ": 14.161104356361172
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.7084412069256283,
+          "B-robustZ": 2.5058956831184362,
+          "C-topKConcentration": 0.04667152385603559,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.566184158838783,
+          "B-robustZ": 5.527921314723012,
+          "C-topKConcentration": 0.0758356777977757,
+          "D-referenceConditionedZ": 11.716793076526633
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.833690048980556,
+          "B-robustZ": 2.7137059321817194,
+          "C-topKConcentration": 0.051373664054269526,
+          "D-referenceConditionedZ": 3.4119796922073613
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 3.0119199743595377,
+          "B-robustZ": 3.8893819700016516,
+          "C-topKConcentration": 0.05723888588465106,
+          "D-referenceConditionedZ": 13.51413049735959
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 23.022489175783843,
+          "B-robustZ": 31.998965473133218,
+          "C-topKConcentration": 0.5605572714722242,
+          "D-referenceConditionedZ": 4.141655169652366e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 20.833051570493236,
+          "B-robustZ": 26.54131780852061,
+          "C-topKConcentration": 0.3574397827046624,
+          "D-referenceConditionedZ": 982310.9231682711
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.7084412069256283,
+          "B-robustZ": 2.5058956831184367,
+          "C-topKConcentration": 0.04667152385603559,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-1024",
+      "pointCount": 1024,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.011904761904761904,
+          "D-referenceConditionedZ": 14.16110435636117
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.7084412069256287,
+          "B-robustZ": 2.5058956831184376,
+          "C-topKConcentration": 0.04667152385603559,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.566184158838783,
+          "B-robustZ": 5.527921314723011,
+          "C-topKConcentration": 0.07583567779777571,
+          "D-referenceConditionedZ": 11.716793076526633
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.8336900489805563,
+          "B-robustZ": 2.7137059321817194,
+          "C-topKConcentration": 0.051373664054269526,
+          "D-referenceConditionedZ": 3.411979692207364
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 3.0119199743595373,
+          "B-robustZ": 3.8893819700016534,
+          "C-topKConcentration": 0.057238885884651064,
+          "D-referenceConditionedZ": 13.514130497359584
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 23.022489175783846,
+          "B-robustZ": 31.998965473133225,
+          "C-topKConcentration": 0.5605572714722243,
+          "D-referenceConditionedZ": 2.58853448103273e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 20.833051570493236,
+          "B-robustZ": 26.541317808520617,
+          "C-topKConcentration": 0.3574397827046625,
+          "D-referenceConditionedZ": 982310.9231657359
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.7084412069256283,
+          "B-robustZ": 2.505895683118437,
+          "C-topKConcentration": 0.04667152385603559,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-1024",
+      "pointCount": 1024,
+      "blocksPerAxis": 16,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.011904761904761906,
+          "D-referenceConditionedZ": 14.16110435636117
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.7084412069256283,
+          "B-robustZ": 2.5058956831184362,
+          "C-topKConcentration": 0.04667152385603559,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.5661841588387824,
+          "B-robustZ": 5.527921314723012,
+          "C-topKConcentration": 0.07583567779777571,
+          "D-referenceConditionedZ": 11.716793076526631
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.8336900489805563,
+          "B-robustZ": 2.7137059321817203,
+          "C-topKConcentration": 0.05137366405426953,
+          "D-referenceConditionedZ": 3.4119796922073635
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 3.0119199743595377,
+          "B-robustZ": 3.889381970001653,
+          "C-topKConcentration": 0.05723888588465106,
+          "D-referenceConditionedZ": 13.514130497359577
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 23.02248917578384,
+          "B-robustZ": 31.998965473133218,
+          "C-topKConcentration": 0.5605572714722243,
+          "D-referenceConditionedZ": 3.235668101290912e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 20.833051570493232,
+          "B-robustZ": 26.541317808520613,
+          "C-topKConcentration": 0.3574397827046625,
+          "D-referenceConditionedZ": 982310.9231637077
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.7084412069256287,
+          "B-robustZ": 2.505895683118437,
+          "C-topKConcentration": 0.046671523856035596,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-2048",
+      "pointCount": 2048,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0000000000000002,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.06250000000000003,
+          "D-referenceConditionedZ": 4.5848809660614185
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.1482348022387927,
+          "B-robustZ": 4.036174735150766,
+          "C-topKConcentration": 0.17315291974994654,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.323893109518664,
+          "B-robustZ": 6.933628103218874,
+          "C-topKConcentration": 0.1811565263914985,
+          "D-referenceConditionedZ": 5.720745894122819
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.115652474119624,
+          "B-robustZ": 3.7965227454671866,
+          "C-topKConcentration": 0.1716657526298419,
+          "D-referenceConditionedZ": 1.934735770531518
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.9038602664657194,
+          "B-robustZ": 5.676933559330071,
+          "C-topKConcentration": 0.15193460198653783,
+          "D-referenceConditionedZ": 6.421282645146608
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 7.43486360373926,
+          "B-robustZ": 12.450707681464282,
+          "C-topKConcentration": 0.6412987383109031,
+          "D-referenceConditionedZ": 272815561.6239812
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.542309788323408,
+          "B-robustZ": 5.899990208233892,
+          "C-topKConcentration": 0.28200616606768336,
+          "D-referenceConditionedZ": 34.793568645862734
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.1482348022387927,
+          "B-robustZ": 4.036174735150764,
+          "C-topKConcentration": 0.1731529197499465,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-2048",
+      "pointCount": 2048,
+      "blocksPerAxis": 4,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.584880966061421
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.148234802238792,
+          "B-robustZ": 4.03617473515076,
+          "C-topKConcentration": 0.17315291974994657,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.3238931095186635,
+          "B-robustZ": 6.933628103218872,
+          "C-topKConcentration": 0.18115652639149846,
+          "D-referenceConditionedZ": 5.720745894122817
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.115652474119624,
+          "B-robustZ": 3.7965227454671857,
+          "C-topKConcentration": 0.1716657526298419,
+          "D-referenceConditionedZ": 1.9347357705315102
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.903860266465719,
+          "B-robustZ": 5.676933559330066,
+          "C-topKConcentration": 0.15193460198653777,
+          "D-referenceConditionedZ": 6.421282645146604
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 7.43486360373926,
+          "B-robustZ": 12.450707681464284,
+          "C-topKConcentration": 0.6412987383109031,
+          "D-referenceConditionedZ": 272815556.67558885
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.542309788323407,
+          "B-robustZ": 5.899990208233891,
+          "C-topKConcentration": 0.2820061660676833,
+          "D-referenceConditionedZ": 34.79356864586276
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.1482348022387923,
+          "B-robustZ": 4.036174735150761,
+          "C-topKConcentration": 0.17315291974994654,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-2048",
+      "pointCount": 2048,
+      "blocksPerAxis": 4,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.0625,
+          "D-referenceConditionedZ": 4.584880966061422
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.148234802238793,
+          "B-robustZ": 4.036174735150767,
+          "C-topKConcentration": 0.17315291974994657,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 2.323893109518663,
+          "B-robustZ": 6.933628103218874,
+          "C-topKConcentration": 0.18115652639149846,
+          "D-referenceConditionedZ": 5.720745894122818
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.1156524741196234,
+          "B-robustZ": 3.7965227454671835,
+          "C-topKConcentration": 0.17166575262984193,
+          "D-referenceConditionedZ": 1.9347357705315162
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 1.9038602664657194,
+          "B-robustZ": 5.676933559330069,
+          "C-topKConcentration": 0.1519346019865378,
+          "D-referenceConditionedZ": 6.4212826451466025
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 7.4348636037392595,
+          "B-robustZ": 12.450707681464278,
+          "C-topKConcentration": 0.6412987383109031,
+          "D-referenceConditionedZ": 272815557.66526735
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 4.542309788323406,
+          "B-robustZ": 5.899990208233893,
+          "C-topKConcentration": 0.2820061660676833,
+          "D-referenceConditionedZ": 34.793568645862756
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.1482348022387927,
+          "B-robustZ": 4.036174735150765,
+          "C-topKConcentration": 0.17315291974994654,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-2048",
+      "pointCount": 2048,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 16.398318399167525
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.458400472275449,
+          "B-robustZ": 2.6613487741725903,
+          "C-topKConcentration": 0.05814631314937804,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.180722571759371,
+          "B-robustZ": 4.810295584588237,
+          "C-topKConcentration": 0.08432686718486311,
+          "D-referenceConditionedZ": 11.497209990820144
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.5265832535048043,
+          "B-robustZ": 2.7103210888680613,
+          "C-topKConcentration": 0.06151686990825767,
+          "D-referenceConditionedZ": 2.9199147754809918
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.237624153620395,
+          "B-robustZ": 3.903844949497148,
+          "C-topKConcentration": 0.05246910707879231,
+          "D-referenceConditionedZ": 17.653294549278872
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 14.103163379049636,
+          "B-robustZ": 22.89130595162688,
+          "C-topKConcentration": 0.5867167005433982,
+          "D-referenceConditionedZ": 9377803862887548.0
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 11.781808260988313,
+          "B-robustZ": 17.06507140094259,
+          "C-topKConcentration": 0.2579198546024276,
+          "D-referenceConditionedZ": 120758.90781437526
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.4584004722754487,
+          "B-robustZ": 2.6613487741725894,
+          "C-topKConcentration": 0.05814631314937803,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-2048",
+      "pointCount": 2048,
+      "blocksPerAxis": 8,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 16.39831839916752
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.458400472275449,
+          "B-robustZ": 2.6613487741725907,
+          "C-topKConcentration": 0.058146313149378036,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.1807225717593695,
+          "B-robustZ": 4.8102955845882365,
+          "C-topKConcentration": 0.08432686718486307,
+          "D-referenceConditionedZ": 11.497209990820146
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.526583253504804,
+          "B-robustZ": 2.7103210888680596,
+          "C-topKConcentration": 0.06151686990825766,
+          "D-referenceConditionedZ": 2.9199147754809878
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.2376241536203954,
+          "B-robustZ": 3.9038449494971506,
+          "C-topKConcentration": 0.052469107078792314,
+          "D-referenceConditionedZ": 17.653294549278872
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 14.103163379049636,
+          "B-robustZ": 22.89130595162688,
+          "C-topKConcentration": 0.5867167005433982,
+          "D-referenceConditionedZ": 8791691121457077.0
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 11.781808260988313,
+          "B-robustZ": 17.06507140094259,
+          "C-topKConcentration": 0.25791985460242756,
+          "D-referenceConditionedZ": 120758.90781448827
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.458400472275449,
+          "B-robustZ": 2.661348774172591,
+          "C-topKConcentration": 0.05814631314937802,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-2048",
+      "pointCount": 2048,
+      "blocksPerAxis": 8,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 16.39831839916753
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.458400472275449,
+          "B-robustZ": 2.6613487741725907,
+          "C-topKConcentration": 0.058146313149378036,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.18072257175937,
+          "B-robustZ": 4.810295584588236,
+          "C-topKConcentration": 0.08432686718486308,
+          "D-referenceConditionedZ": 11.497209990820147
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 2.5265832535048043,
+          "B-robustZ": 2.7103210888680613,
+          "C-topKConcentration": 0.061516869908257665,
+          "D-referenceConditionedZ": 2.919914775480981
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.237624153620396,
+          "B-robustZ": 3.9038449494971506,
+          "C-topKConcentration": 0.052469107078792335,
+          "D-referenceConditionedZ": 17.65329454927887
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 14.103163379049635,
+          "B-robustZ": 22.891305951626872,
+          "C-topKConcentration": 0.5867167005433982,
+          "D-referenceConditionedZ": 1.0989613901821346e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 11.781808260988312,
+          "B-robustZ": 17.06507140094259,
+          "C-topKConcentration": 0.25791985460242756,
+          "D-referenceConditionedZ": 120758.90781426229
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.458400472275449,
+          "B-robustZ": 2.6613487741725903,
+          "C-topKConcentration": 0.05814631314937803,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-2048",
+      "pointCount": 2048,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-06,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 13.833174437899931
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.680868702596442,
+          "B-robustZ": 2.495412311827392,
+          "C-topKConcentration": 0.061502568755322694,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.5650333939659538,
+          "B-robustZ": 5.611823022566719,
+          "C-topKConcentration": 0.10080085892650466,
+          "D-referenceConditionedZ": 11.471361291229838
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 3.1504344623245335,
+          "B-robustZ": 3.161763931568299,
+          "C-topKConcentration": 0.0689720151553217,
+          "D-referenceConditionedZ": 4.0910579856484315
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.9111349077218,
+          "B-robustZ": 4.813328652571795,
+          "C-topKConcentration": 0.07096353318955764,
+          "D-referenceConditionedZ": 12.113586374078492
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 18.762253089237447,
+          "B-robustZ": 26.220545577947597,
+          "C-topKConcentration": 0.5855010367587009,
+          "D-referenceConditionedZ": 1.928864980650629e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 17.098406733396395,
+          "B-robustZ": 22.033577541147977,
+          "C-topKConcentration": 0.38004840736355694,
+          "D-referenceConditionedZ": 1139365.4408654699
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.680868702596442,
+          "B-robustZ": 2.4954123118273923,
+          "C-topKConcentration": 0.06150256875532268,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-2048",
+      "pointCount": 2048,
+      "blocksPerAxis": 16,
+      "amplitude": 1e-05,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 13.833174437899926
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.680868702596442,
+          "B-robustZ": 2.4954123118273928,
+          "C-topKConcentration": 0.06150256875532268,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.5650333939659538,
+          "B-robustZ": 5.6118230225667185,
+          "C-topKConcentration": 0.10080085892650467,
+          "D-referenceConditionedZ": 11.471361291229845
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 3.1504344623245335,
+          "B-robustZ": 3.161763931568299,
+          "C-topKConcentration": 0.0689720151553217,
+          "D-referenceConditionedZ": 4.091057985648425
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.9111349077218,
+          "B-robustZ": 4.813328652571795,
+          "C-topKConcentration": 0.07096353318955764,
+          "D-referenceConditionedZ": 12.1135863740785
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 18.76225308923745,
+          "B-robustZ": 26.220545577947604,
+          "C-topKConcentration": 0.585501036758701,
+          "D-referenceConditionedZ": 2.4110812258132868e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 17.098406733396395,
+          "B-robustZ": 22.033577541147984,
+          "C-topKConcentration": 0.3800484073635569,
+          "D-referenceConditionedZ": 1139365.4408834877
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.6808687025964417,
+          "B-robustZ": 2.495412311827392,
+          "C-topKConcentration": 0.06150256875532268,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    },
+    {
+      "pointSet": "random-2048",
+      "pointCount": 2048,
+      "blocksPerAxis": 16,
+      "amplitude": 0.0001,
+      "values": {
+        "smoothUniform": {
+          "A-maxOverMedian": 1.0,
+          "B-robustZ": 0.0,
+          "C-topKConcentration": 0.015625,
+          "D-referenceConditionedZ": 13.833174437899931
+        },
+        "heterogeneous": {
+          "A-maxOverMedian": 2.6808687025964417,
+          "B-robustZ": 2.4954123118273923,
+          "C-topKConcentration": 0.061502568755322694,
+          "D-referenceConditionedZ": 0.0
+        },
+        "heterogeneousAnisotropic": {
+          "A-maxOverMedian": 3.5650333939659533,
+          "B-robustZ": 5.611823022566719,
+          "C-topKConcentration": 0.10080085892650466,
+          "D-referenceConditionedZ": 11.471361291229849
+        },
+        "heterogeneousJitter": {
+          "A-maxOverMedian": 3.150434462324534,
+          "B-robustZ": 3.1617639315683,
+          "C-topKConcentration": 0.06897201515532168,
+          "D-referenceConditionedZ": 4.091057985648424
+        },
+        "heterogeneousOscillatory": {
+          "A-maxOverMedian": 2.9111349077217996,
+          "B-robustZ": 4.813328652571796,
+          "C-topKConcentration": 0.07096353318955764,
+          "D-referenceConditionedZ": 12.113586374078496
+        },
+        "singleHotspot": {
+          "A-maxOverMedian": 18.76225308923745,
+          "B-robustZ": 26.220545577947604,
+          "C-topKConcentration": 0.5855010367587009,
+          "D-referenceConditionedZ": 3.013851532266608e+16
+        },
+        "multipleHotspots": {
+          "A-maxOverMedian": 17.09840673339639,
+          "B-robustZ": 22.033577541147977,
+          "C-topKConcentration": 0.38004840736355694,
+          "D-referenceConditionedZ": 1139365.4408730047
+        },
+        "globalIncrease": {
+          "A-maxOverMedian": 2.6808687025964426,
+          "B-robustZ": 2.4954123118273928,
+          "C-topKConcentration": 0.06150256875532268,
+          "D-referenceConditionedZ": 0.0
+        }
+      }
+    }
+  ],
+  "deploymentVerdict": {
+    "deployable": false,
+    "falsePositiveSeedsChosenRule": 2,
+    "falsePositiveSeedsOld1DRule": 9,
+    "seeds": 10,
+    "decision": "NOT CALIBRATED FOR DEPLOYMENT",
+    "reasoning": "The completed 2D run is a fully validated solution (every acceptance criterion satisfied by every seed, Tier-1 maintained, Gate 6 reproduced), so any localized-error signature that fires on it is a false positive. The inherited 1D rule fires on 9/10 seeds and must not be carried into 2D. The best calibrated candidate still fires on 2/10 seeds. The threshold is NOT raised to silence them: fitting a threshold to the observed run is exactly the post-hoc tuning this audit forbids. What the synthetic null family cannot reproduce is the block-to-block tail of a real trained error field; a trustworthy threshold needs an EMPIRICAL null distribution built from several validated runs (the full sense of candidate D, a dimension-conditioned reference distribution), and only one validated 2D run exists.",
+    "prospectiveProtocol": [
+      "for d >= 2 the localized-error REQUIREMENT is carried by an acceptance criterion of the AC2D-9 form (a fixed relative bound per block), which is what the 2D calibration used and which behaved correctly (worst seed 1.568e-4 against a 1e-3 threshold)",
+      "the SYMPTOM signature sLocalizedError is registered NOT CALIBRATED for d >= 2: until an empirical null distribution exists it must not be used to name a root cause",
+      "the inherited 1D constant 3.0 on a max/median statistic is retired for d >= 2 (machine-verified false positives on a validated run)",
+      "a future experiment that needs the symptom must first collect block statistics from >= 5 validated runs and preregister the resulting quantile as its threshold"
+    ]
+  }
+}

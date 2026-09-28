@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leo-ai.local/schemas/pinn/diagnosis-record-1.0.json",
+  "title": "Leo AI PINN DiagnosisRecord (Amendment A-0001 draft 3; A-0002 draft 3 fields)",
+  "description": "FAILURE_RECORDED -> DIAGNOSED. The signature is what was observed; the root cause is what the discriminating experiment found; the gate follows the root cause. discriminatingExperiment.excludes must name, for every other root cause admissible for the signature, the experiment that excluded it -- a root cause is never chosen, it is what is left. Admissibility, evidence completeness and coverage of the alternatives are enforced by pinn.governance.trust_loop.validate_diagnosis_record under the matrix of constitutionVersion (a PROPOSED amendment's cells are unreachable until its version is effective); explainedSignatures is the subset of observedSignatures this record explains, and pinn.governance.trust_loop.diagnosis_coverage_errors requires the records of one failure to explain every observed signature exactly once.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "diagnosisId", "problemId", "revision", "specHash", "constitutionVersion", "problemClass", "signature", "signatureEvidence", "rootCause", "discriminatingExperiment", "round", "decidedBy", "decidedAt"],
+  "properties": {
+    "schemaVersion": { "const": "pinn.diagnosisRecord/1.0" },
+    "diagnosisId": { "type": "string", "pattern": "^dg-[a-z0-9][a-z0-9-]*$" },
+    "problemId": { "type": "string", "pattern": "^pdef-[a-z0-9][a-z0-9.-]*$" },
+    "revision": { "type": "integer", "minimum": 1 },
+    "specHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "constitutionVersion": { "enum": ["1.1", "1.2"] },
+    "problemClass": { "const": "forward" },
+    "signature": { "enum": ["sPdeResidual", "sBcResidual", "sConservation", "sPinnCfd", "sSeedSensitive", "sLocalizedError"] },
+    "observedSignatures": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["sPdeResidual", "sBcResidual", "sConservation", "sPinnCfd", "sSeedSensitive", "sLocalizedError"] } },
+    "explainedSignatures": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["sPdeResidual", "sBcResidual", "sConservation", "sPinnCfd", "sSeedSensitive", "sLocalizedError"] } },
+    "signatureEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "residualStatistics": { "$ref": "#/$defs/artifactRef" },
+        "autodiffComparison": { "$ref": "#/$defs/artifactRef" },
+        "scalingSensitivity": { "$ref": "#/$defs/artifactRef" },
+        "boundaryResidualDistribution": { "$ref": "#/$defs/artifactRef" },
+        "samplingConfigDiff": { "$ref": "#/$defs/artifactRef" },
+        "hardConstraintDiff": { "$ref": "#/$defs/artifactRef" },
+        "conservationResiduals": { "$ref": "#/$defs/artifactRef" },
+        "admissibilityChecks": { "$ref": "#/$defs/artifactRef" },
+        "pinnProvenance": { "$ref": "#/$defs/artifactRef" },
+        "referenceProvenance": { "$ref": "#/$defs/artifactRef" },
+        "gridConvergence": { "$ref": "#/$defs/artifactRef" },
+        "multiSeedStatistics": { "$ref": "#/$defs/artifactRef" },
+        "errorSpatialDistribution": { "$ref": "#/$defs/artifactRef" }
+      }
+    },
+    "rootCause": { "enum": ["rSpecDefect", "rDataDefect", "rSingularityTreatment", "rReferenceDefect", "rImplementationDefect", "rCapacityLimit", "rOptimizationFailure", "rSamplingDeficiency", "rUndetermined"] },
+    "gate": { "type": "integer", "minimum": 1, "maximum": 4 },
+    "discriminatingExperiment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["experimentId", "evaluationSet", "excludes", "evidencePointers"],
+      "properties": {
+        "experimentId": { "type": "string", "minLength": 1 },
+        "evaluationSet": { "const": "dev" },
+        "intervention": { "$ref": "#/$defs/intervention" },
+        "determinismReplay": { "$ref": "#/$defs/determinismReplay" },
+        "identifiability": { "$ref": "#/$defs/identifiability" },
+        "excludes": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "rSpecDefect": { "$ref": "#/$defs/experimentRef" },
+            "rDataDefect": { "$ref": "#/$defs/experimentRef" },
+            "rSingularityTreatment": { "$ref": "#/$defs/experimentRef" },
+            "rReferenceDefect": { "$ref": "#/$defs/experimentRef" },
+            "rImplementationDefect": { "$ref": "#/$defs/experimentRef" },
+            "rCapacityLimit": { "$ref": "#/$defs/experimentRef" },
+            "rOptimizationFailure": { "$ref": "#/$defs/experimentRef" },
+            "rSamplingDeficiency": { "$ref": "#/$defs/experimentRef" }
+          }
+        },
+        "evidencePointers": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/artifactRef" } }
+      }
+    },
+    "round": { "type": "integer", "minimum": 1, "maximum": 3 },
+    "decidedBy": { "type": "string", "minLength": 1 },
+    "decidedAt": { "$ref": "#/$defs/dateTime" }
+  },
+  "$defs": {
+    "intervention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factor", "changed", "heldFixed", "levels"],
+      "properties": {
+        "factor": { "enum": ["capacity", "sampling"] },
+        "changed": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/control" } },
+        "heldFixed": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/control" } },
+        "levels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["level", "seeds", "medianError"],
+            "properties": {
+              "level": { "type": "string", "minLength": 1 },
+              "seeds": { "type": "integer", "minimum": 1 },
+              "medianError": { "type": "number", "minimum": 0 },
+              "evidencePointer": { "$ref": "#/$defs/artifactRef" }
+            }
+          }
+        },
+        "optimizationDiagnosticsClean": { "type": "boolean" }
+      }
+    },
+    "control": { "enum": ["architecture", "sampling", "optimizer", "lrSchedule", "lossWeights", "trainingBudget", "spec", "reference", "seedProtocol"] },
+    "determinismReplay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sameSeedRuns", "maxDivergence", "epsilonDet"],
+      "properties": {
+        "sameSeedRuns": { "type": "integer", "minimum": 2 },
+        "maxDivergence": { "type": "number", "minimum": 0 },
+        "epsilonDet": { "type": "number", "minimum": 0 },
+        "defectLocated": { "type": "string" },
+        "evidencePointer": { "$ref": "#/$defs/artifactRef" }
+      }
+    },
+    "identifiability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ambiguityType", "claimRequiresUniqueEvaluation", "specResolvesAmbiguity", "ambiguityIntent"],
+      "properties": {
+        "ambiguityType": { "enum": ["nullspace", "gauge", "normalization", "branch", "symmetry"] },
+        "claimRequiresUniqueEvaluation": { "type": "boolean" },
+        "specResolvesAmbiguity": { "type": "boolean" },
+        "ambiguityIntent": { "enum": ["unintended", "intended", "undecided"] },
+        "nullspaceProjectionFraction": { "type": "number", "minimum": 0, "maximum": 1 },
+        "evidencePointer": { "$ref": "#/$defs/artifactRef" }
+      }
+    },
+    "experimentRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["experiment", "observed"],
+      "properties": {
+        "experiment": { "type": "string", "pattern": "^(P[0-9]+|exp-[a-z0-9][a-z0-9-]*)$" },
+        "observed": { "type": "string", "minLength": 1 }
+      }
+    },
+    "artifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifactId", "sha256"],
+      "properties": {
+        "artifactId": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "dateTime": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    }
+  }
+}

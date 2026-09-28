@@ -1,0 +1,24 @@
+{
+    "schema":  1,
+    "archive":  "openai4s-linux-x86_64.tar.gz",
+    "sha256":  "2eb33f7bf1399752fcd7f6375c4158d2822259899123a46eb2321a35701b7caa",
+    "version":  "0.2.0",
+    "architecture":  "x86_64",
+    "upstream":  {
+                     "url":  "https://github.com/PKU-YuanGroup/OpenAI4S.git",
+                     "branch":  "main",
+                     "revision":  "a792c38d9984be428437b548db29baab3322f6dc"
+                 },
+    "dependencies":  {
+                         "webview2":  {
+                                          "version":  "152.0.4191.53",
+                                          "sha256":  "f8f200b57d6a7a71d380f777f5c0ea0f71f520048add21e15737121de9ba4f68",
+                                          "path":  "runtime/webview2/152.0.4191.53/Microsoft.WebView2.FixedVersionRuntime.152.0.4191.53.x64"
+                                      },
+                         "mingit":  {
+                                        "version":  "2.55.0.5",
+                                        "sha256":  "56d7b226b7693196cfc71fef26568f536c4a021ab6c37ff2db4287bed908e96e",
+                                        "path":  "tools/mingit"
+                                    }
+                     }
+}
