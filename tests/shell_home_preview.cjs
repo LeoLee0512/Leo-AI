@@ -40,11 +40,11 @@ const {pathToFileURL}=require('url');
       await page.locator(button).click();assert.equal(await page.locator(`[data-pane="${pane}"]`).evaluate(el=>el.classList.contains('active')),true);
       await page.locator('#settings-close').click();
     }
-    await page.locator('#account-login').click();assert.equal(await page.locator('#account-email').isDisabled(),true);
+    await page.locator('#account-login').click();assert.equal(await page.locator('#account-email').isDisabled(),false);
     await page.locator('#register-tab').click();assert.equal(await page.locator('#account-confirm-field').isVisible(),true);
-    assert.equal(await page.locator('#account-submit').isDisabled(),true);
+    assert.equal(await page.locator('#account-submit').isDisabled(),false);
     if(scenario.name==='desktop')await page.screenshot({path:path.join(out,'account-preview.png')});
-    await page.locator('#login-tab').click();await page.locator('#account-forgot').click();assert.equal(await page.locator('#account-password-field').isVisible(),false);
+    await page.locator('#login-tab').click();await page.locator('#account-forgot').click();assert.equal(await page.locator('#account-password-field').isVisible(),true);assert.equal(await page.locator('#account-recovery-field').isVisible(),true);
     await page.keyboard.press('Escape');assert.equal(await page.locator('#account-dialog').evaluate(el=>el.open),false);
     assert.deepEqual(await page.evaluate(()=>fixture.requests),[]);
     await page.locator('#nav-projects').click();await page.waitForFunction(()=>document.querySelectorAll('#project-list li').length===1);

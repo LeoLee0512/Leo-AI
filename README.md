@@ -1,14 +1,19 @@
-# Leo AI 2.1.2
+# Leo AI 2.1.3
 
 面向科研的 Windows 桌面工作台，包含模型配置、会话界面、科研流程及 PINN 验证代码。
 
 本仓库是用户批准的 **精简完整源码快照**，来自本地发布提交
-`afc4aa4645284c270ff69127117aefd97be193d9`。不导入旧 Git 历史。
-版本号为 2.1.2，桌面入口和窗口名保留「Leo AI 2.1」。
+`78c23513aa31362887152add703f7edd1ae3e9f2`。不导入旧 Git 历史。
+版本号为 2.1.3，桌面入口和窗口名保留「Leo AI 2.1」。
 
 ## 本版修复
 
-- 首页更新为面向学习、研究与创作的研究桌面，加入轻导航及研究示例；邮箱账号仅保留未启用的界面入口，后端按用户要求后续接入。
+- 对话/项目支持归档、回收站、恢复和经确认的彻底删除；使用原后端的删除服务。
+- 会话输入框支持实际模型能力允许的 effort，选择随每次消息发送。
+- 工作台内编辑模型配置，保留会话及草稿；另设返回主页面入口。
+- 本地邮箱账号支持注册、登录、退出、恢复码重置；密码盐化保存。邮箱不验证，账号共用当前 Windows 工作区，设置与工作台无需登录。接口替换边界为 `ShellApi.account_request`。
+
+- 首页提供研究桌面、轻导航和研究示例；邮箱账号现接入本地适配器，网络后端留待后续替换。
 
 - 合并同一轮次内相邻的重复回答；隐藏自动附加的「完成内容 / Completed work」清单，历史消息重新打开同样生效。
 
@@ -43,7 +48,7 @@
 python tools/build_wheelhouse.py build
 tools/provision_venv.ps1
 .venv/Scripts/python.exe tools/build_wheelhouse.py verify
-tools/build_launcher.ps1 -OutputRoot C:/LeoBuild/2.1.2
+tools/build_launcher.ps1 -OutputRoot C:/LeoBuild/2.1.3
 ```
 
 构建出的 `dist/LeoAIStudio` 是 **更新包**，不能仅复制其中的 EXE 当作完整安装。
@@ -55,7 +60,7 @@ WebView2，以及科研 A/B 环境。`runtime/dependencies.json` 给出原始下
 对已有完整安装，可使用：
 
 ```powershell
-tools/deploy_release.ps1 -AppRoot C:/LeoAI -PackageRoot C:/LeoBuild/2.1.2/dist/LeoAIStudio -ShortcutPath "$env:USERPROFILE/Desktop/Leo AI 2.1.lnk"
+tools/deploy_release.ps1 -AppRoot C:/LeoAI -PackageRoot C:/LeoBuild/2.1.3/dist/LeoAIStudio -ShortcutPath "$env:USERPROFILE/Desktop/Leo AI 2.1.lnk"
 .venv/Scripts/python.exe tools/theme_asset_provenance.py --app-root C:/LeoAI --strict
 ```
 
@@ -65,7 +70,7 @@ tools/deploy_release.ps1 -AppRoot C:/LeoAI -PackageRoot C:/LeoBuild/2.1.2/dist/L
 
 ## 验证范围
 
-原完整工作树在本次发布前：全量测试 **1460 通过、32 跳过、0 失败**；
+原完整工作树在本次发布前：全量测试 **1468 通过、32 跳过、0 失败**；
 已安装科研解释器运行 `tests/pinn`：**952 通过、0 跳过**；
 严格发布校验 **17/17**，界面资产来源校验 **16/16**。
 32 个跳过项来自构建环境未装科学依赖及独立工作树未设置默认上游安装位置。

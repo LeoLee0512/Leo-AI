@@ -55,10 +55,20 @@ const {pathToFileURL} = require('url');
         // The drawer artwork must never paint onto the dimmed home area.
         const rect = await page.locator('.drawer').boundingBox();
         const clip = {x:0,y:72,width:Math.max(1,Math.floor(rect.x)-4),height:scenario.height-72};
-        const visible = await page.screenshot({clip});
+        const visible = await page.screenshot({clip,caret:'hide',animations:'disabled'});
         const hide = await page.addStyleTag({content:'.drawer::before{visibility:hidden!important}'});
-        const hidden = await page.screenshot({clip});
-        const leaks = !visible.equals(hidden);
+        const hidden = await page.screenshot({clip,caret:'hide',animations:'disabled'});
+        // Toggling a composited layer can rerasterize the rotated paper cards.
+        // Compare decoded pixels: tolerate sparse <= 8-level edge antialiasing,
+        // but not the broad background repaint reproduced by the old document.
+        const difference=await page.evaluate(async urls=>{
+          const decode=async url=>{const im=new Image();im.src=url;await im.decode();const canvas=document.createElement('canvas');canvas.width=im.width;canvas.height=im.height;const ctx=canvas.getContext('2d');ctx.drawImage(im,0,0);return ctx.getImageData(0,0,im.width,im.height).data;};
+          const [a,b]=await Promise.all(urls.map(decode));let pixels=0,max=0;
+          for(let i=0;i<a.length;i+=4){const delta=Math.max(Math.abs(a[i]-b[i]),Math.abs(a[i+1]-b[i+1]),Math.abs(a[i+2]-b[i+2]));if(delta){pixels++;max=Math.max(max,delta);}}
+          return {pixels,max,fraction:pixels/(a.length/4)};
+        },[visible,hidden].map(b=>'data:image/png;base64,'+b.toString('base64')));
+        const leaks = difference.max>8||difference.fraction>.005;
+        if(leaks){fs.writeFileSync(path.join(output,`${variant}-${scenario.name}-visible.png`),visible);fs.writeFileSync(path.join(output,`${variant}-${scenario.name}-hidden.png`),hidden);}
         await hide.evaluate(el=>el.remove());
         if(variant==='after') assert.equal(leaks,false,`${scenario.name}: drawer art leaked onto home`);
         // Scroll and reopen: both paths used to change the pseudo-element's containing block.
@@ -90,7 +100,7 @@ const {pathToFileURL} = require('url');
           await page.screenshot({path:path.join(output,`${variant}-entry-error.png`)});
         }
         assert.deepEqual(errors,[]);
-        evidence.push({variant,scenario:scenario.name,artwork_leaks_onto_home:leaks,page_errors:errors});
+        evidence.push({variant,scenario:scenario.name,artwork_leaks_onto_home:leaks,pixel_difference:difference,page_errors:errors});
         await page.close();
       }
     }

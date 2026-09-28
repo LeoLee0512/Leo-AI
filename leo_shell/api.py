@@ -199,6 +199,53 @@ class ShellApi:
         except Exception:
             return _failure("WORKBENCH_UNAVAILABLE")
 
+    def account_request(self, payload: Any) -> dict:
+        """Local adapter seam for a later server-backed account service."""
+        with self._lock:
+            try:
+                from .local_accounts import LocalAccounts
+                if self._paths is None:
+                    return _failure("ACCOUNT_UNAVAILABLE")
+                return LocalAccounts(self._paths.user).request(payload)
+            except ValueError as exc:
+                code = str(exc)
+                return _failure(code if code.startswith("ACCOUNT_") else "ACCOUNT_UNAVAILABLE")
+            except Exception:
+                return _failure("ACCOUNT_UNAVAILABLE")
+
+    def purge_entity(self, payload: Any) -> dict:
+        """Delete only an explicitly confirmed, revision-matched recycled item."""
+        with self._lock:
+            try:
+                from .entity_store import EntityStore
+                from .workbench import WorkbenchGateway, identifier
+                if not isinstance(payload, dict) or self._paths is None:
+                    return _failure("ENTITY_INVALID")
+                kind, ident = payload.get("entity_type"), identifier(payload.get("entity_id"))
+                if kind not in {"session", "project"} or payload.get("confirm_id") != ident:
+                    return _failure("ENTITY_INVALID")
+                store = self._entity_store
+                if store is None:
+                    store = self._entity_store = EntityStore(self._paths.user)
+                with store.lock:
+                    data = store._read()
+                    record = next((r for r in data["entities"] if r["entity_type"] == kind and r["entity_id"] == ident), None)
+                    if not record or record["state"] != "trashed" or type(payload.get("expected_revision")) is not int or record["revision"] != payload["expected_revision"]:
+                        return _failure("ENTITY_REVISION_CONFLICT")
+                    if self._workbench_gateway is None:
+                        self._workbench_gateway = WorkbenchGateway(self._coordinator._bridge.client_url)
+                    self._workbench_gateway.purge(kind, ident)
+                    members = set(record.get("snapshot", {}).get("member_session_ids", []))
+                    data["entities"] = [r for r in data["entities"] if r != record and not (kind == "project" and r["entity_type"] == "session" and r["entity_id"] in members)]
+                    data["revision"] += 1
+                    store._write(data)
+                    return {"ok": True}
+            except ValueError as exc:
+                code = str(exc)
+                return _failure(code if code.startswith(("ENTITY_", "WORKBENCH_")) else "ENTITY_INVALID")
+            except Exception:
+                return _failure("WORKBENCH_UNAVAILABLE")
+
     def research_request(self, payload: Any) -> dict:
         """Task operations are validated by the service; payloads cannot supply approval."""
         if not isinstance(payload, dict):

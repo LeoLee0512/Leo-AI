@@ -116,8 +116,9 @@ def test_no_frontend_calls_an_unimplemented_method():
 def test_the_scan_sees_the_workbench_call_style():
     """If the contract missed native('...') calls it would be checking nothing in the workbench."""
     calls = called_methods()
-    for name in ("workbench_request", "open_model_settings", "list_session_models"):
+    for name in ("workbench_request", "save_profile", "purge_entity", "return_to_start", "list_session_models"):
         assert "workbench.js" in calls.get(name, set()), name
+    assert "workbench.js" not in calls.get("open_model_settings", set())
 
 
 def test_mutation_an_unimplemented_call_is_detected(monkeypatch, tmp_path):

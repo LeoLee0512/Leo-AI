@@ -107,8 +107,10 @@ async function scenario(restoreFails=false,changed=false){
   await el('settings-button').onclick();
   assert.equal(el('settings-dialog').open,true);
   await el('configure-models').onclick();
-  // Managing models lands on the start page with its drawer open, not a bare start page.
-  assert.ok(calls.find(c=>c[0]==='settings'));
+  // Editing models remains in the current document and keeps the dialog open.
+  assert.equal(el('model-editor').hidden,false);
+  assert.equal(el('settings-dialog').open,true);
+  assert.equal(calls.find(c=>c[0]==='settings'),undefined);
   assert.equal(calls.find(c=>c[0]==='start'),undefined);
   await el('history').children[0].onclick();
   el('message-input').value='A real user question';

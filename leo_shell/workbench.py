@@ -222,6 +222,19 @@ class WorkbenchGateway:
         self._client_url = client_url
         self._opener = opener or build_opener(ProxyHandler({}), _NoRedirect())
 
+    def purge(self, kind, ident):
+        # Deliberately absent from the generic browser operation router.
+        if kind not in {"session", "project"}:
+            raise ValueError("WORKBENCH_INVALID_REQUEST")
+        path = ("/frames/" if kind == "session" else "/projects/") + identifier(ident)
+        raw, _ = self._exchange("DELETE", path, None, _JSON_LIMIT)
+        if len(raw) > _JSON_LIMIT:
+            raise ValueError("WORKBENCH_RESPONSE_INVALID")
+        result = json.loads(raw)
+        if not isinstance(result, dict) or result.get("ok") is not True:
+            raise ValueError("WORKBENCH_RESPONSE_INVALID")
+        return result
+
     def request(self, payload):
         method, path, body = route(payload)
         operation = payload.get("operation")
