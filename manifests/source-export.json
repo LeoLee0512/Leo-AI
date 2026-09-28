@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "version": "2.1.2",
-  "source_commit": "01f985788737e0459d1ea2f365916c7e0e872932",
+  "source_commit": "a9aaa4be17db320b1c270c716d9b5ec4857c2c70",
   "source_branch": "astra/leo-2.1.2-frontend",
   "export_policy": "source, tests, build inputs and docs; no Git history, runtime binaries, user data or historical experiment outputs",
   "copied_tracked_files": 391,
@@ -24,5 +24,6 @@
     }
   },
   "scientific_source_modified": false,
-  "archive_tests_require_omitted_records": true
+  "archive_tests_require_omitted_records": true,
+  "previous_source_commit": "01f985788737e0459d1ea2f365916c7e0e872932"
 }

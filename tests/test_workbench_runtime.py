@@ -7,6 +7,67 @@ import subprocess
 import pytest
 
 
+def test_chat_projects_one_answer_without_runtime_completion_checklists():
+    """Exercise polling, reopening and copy against the actual owned document."""
+    node = shutil.which('node')
+    if not node:
+        pytest.skip('Node required for browser runtime regression')
+    source = (Path(__file__).resolve().parents[1]/'stage/workbench.js').read_text(encoding='utf-8')
+    harness = r'''
+const vm=require('node:vm'), assert=require('node:assert/strict');
+const source=JSON.parse(require('node:fs').readFileSync(0,'utf8'));
+class Element {
+  constructor(){this.children=[];this.value='';this.classList={add(){},remove(){}};this.lastChild={};}
+  append(...items){this.children.push(...items)} replaceChildren(){this.children=[]}
+  querySelector(){return this.child||(this.child=new Element())} focus(){} setAttribute(){} showModal(){} close(){}
+}
+const flush=async()=>{for(let i=0;i<10;i++)await new Promise(r=>setImmediate(r));};
+const text=n=>(n.textContent||'')+(n.children||[]).map(text).join('');
+async function scenario(messages,expected,expectedCopy=expected[0]){
+  const original=JSON.stringify(messages),nodes=new Map(),copied=[];let timer;
+  const el=id=>{if(!nodes.has(id))nodes.set(id,new Element());return nodes.get(id)};
+  const frame={id:'f-chat',project_id:'p-chat',name:'Greeting'};
+  const api={get_state:async()=>({profiles:[]}),list_entity_states:async()=>({entities:[]}),
+    list_session_models:async()=>({binding:null,models:[]}),
+    workbench_request:async p=>({data:{projects:{projects:[{id:'p-chat',name:'Project'}]},frames:{frames:[frame]},
+      messages:{messages,has_earlier:false},execution:{owner:null},feedback:{feedback:{}}}[p.operation]})};
+  const ctx=vm.createContext({window:{pywebview:{api},navigator:{clipboard:{writeText:async t=>copied.push(t)}},addEventListener(){}},
+    document:{getElementById:el,createElement:()=>new Element(),createTextNode:t=>({textContent:t}),addEventListener(){},querySelector(){return null}},
+    setTimeout:fn=>{timer=fn;return 1},clearTimeout(){}});
+  vm.runInContext(source,ctx);await flush();
+  const check=()=>assert.deepEqual(el('messages').children.filter(n=>n.className?.startsWith('message assistant'))
+    .map(n=>n.children.filter(c=>c.className==='message-body').map(text).join('')),expected);
+  await el('history').children[0].onclick();check();
+  timer();await flush();check(); // The same persisted rows arrive again.
+  await el('history').children[0].onclick();check(); // Reopen history.
+  const answer=el('messages').children.find(n=>n.className==='message assistant');
+  if(answer){await answer.children.at(-1).children[0].onclick();assert.equal(copied[0],expectedCopy);}
+  assert.equal(JSON.stringify(messages),original,'rendering must not mutate stored messages');
+}
+const u=(seq,content='你好')=>({seq,message_id:'u-'+seq,role:'user',content});
+const a=(seq,content,extra={})=>({seq,message_id:'a-'+seq,role:'assistant',content,...extra});
+(async()=>{
+  const answer='你好，我是Leo AI。有什么可以帮你的吗？';
+  await scenario([u(1),a(2,answer),a(3,answer+'\n\n完成内容：\n- Answered the greeting')],[answer]);
+  await scenario([u(1),a(2,answer),a(3,'完成内容：\n- Answered the greeting')],[answer]);
+  await scenario([u(1),a(2,answer),a(3,answer)],[answer]);
+  await scenario([u(1),a(2,'Hello\n\nCompleted work:\n- Answered the question')],['Hello']);
+  await scenario([u(1),a(2,answer),u(3),a(4,answer)],[answer,answer]);
+  await scenario([u(1),a(2,'第一步'),a(3,'不同的补充')],['第一步','不同的补充']);
+  await scenario([u(1),a(2,'结果\n\n完成内容：\n- Computed the result\n\n限制与局限：\n尚未验证\n\n产物：\n- report.txt')],
+    ['结果\n\n\n限制与局限：\n尚未验证\n\n产物：\n- report.txt']);
+  await scenario([u(1),a(2,'> 完成内容：\n> - 用户引用的文字')],['> 完成内容：\n> - 用户引用的文字']);
+  await scenario([u(1),a(2,answer),a(3,answer,{failure:{request_id:'failed-1'}})],[answer,answer]);
+  await scenario([u(1),a(2,answer),a(3,answer,{review_status:'candidate'})],[answer,answer]);
+  await scenario([u(1),a(2,answer),a(3,answer,{artifact_refs:[{id:'a-file'}]})],[answer,answer]);
+  // The same words inside a fenced example remain visible (as a code block).
+  await scenario([u(1),a(2,'Example\n```text\n完成内容：\n- A literal example\n```')],['Example\n'],'Example\n完成内容：\n- A literal example');
+})().catch(e=>{console.error(e);process.exitCode=1});
+'''
+    result = subprocess.run([node, '-e', harness], input=json.dumps(source), encoding='utf-8', capture_output=True)
+    assert result.returncode == 0, result.stderr
+
+
 def test_workbench_restores_credentials_and_freezes_every_turn():
     node = shutil.which('node')
     if not node:

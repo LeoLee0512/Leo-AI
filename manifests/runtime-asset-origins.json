@@ -192,7 +192,7 @@
       "upstream_project": "Leo AI Studio",
       "version_or_commit": "leo-message-actions-20260926",
       "license": "PROJECT OUTBOUND LICENSE NOT DECLARED; this record does not grant redistribution rights",
-      "expected_sha256": "389a583fbc33fe835936293871bc0100655ff27feea711e208fc0a92672a51f0",
+      "expected_sha256": "ebeaba7df5388b41a0cff57e06bd75dc7d61d743e8b055c2357beea741b841db",
       "runtime_consumer": "leo_shell/theme_runtime.py",
       "build_path": "tools/build_launcher.ps1: stage/ -> package/theme/",
       "deployment_path": "tools/deploy_release.ps1: package/theme/ -> app-root/theme/",

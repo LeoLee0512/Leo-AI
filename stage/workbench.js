@@ -54,7 +54,39 @@
     return {modelBinding:{profile_id:binding.profile_id,revision:binding.revision},reasoningSelection:{choice:'default',capability_revision:capability.revision}};
   }
   function messageContent(host,text){const parts=String(text||'').split(/```[^\n]*\n([\s\S]*?)```/g);parts.forEach((part,i)=>{if(i%2){const pre=el('pre');pre.append(el('code',part));host.append(pre);}else{const body=el('div',undefined,'message-body');for(const [index,line]of part.split('\n').entries()){if(index)body.append(document.createTextNode('\n'));if(/^#{1,3} /.test(line))body.append(el('strong',line.replace(/^#+ /,'')));else{line.split(/(\*\*[^*]+\*\*)/g).forEach(chunk=>body.append(chunk.startsWith('**')&&chunk.endsWith('**')?el('strong',chunk.slice(2,-2)):document.createTextNode(chunk)));}}host.append(body);}});}
-  function renderMessages(scroll=false){const area=$('messages');const scroller=$('chat-scroll');const atEnd=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<130;area.replaceChildren();if(!state.messages.length){const empty=el('div',undefined,'message-empty');empty.append(el('p','✦','eyebrow'),el('h2','一个好问题，是发现的开始。'),el('p','可以讨论一个原理，也可以整理一个真实研究任务。','muted'));area.append(empty);}for(const m of [...state.messages].sort((a,b)=>a.seq-b.seq)){if(!['assistant','user'].includes(m.role))continue;const row=el('article',undefined,'message '+m.role+(m.failure?' failure':''));row.append(el('header',m.role==='assistant'?'LEO AI':'你'));messageContent(row,m.content);if(m.failure)row.append(el('p','本次调用未完成'+(m.failure.request_id?' · 支持 ID：'+m.failure.request_id:''),'muted'));row.append(actionBar(m,row));area.append(row);}if(scroll||atEnd)scroller.scrollTop=scroller.scrollHeight;}
+  function answerText(content){
+    // The runtime appends this protocol checklist to its final summary. Hide
+    // that section only; retain findings, limitations, artifacts and quotations.
+    const lines=String(content||'').split('\n'), kept=[];
+    let fence=null;
+    for(let i=0;i<lines.length;i++){
+      const marker=lines[i].match(/^\s{0,3}(`{3,}|~{3,})/);
+      if(marker){if(!fence)fence=marker[1];else if(marker[1][0]===fence[0]&&marker[1].length>=fence.length)fence=null;kept.push(lines[i]);continue;}
+      if(!fence&&/^(完成内容：|Completed work:)\s*$/.test(lines[i])){
+        let end=i+1;
+        while(end<lines.length&&/^- \S/.test(lines[end]))end++;
+        if(end>i+1&&end<=i+5&&(end===lines.length||!lines[end].trim())){i=end-1;continue;}
+      }
+      kept.push(lines[i]);
+    }
+    return kept.join('\n').trim();
+  }
+  function displayMessages(){
+    const rows=[];
+    let previous=null;
+    for(const raw of [...state.messages].sort((a,b)=>a.seq-b.seq)){
+      if(raw.role!=='assistant'){rows.push(raw);previous=null;continue;}
+      // Failure and reviewed/evidence-bearing records keep their own identity.
+      const protectedRow=raw.failure||raw.review_status||raw.turn_id||raw.execution_id||raw.artifact_refs?.length;
+      const content=protectedRow?raw.content:answerText(raw.content);
+      if(!content&&!protectedRow)continue;
+      const row={...raw,content};
+      if(!protectedRow&&previous&&previous.content===content)continue;
+      rows.push(row);previous=protectedRow?null:row;
+    }
+    return rows;
+  }
+  function renderMessages(scroll=false){const area=$('messages');const scroller=$('chat-scroll');const atEnd=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<130;area.replaceChildren();if(!state.messages.length){const empty=el('div',undefined,'message-empty');empty.append(el('p','✦','eyebrow'),el('h2','一个好问题，是发现的开始。'),el('p','可以讨论一个原理，也可以整理一个真实研究任务。','muted'));area.append(empty);}for(const m of displayMessages()){if(!['assistant','user'].includes(m.role))continue;const row=el('article',undefined,'message '+m.role+(m.failure?' failure':''));row.append(el('header',m.role==='assistant'?'LEO AI':'你'));messageContent(row,m.content);if(m.failure)row.append(el('p','本次调用未完成'+(m.failure.request_id?' · 支持 ID：'+m.failure.request_id:''),'muted'));row.append(actionBar(m,row));area.append(row);}if(scroll||atEnd)scroller.scrollTop=scroller.scrollHeight;}
   function running(execution){state.execution=execution;const active=!!execution;$('working').hidden=!active;$('stop').hidden=!active;$('send').hidden=active;$('model-select').disabled=active;$('elapsed').textContent=active&&openedAt?' · '+Math.max(0,Math.floor((Date.now()-openedAt)/1000))+' 秒':'';}
   async function refreshChat(epoch=state.epoch){const fid=state.frame?.id;if(!fid||epoch!==state.epoch)return;const [data,queue]=await Promise.all([request('messages',{frameId:fid}),request('execution',{frameId:fid})]);if(epoch!==state.epoch)return;const seen=new Map(state.messages.map(m=>[m.message_id||m.seq,m]));for(const m of data.messages||[])seen.set(m.message_id||m.seq,m);const next=[...seen.values()];const changed=JSON.stringify(next)!==JSON.stringify(state.messages);state.messages=next;if(state.before===null){state.before=data.next_before_seq;$('earlier-messages').hidden=!data.has_earlier;}if(changed)renderMessages();const owner=queue.owner||queue.queue?.[0]||null;running(owner);clearTimeout(poll);poll=setTimeout(()=>refreshChat(epoch).catch(e=>{notice(e.message);poll=setTimeout(()=>refreshChat(epoch).catch(e=>notice(e.message)),5000);}),owner?1700:6000);}
   async function openFrame(frame,fresh=false){keepDraft();state.epoch++;nb.epoch++;clearTimeout(poll);state.frame=frame;state.project=frame.project_id;state.messages=[];state.before=null;state.binding=null;openedAt=0;$('message-input').value=drafts.get(frame.id)||'';show('chat-view');$('earlier-messages').hidden=true;$('project-select').value=state.project;updateHeader();renderHistory();renderMessages();state.feedback={};request('feedback',{frameId:frame.id}).then(d=>{if(state.frame?.id===frame.id){state.feedback=d.feedback||{};renderMessages();}}).catch(()=>{});await Promise.all([refreshModels(fresh),refreshChat()]);}
