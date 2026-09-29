@@ -137,9 +137,13 @@ def test_notebook_keeps_only_rendered_fields_and_trims_output():
 
 def test_artifact_list_and_kernel_are_reduced_to_known_values():
     listed = shape_artifacts([{"artifact_id": "a-0123456789ab", "filename": "u.png", "content_type": "image/png",
-                               "size_bytes": 10, "checksum": "c"}, {"artifact_id": "../x"}, "junk"])
+                               "size_bytes": 10, "checksum": "c", "latest_version_id": "v-abc123"},
+                              {"artifact_id": "a-0123456789ac", "filename": "v.png", "latest_version_id": "../x"},
+                              {"artifact_id": "../x"}, "junk"])
     assert listed == {"artifacts": [{"id": "a-0123456789ab", "filename": "u.png", "contentType": "image/png",
-                                     "size": 10, "createdAt": "", "upload": False}]}
+                                     "size": 10, "versionId": "v-abc123", "createdAt": "", "upload": False},
+                                    {"id": "a-0123456789ac", "filename": "v.png", "contentType": "",
+                                     "size": None, "versionId": "", "createdAt": "", "upload": False}]}
     assert shape_kernel({"state": "exploded", "alive": 1, "generation": -3}) == {"state": "none", "alive": False, "generation": 0}
     with pytest.raises(ValueError, match="WORKBENCH_RESPONSE_INVALID"):
         shape_artifacts({"artifacts": []})

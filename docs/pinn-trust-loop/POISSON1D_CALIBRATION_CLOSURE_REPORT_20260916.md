@@ -37,7 +37,7 @@ G6 语义审计（宪法 28.1、`trust_vector.independent_environments`、`repro
 
 | 字段 | Environment A（原 run） | Environment B |
 |---|---|---|
-| machineId | win-60a9b43e-b66d-4186-8afb-43e9ada3342e | 同 |
+| machineId | win-<machine-guid> | 同 |
 | osFamily / OS | windows / Windows-11-10.0.26200 | 同 |
 | architecture | AMD64 | 同 |
 | acceleratorClass | cpu-only（训练强制 CPU float64） | cpu-only |
@@ -46,7 +46,7 @@ G6 语义审计（宪法 28.1、`trust_vector.independent_environments`、`repro
 | numerical backend | mkl | mkl（MKL-DNN 3.11.2） |
 | driver | — | — |
 | dependencyLockHash | 75efe91aa4e1…（用户通用 mamba 环境，无 lockfile，数百个发行版） | 9083b98ea21e…（只装复现包声明的依赖：torch==2.12.1、numpy==2.4.5，`--no-cache-dir`） |
-| installationId | prefix-689a1fbe8610a998 | prefix-e67819cbf0282077（新前缀 `C:\Users\user\LeoAI-envB-20260916\venv`，无复制、无克隆） |
+| installationId | prefix-<env-A> | prefix-<env-B-1d>（新前缀 `C:\Users\user\LeoAI-envB-20260916\venv`，无复制、无克隆） |
 | environmentId | e986dbc039e0… | 232ac1d46aea… |
 | qualification | — | **independent = True**（强字段不同：dependencyLockHash、installationId） |
 
@@ -263,3 +263,5 @@ Evidence chain：冻结规格 fd5584d7b290（r2，hard BC）→ G1 数学一致�
 - `TRUST_REPORT.md` · d0c3dab8a611885c25cbb8ef53501d8708dc6c95996934361f82b8264e8c6a9c · (index)
 - `POST_AUDIT_ANNOTATION.md` · 0a925fd242e5be796d78859665e0dae0ef79d3e40613f46eeec41abef12fc880 · (index)
 - `attempt_state.json` · 7bb39001d0e9352825e9ab07bda7228003943562deb36658db204b13e22e28a3 · (index)
+
+> 3.0.0 公开整理（2026-09-29）：本报告中的设备标识（machineId）与安装前缀（installationId）已替换为占位符，其余内容保持原样。

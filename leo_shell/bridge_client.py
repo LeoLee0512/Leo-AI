@@ -99,6 +99,12 @@ class WslBridge:
         self._local_session: Any = None
         self._local_base_url: str | None = None
         self._local_configuration: tuple[str, str, int] | None = None
+        # (url, monotonic time) of the last sign-in URL. Every workbench request used to
+        # spawn wsl.exe for it (~0.4 s each); the URL is stable (fixed port, persisted
+        # token), so it is reused until it fails, the daemon stops, or it ages out.
+        self._client_url_cache: tuple[str, float] | None = None
+
+    CLIENT_URL_TTL = 600.0
 
     # ------------------------------------------------------------------ API
 
@@ -158,6 +164,7 @@ class WslBridge:
         return {"runtime": runtime_result, "source": source_result, "activate": activate_result}
 
     def start(self, *, provider: str, model: str, base_url: str, api_key: str | None) -> dict:
+        self._client_url_cache = None
         provider = self._require_value("provider", provider)
         model = self._require_value("model", model)
         base_url = self._require_value("base_url", base_url, allow_empty=True)
@@ -227,6 +234,7 @@ class WslBridge:
                 "OPENAI4S_LLM_REASONING_EFFORT": "none",
                 "OPENAI4S_CONTEXT_WINDOW": str(self._local_session.context_size),
             }
+            self._client_url_cache = None
             result = self._run("start", ["chatgpt", LOCAL_MODEL, relay_url], timeout=120, extra_env=extra_env)
             self._local_base_url = relay_url
             self._local_configuration = configuration
@@ -313,13 +321,22 @@ class WslBridge:
         return result
 
     def client_url(self) -> str:
+        cached = self._client_url_cache
+        if cached is not None and time.monotonic() - cached[1] < self.CLIENT_URL_TTL:
+            return cached[0]
         data = self._run("url", timeout=30)
         url = data.get("client_url")
         if not self._is_valid_client_url(url):
             raise BridgeError("CLIENT_URL_INVALID", "OpenAI4S returned an untrusted local sign-in URL.")
+        self._client_url_cache = (url, time.monotonic())
         return url
 
+    def invalidate_client_url(self) -> None:
+        """Forget the cached URL; the next client_url() asks the bridge again."""
+        self._client_url_cache = None
+
     def stop(self) -> dict:
+        self._client_url_cache = None
         try:
             return self._run("stop", timeout=60)
         finally:

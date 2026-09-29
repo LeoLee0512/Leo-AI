@@ -46,17 +46,21 @@ def main():
     subprocess.run(["git", "-c", "user.name=Leo evidence reconstruction", "-c", "user.email=local@invalid",
                     "commit", "-m", "Reconstruct exported method bytes"], cwd=source, check=True, capture_output=True)
     data = output / "work"
+    # Packages exported before 2.2.11 carry no family: they are 1D.
+    family = plan.get("family", "poisson1d")
+    experiments, runner = {"poisson1d": ("experiments/poisson1d", "pinn.experiments.runner"),
+                           "poisson2d": ("experiments/poisson2d", "pinn.experiments2d.runner2d")}[family]
     for name in ("ledger", "problems"):
-        shutil.copytree(package / "work/experiments/poisson1d" / name, data / "experiments/poisson1d" / name)
+        shutil.copytree(package / "work" / experiments / name, data / experiments / name)
     # Execute the copied, verified method, not a newer installed pinn module.
     import sys
     from pinn.research.storage import write
     context_file = output / "context.json"
     write(context_file, RunContext(source, data).document())
-    command = [sys.executable, "-m", "pinn.experiments.runner", "--context", str(context_file), "attempt",
+    command = [sys.executable, "-m", runner, "--context", str(context_file), "attempt",
         "--config", str(source / plan["configPath"]), "--attempt-id", "independent-reproduction",
         "--problem-id", plan["problemId"], "--revision", "1", "--out-root", str(data / "attempts"),
-        "--ledger", str(data / "experiments/poisson1d/ledger" / (plan["problemId"] + ".json")),
+        "--ledger", str(data / experiments / "ledger" / (plan["problemId"] + ".json")),
         "--claim-pool-member", plan["claimMember"], "--seed-offset", "10000", "--reproduction-of", str(original)]
     subprocess.run(command, cwd=source, check=True)
     return 0

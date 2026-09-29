@@ -67,6 +67,9 @@ _STATE_PROFILE_KEYS = ("id", "name", "preset", "model", "base_url")
 _STATE_SETTINGS_KEYS = ("preset", "model", "base_url")
 
 
+_APPEARANCE_INTENTS = frozenset({"upload", "chat"})
+
+
 def _failure(message: str) -> dict:
     return {"ok": False, "message": message}
 
@@ -185,6 +188,7 @@ class ShellApi:
         self._session_model_service = None
         self._research_service = None
         self._workbench_gateway = None
+        self._appearance_intent: str | None = None
 
     def workbench_request(self, payload: Any) -> dict:
         try:
@@ -227,11 +231,35 @@ class ShellApi:
 
     def paste_text(self) -> dict:
         """Read text only in response to the user's explicit Edit > Paste action."""
-        try:
-            from .clipboard import get_text
-            return {"ok": True, "text": get_text()}
-        except Exception:
-            return _failure("CLIPBOARD_UNAVAILABLE")
+        from .clipboard import ClipboardError, get_text
+        with self._lock:
+            try:
+                return {"ok": True, "text": get_text()}
+            except ClipboardError as exc:
+                return _failure(str(exc))
+            except Exception:
+                self._logger.exception("paste_text failed")
+                return _failure("CLIPBOARD_UNAVAILABLE")
+
+    def appearance_intent(self, payload: Any) -> dict:
+        """One-shot hand-off from the start page to the workbench appearance tab.
+
+        The two pages replace each other through ``load_html``, so browser
+        storage is not a dependable channel between them; the intent lives in
+        this process instead and is consumed exactly once.
+        """
+        with self._lock:
+            op = payload.get("operation") if isinstance(payload, dict) else None
+            if op == "set":
+                intent = payload.get("intent")
+                if intent not in _APPEARANCE_INTENTS:
+                    return _failure("APPEARANCE_INTENT_INVALID")
+                self._appearance_intent = intent
+                return {"ok": True}
+            if op == "take":
+                intent, self._appearance_intent = self._appearance_intent, None
+                return {"ok": True, "intent": intent}
+            return _failure("APPEARANCE_INTENT_INVALID")
 
     def purge_entity(self, payload: Any) -> dict:
         """Delete only an explicitly confirmed, revision-matched recycled item."""
@@ -271,18 +299,10 @@ class ShellApi:
         if not isinstance(payload, dict):
             return _failure("RESEARCH_REQUEST_INVALID")
         try:
-            from .research import ResearchService
-            from .research_draft import generate
-            with self._lock:
-                if self._paths is None:
-                    return _failure("RESEARCH_RUNTIME_UNAVAILABLE")
-                if self._research_service is None:
-                    def confirm(title, text):
-                        window = getattr(self._ui, "_window", None)
-                        return bool(window and window.create_confirmation_dialog(title, text))
-                    self._research_service = ResearchService(self._paths, confirm=confirm,
-                        draft_provider=lambda frame, prompt: generate(self._session_models(), frame, prompt))
-            return self._research_service.dispatch(payload.get("operation"), payload)
+            service = self._research()
+            if service is None:
+                return _failure("RESEARCH_RUNTIME_UNAVAILABLE")
+            return service.dispatch(payload.get("operation"), payload)
         except ValueError as exc:
             code = str(exc)
             if not re.fullmatch(r"[A-Z][A-Z0-9_]{1,100}", code):
@@ -290,6 +310,30 @@ class ShellApi:
             return _failure(code)
         except Exception:
             return _failure("RESEARCH_UNAVAILABLE")
+
+    def _research(self):
+        from .research import ResearchService
+        from .research_draft import generate
+        with self._lock:
+            if self._paths is None:
+                return None
+            if self._research_service is None:
+                def confirm(title, text):
+                    window = getattr(self._ui, "_window", None)
+                    return bool(window and window.create_confirmation_dialog(title, text))
+                self._research_service = ResearchService(self._paths, confirm=confirm,
+                    draft_provider=lambda frame, prompt: generate(self._session_models(), frame, prompt))
+            return self._research_service
+
+    # Window lifecycle only; underscored so the page cannot call them.
+    def _research_busy_tasks(self) -> list:
+        service = self._research()
+        return service.busy_tasks() if service is not None else []
+
+    def _research_stop_for_close(self) -> None:
+        service = self._research()
+        if service is not None:
+            service.stop_for_close()
 
     def _session_models(self):
         if self._paths is None:

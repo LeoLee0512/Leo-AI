@@ -150,8 +150,8 @@ Tier-1: PASS（全部适用扰动维持；最大 Δq = 1.33e-4，比 1% 维持�
 | specHash | `05328d507582…`（同） |
 | codeHash | `a39aa07e23d0…`（**同**） |
 | seed 集 | 原三元组 +10000（seedSetId 不同） |
-| Environment A | mamba 前缀，installationId `prefix-689a1fbe8610a998`，dependencyLockHash `75efe91aa4e1…`，environmentId `e986dbc039e0…` |
-| Environment B | 全新 venv（base 同一 mamba python 3.12.9，无 system-site-packages，`--no-cache-dir` 只装复现包声明的 torch 2.12.1+cpu 与 numpy 2.4.5），installationId `prefix-ede7d4c77496dd0e`，dependencyLockHash `460309bb1065…`，environmentId `48e795c85bbd…` |
+| Environment A | mamba 前缀，installationId `prefix-<env-A>`，dependencyLockHash `75efe91aa4e1…`，environmentId `e986dbc039e0…` |
+| Environment B | 全新 venv（base 同一 mamba python 3.12.9，无 system-site-packages，`--no-cache-dir` 只装复现包声明的 torch 2.12.1+cpu 与 numpy 2.4.5），installationId `prefix-<env-B-2d>`，dependencyLockHash `460309bb1065…`，environmentId `48e795c85bbd…` |
 | 独立性 | **independent = True**：强字段中 `installationId` 与 `dependencyLockHash` 不同（machineId / osFamily / acceleratorClass / frameworkVersion / blasBackend 在同机上必然相同；宪法 28.1 只要求至少一个强字段不同） |
 | dev 相对 L2 中位 | A 3.686e-05 · B **3.286e-05** |
 | \|Δmedian\| | **4.000e-06** |
@@ -289,3 +289,5 @@ READY FOR NEXT 2D COMPLEXITY STEP
 | `plots/p7_worst_seed_error.png` | 最差 seed 误差场 |
 | `plots/p8_fdm_convergence.png` | 独立 FDM 网格收敛（斜率 2 参考线） |
 | `plots/p9_redteam_summary.png` | Tier-1 各扰动的 QoI 漂移与 1% / 5% 线 |
+
+> 3.0.0 公开整理（2026-09-29）：本报告中的设备标识（machineId）与安装前缀（installationId）已替换为占位符，其余内容保持原样。

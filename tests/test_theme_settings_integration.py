@@ -38,9 +38,9 @@ ROOT = Path(__file__).resolve().parents[1]
 THEMES = {
     "ink-autumn": {"zh": "淡墨浓秋", "en": "Ink Autumn"},
     "deep-sea-molten-orange": {
-        "zh": "深海 × 熔橙", "en": "Deep Sea × Molten Orange"
+        "zh": "深海熔橙", "en": "Deep Sea Molten Orange"
     },
-    "amethyst-teal": {"zh": "紫晶 × 青绿", "en": "Amethyst × Teal"},
+    "amethyst-teal": {"zh": "紫晶青绿", "en": "Amethyst Teal"},
 }
 
 

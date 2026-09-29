@@ -1,5 +1,6 @@
 """Bounded native gateway for Leo's own frontend. No daemon token enters HTML."""
 import base64
+import hashlib
 import json
 import re
 from urllib.error import HTTPError
@@ -27,6 +28,22 @@ _TEXT_TYPES = {"application/json", "application/xml", "application/x-yaml", "app
                "application/csv", "application/x-tex", "application/javascript"}
 _TEXT_SUFFIXES = (".txt", ".csv", ".tsv", ".json", ".md", ".py", ".r", ".log", ".yaml", ".yml",
                   ".tex", ".xml", ".ini", ".toml", ".dat")
+
+
+# Operations answered inside the shell rather than by the daemon (approval modes, schedules).
+# The desktop registers them at start-up; the page reaches them through the same bounded
+# workbench_request entry, so no new native method is exposed to the page.
+_LOCAL_HANDLERS = {}
+
+
+def register_local(operations, handler):
+    for operation in operations:
+        _LOCAL_HANDLERS[operation] = handler
+
+
+def unregister_local(operations):
+    for operation in operations:
+        _LOCAL_HANDLERS.pop(operation, None)
 
 
 def identifier(value):
@@ -90,6 +107,10 @@ def route(payload):
             "owner": {"kind": identifier(owner.get("kind")), "id": identifier(owner.get("id"))}}
     if op == "execution":
         return "GET", path + "/execution-queue", None
+    if op == "timeline":
+        return "GET", path + "/action-timeline?limit=300", None
+    if op == "thoughts":
+        return "GET", path + "/leo-projections", None
     if op == "artifacts":
         return "GET", path + "/artifacts", None
     if op == "notebook":
@@ -168,6 +189,15 @@ def shape_notebook(result):
     return {"entries": entries, "total": len(rows), "omitted": max(0, len(rows) - _NOTEBOOK_MAX_ENTRIES)}
 
 
+def _version_id(row):
+    """The newest version's id, so a link to an exact version (trusted delivery) finds its file."""
+    for key in ("latest_version_id", "version_id"):
+        value = row.get(key)
+        if isinstance(value, str) and re.fullmatch(r"v-[A-Za-z0-9_-]{1,120}", value):
+            return value
+    return ""
+
+
 def shape_artifacts(result):
     if not isinstance(result, list):
         raise ValueError("WORKBENCH_RESPONSE_INVALID")
@@ -182,6 +212,7 @@ def shape_artifacts(result):
         content_type = row.get("content_type") if isinstance(row.get("content_type"), str) else ""
         artifacts.append({"id": ident, "filename": filename[:255], "contentType": content_type[:120],
                           "size": _count(row.get("size_bytes")),
+                          "versionId": _version_id(row),
                           "createdAt": row.get("created_at") if isinstance(row.get("created_at"), str) else "",
                           "upload": row.get("is_user_upload") is True})
         if len(artifacts) >= _ARTIFACT_MAX_ITEMS:
@@ -213,8 +244,82 @@ def preview_payload(raw, content_type, meta):
     return {**base, "kind": "binary"}
 
 
+_TIMELINE_KINDS = {"user", "code", "native_tools", "delegate", "finalize", "terminal", "no_action",
+                   "permission_resolution", "system", "turn"}
+_TIMELINE_STATUS = {"running", "completed", "failed", "cancelled", "interrupted", "pending", "proposed"}
+
+
+def shape_timeline(result):
+    """What the page needs to fold a turn's steps: kind, title, status and approval — no arguments.
+
+    The daemon's timeline already withholds commands, URLs and raw results; this keeps only the
+    few fields the folded view draws, bounded.
+    """
+    groups = result.get("groups") if isinstance(result, dict) else None
+    if not isinstance(groups, list):
+        raise ValueError("WORKBENCH_RESPONSE_INVALID")
+    shaped = []
+    for group in groups[-300:]:
+        if not isinstance(group, dict):
+            continue
+        kind = group.get("kind") if group.get("kind") in _TIMELINE_KINDS else "other"
+        permission = group.get("permission") if isinstance(group.get("permission"), dict) else None
+        names = []
+        for event in group.get("events") or []:
+            name = event.get("name") if isinstance(event, dict) else None
+            if isinstance(name, str) and name and name not in names and len(names) < 6:
+                names.append(name[:80])
+        shaped.append({
+            "ordinal": group.get("ordinal") if type(group.get("ordinal")) is int else None,
+            "turnId": _clip(group.get("turn_id"), 160)[0] or None,
+            "kind": kind,
+            "title": _clip(group.get("title"), 160)[0],
+            "status": group.get("status") if group.get("status") in _TIMELINE_STATUS else "other",
+            "names": names,
+            "permission": {"decisionId": _clip(permission.get("decision_id"), 120)[0],
+                           "state": _clip(permission.get("state"), 40)[0]} if permission else None,
+        })
+    return {"groups": shaped}
+
+
+_THOUGHT_SOURCES = {"reasoning_content", "reasoning"}
+_THOUGHT_MAX_ITEMS = 200
+_THOUGHT_TEXT_LIMIT = 32 * 1024
+
+
+def shape_thoughts(result):
+    """2.2.11 · The model's own reasoning text, one entry per model call, for the fold.
+
+    The bridge overlay (``bridge/leo_thought_runtime.py``) stores what the provider streamed as
+    ``reasoning_content`` before anything is shown; this keeps only that channel, only when the
+    stored digest matches the text, and bounds what reaches the page.
+    """
+    rows = result.get("projections") if isinstance(result, dict) else None
+    if not isinstance(rows, list):
+        raise ValueError("WORKBENCH_RESPONSE_INVALID")
+    thoughts = []
+    for row in rows:
+        if not isinstance(row, dict) or row.get("channel") != "thought" or row.get("source_field") not in _THOUGHT_SOURCES:
+            continue
+        text = row.get("text")
+        if not isinstance(text, str) or not text.strip():
+            continue
+        if row.get("content_sha256") != hashlib.sha256(text.encode("utf-8")).hexdigest():
+            continue
+        clipped, cut = _clip(text, _THOUGHT_TEXT_LIMIT)
+        thoughts.append({"turnId": _clip(row.get("turn_id"), 160)[0] or None,
+                         "groupId": _clip(row.get("group_id"), 160)[0] or None,
+                         "engineTurn": _count(row.get("engine_turn")),
+                         "status": _clip(row.get("status"), 40)[0],
+                         "text": clipped, "truncated": cut})
+    omitted = max(0, len(thoughts) - _THOUGHT_MAX_ITEMS)
+    return {"thoughts": thoughts[omitted:], "hasMore": result.get("has_more") is True or omitted > 0}
+
+
 _SHAPERS = {"notebook": shape_notebook, "artifacts": shape_artifacts, "kernel": shape_kernel,
-            "feedback": shape_feedback}
+            "feedback": shape_feedback, "timeline": shape_timeline, "thoughts": shape_thoughts}
+# Operations whose raw daemon answer may exceed the ordinary limit before it is trimmed.
+_LARGE_OPERATIONS = {"notebook", "thoughts"}
 
 
 class WorkbenchGateway:
@@ -236,11 +341,14 @@ class WorkbenchGateway:
         return result
 
     def request(self, payload):
+        operation = payload.get("operation") if isinstance(payload, dict) else None
+        local = _LOCAL_HANDLERS.get(operation) if isinstance(operation, str) else None
+        if local is not None:
+            return {"ok": True, "data": local(payload)}
         method, path, body = route(payload)
-        operation = payload.get("operation")
         if operation == "artifact_preview":
             return {"ok": True, "data": self._preview(payload, path)}
-        limit = _NOTEBOOK_JSON_LIMIT if operation == "notebook" else _JSON_LIMIT
+        limit = _NOTEBOOK_JSON_LIMIT if operation in _LARGE_OPERATIONS else _JSON_LIMIT
         raw, _ = self._exchange(method, path, body, limit)
         if len(raw) > limit:
             raise ValueError("WORKBENCH_RESPONSE_INVALID")
@@ -264,8 +372,30 @@ class WorkbenchGateway:
         raw, content_type = self._exchange("GET", path, None, _PREVIEW_IMAGE_LIMIT)
         return preview_payload(raw, content_type, meta)
 
+    def _forget_url(self):
+        """The sign-in URL is cached by the bridge; drop it after a failure so it is asked for again."""
+        invalidate = getattr(getattr(self._client_url, "__self__", None), "invalidate_client_url", None)
+        if callable(invalidate):
+            invalidate()
+
     def _exchange(self, method, path, body, limit):
-        """Read at most ``limit + 1`` bytes so callers can tell a cut from a fit."""
+        """Read at most ``limit + 1`` bytes so callers can tell a cut from a fit.
+
+        A refused token (401/403) never ran anything, so it is retried once with a fresh URL.
+        A connection failure is retried only for reads: a write may already have landed.
+        """
+        try:
+            return self._exchange_once(method, path, body, limit)
+        except _StaleEndpoint as stale:
+            self._forget_url()
+            if not stale.retry and method != "GET":
+                raise ValueError("WORKBENCH_UNAVAILABLE") from None
+            try:
+                return self._exchange_once(method, path, body, limit)
+            except _StaleEndpoint:
+                raise ValueError("WORKBENCH_UNAVAILABLE") from None
+
+    def _exchange_once(self, method, path, body, limit):
         url = self._client_url()
         if not WslBridge._is_valid_client_url(url):
             raise ValueError("WORKBENCH_UNAVAILABLE")
@@ -294,6 +424,16 @@ class WorkbenchGateway:
                 code = ""
             if code in public_codes:
                 raise ValueError(code) from None
+            if error.code in (401, 403):
+                raise _StaleEndpoint(retry=True) from None
             raise ValueError("WORKBENCH_CONFLICT" if error.code == 409 else "WORKBENCH_REQUEST_FAILED") from None
         except OSError:
-            raise ValueError("WORKBENCH_UNAVAILABLE") from None
+            raise _StaleEndpoint(retry=False) from None
+
+
+class _StaleEndpoint(Exception):
+    """The cached daemon URL did not work; ``retry`` is True when nothing can have run."""
+
+    def __init__(self, retry):
+        super().__init__("WORKBENCH_UNAVAILABLE")
+        self.retry = retry

@@ -98,7 +98,8 @@ def test_the_start_page_no_longer_wraps_the_mark_in_the_lion_badge():
     assert "background" not in rule and "filter" not in rule and "border:" not in rule
 
 
-def test_the_sources_are_kept_and_the_retired_lion_master_stays_as_history():
+def test_the_script_logo_sources_are_kept():
+    # 3.0.0: the retired lion master left the tree (it stays in the private Git history).
     logos = REPO / "assets" / "logos"
-    for name in ("leo-script.original.webp", "leo-script.source.png", "leo-lion-warm.source.png"):
+    for name in ("leo-script.original.webp", "leo-script.source.png"):
         assert (logos / name).is_file(), name

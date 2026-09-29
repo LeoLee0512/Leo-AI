@@ -1,0 +1,86 @@
+[
+  {
+    "prevEventId": "GENESIS",
+    "problemId": "pdef-poisson1d-cal-v1",
+    "revision": 1,
+    "specHash": "3dc9cd62e242e1bc447269f1e9f7c70c3044797eaa620c7b938b54910367b854",
+    "claimSetSha256": "02ee4e7533ea0eb0ff16828bb6f447e0c63f217b2e911ea1eabd6862659eb08e",
+    "event": "SEALED",
+    "actor": "pinn.experiments.runner (Claude, captain)",
+    "at": "2026-09-16T06:55:10Z",
+    "eventId": "cfc88c4a1d3c69dbd51695a8d693339afc09d1e237095d0d2e427960b611079d"
+  },
+  {
+    "prevEventId": "cfc88c4a1d3c69dbd51695a8d693339afc09d1e237095d0d2e427960b611079d",
+    "problemId": "pdef-poisson1d-cal-v1",
+    "revision": 1,
+    "specHash": "3dc9cd62e242e1bc447269f1e9f7c70c3044797eaa620c7b938b54910367b854",
+    "claimSetSha256": "02ee4e7533ea0eb0ff16828bb6f447e0c63f217b2e911ea1eabd6862659eb08e",
+    "event": "OPENED",
+    "codeHash": "a59a939f5842dfe88a8f14e0e618f743f6e20436466697faddadd3940606b636",
+    "actor": "pinn.experiments.runner (Claude, captain)",
+    "at": "2026-09-16T06:57:39Z",
+    "eventId": "0a72c77b0827461d24d338ef6981d607912cf68ebe4f92a794563a0cc711826a"
+  },
+  {
+    "prevEventId": "0a72c77b0827461d24d338ef6981d607912cf68ebe4f92a794563a0cc711826a",
+    "problemId": "pdef-poisson1d-cal-v1",
+    "revision": 1,
+    "specHash": "3dc9cd62e242e1bc447269f1e9f7c70c3044797eaa620c7b938b54910367b854",
+    "claimSetSha256": "d08488d9db3089f54e8711ffbb98ebad13c7e4844f660a513f16778b9c57e2c5",
+    "sampleSetHash": "3977198983fd86f7bdd83b509b04dfcdb6ed7354c1374f6b1f2c2e9726a49f7c",
+    "event": "SEALED",
+    "actor": "pinn.experiments.runner (Claude, captain) [claim pool preregistration]",
+    "at": "2026-09-16T09:37:57Z",
+    "eventId": "b0582a52e9eea6edd121b19fe935115a36ea0bdfa2a966cc7e5d3a914de3b95c"
+  },
+  {
+    "prevEventId": "b0582a52e9eea6edd121b19fe935115a36ea0bdfa2a966cc7e5d3a914de3b95c",
+    "problemId": "pdef-poisson1d-cal-v1",
+    "revision": 1,
+    "specHash": "3dc9cd62e242e1bc447269f1e9f7c70c3044797eaa620c7b938b54910367b854",
+    "claimSetSha256": "349990fc99e2654f6b0b402b85ee804b90a1060811a97760875c3b52fcd3082f",
+    "sampleSetHash": "19a99729d1d6f3b588b36d84c065921eb8ab1e92eb96ff62cb134ab24b3c1fbc",
+    "event": "SEALED",
+    "actor": "pinn.experiments.runner (Claude, captain) [claim pool preregistration]",
+    "at": "2026-09-16T09:38:03Z",
+    "eventId": "75a29b921b546ec2a442b7aa8b1fb1d12dd54fb2994491644012c8e21c54d6ed"
+  },
+  {
+    "prevEventId": "75a29b921b546ec2a442b7aa8b1fb1d12dd54fb2994491644012c8e21c54d6ed",
+    "problemId": "pdef-poisson1d-cal-v1",
+    "revision": 1,
+    "specHash": "3dc9cd62e242e1bc447269f1e9f7c70c3044797eaa620c7b938b54910367b854",
+    "claimSetSha256": "de71575d51bd768d8aff48c4e6052fb67acf1c4f38f79beb4626a2ba24059b01",
+    "sampleSetHash": "ccc392809222e7af79c8a1f79a4f241431a76fb78b75b94be619cfb94b351fce",
+    "event": "SEALED",
+    "actor": "pinn.experiments.runner (Claude, captain) [claim pool preregistration]",
+    "at": "2026-09-16T09:38:10Z",
+    "eventId": "0ac75f7e45a38dfc7be1f86ac1ae881db8166ed3c4830226534226c93b45d12f"
+  },
+  {
+    "prevEventId": "0ac75f7e45a38dfc7be1f86ac1ae881db8166ed3c4830226534226c93b45d12f",
+    "problemId": "pdef-poisson1d-cal-v1",
+    "revision": 2,
+    "specHash": "fd5584d7b290352faf61287632ffa39171772d10daabf97696028a1592dc7b61",
+    "claimSetSha256": "d08488d9db3089f54e8711ffbb98ebad13c7e4844f660a513f16778b9c57e2c5",
+    "sampleSetHash": "3977198983fd86f7bdd83b509b04dfcdb6ed7354c1374f6b1f2c2e9726a49f7c",
+    "event": "SEALED",
+    "actor": "pinn.experiments.runner (Claude, captain)",
+    "at": "2026-09-16T09:50:23Z",
+    "eventId": "e84f038d29e54e9d463cb5a3ed2bb99f6f4730a931c641a9263d514964bb6f9a"
+  },
+  {
+    "prevEventId": "e84f038d29e54e9d463cb5a3ed2bb99f6f4730a931c641a9263d514964bb6f9a",
+    "problemId": "pdef-poisson1d-cal-v1",
+    "revision": 2,
+    "specHash": "fd5584d7b290352faf61287632ffa39171772d10daabf97696028a1592dc7b61",
+    "claimSetSha256": "d08488d9db3089f54e8711ffbb98ebad13c7e4844f660a513f16778b9c57e2c5",
+    "sampleSetHash": "3977198983fd86f7bdd83b509b04dfcdb6ed7354c1374f6b1f2c2e9726a49f7c",
+    "event": "OPENED",
+    "codeHash": "5aaf93a57fdde6d35a24fbee9e783b18839fa5a6374184e70acaba7e633e586b",
+    "actor": "pinn.experiments.runner (Claude, captain)",
+    "at": "2026-09-16T09:53:24Z",
+    "eventId": "c3bf550d945dd8a85e9d7d4a5b48cc2dd504b3322855d6f9d117b81c1fabe180"
+  }
+]

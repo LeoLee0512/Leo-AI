@@ -78,32 +78,14 @@ def _historical_fixture(
     return target
 
 
-def test_exact_path_hash_and_finding_are_reported_as_historical_evidence():
-    """Every remaining finding is an approved, exactly matched immutable evidence record.
-
-    The set is pinned file by file: an absolute path appearing anywhere else fails
-    this test instead of blending into a count.
-    """
+def test_the_tree_carries_no_absolute_personal_path_at_all():
+    """3.0.0 removed the historical evidence that once needed an exemption: nothing is classified
+    any more, so any absolute user path anywhere in the tree fails this test."""
 
     scanner = _scanner()
     hard, configurable, historical = scanner.partition_findings(scanner.scan())
-    assert not hard
-    assert len(historical) == 8
-    assert not [f for f in historical if f["configurable_default"]]
-    assert {(f["file"], f["rule"], f["line"]) for f in historical} == {
-        ("governance/PINN_CONSTITUTION_COMPLIANCE_AUDIT.md", "windows-user-home", 58),
-        ("governance/PINN_CONSTITUTION_COMPLIANCE_AUDIT.md", "windows-user-home", 170),
-        ("governance/PINN_CONSTITUTION_COMPLIANCE_AUDIT.md", "windows-user-home", 407),
-        ("experiments/poisson1d/environment_b_qualification.json", "windows-user-home", 42),
-        ("experiments/poisson1d/runs/repro-envb-frozen-r2/PROVENANCE_MANIFEST.json", "windows-user-home", 103),
-        ("experiments/poisson1d/runs/repro-envb-frozen-r2/PROVENANCE_MANIFEST.json", "desktop-path", 103),
-        ("experiments/poisson1d/runs/repro-envb-r2/POST_AUDIT_ANNOTATION.md", "windows-user-home", 19),
-        ("experiments/poisson2d/environment_b_qualification.json", "windows-user-home", 46),
-    }
-    assert {f["audit_marker"] for f in historical} == {
-        "EXEMPT-HISTORICAL-EVIDENCE"
-    }
-    assert configurable
+    assert not hard and not historical
+    assert [f["file"] for f in configurable] == ["tools/sync_skills.py"]
 
 
 def test_mutating_approved_historical_bytes_invalidates_the_classification(
@@ -248,18 +230,13 @@ def test_unapproved_finding_type_in_approved_file_remains_hard(tmp_path, monkeyp
     assert [f["rule"] for f in hard] == ["linux-user-home"]
 
 
-def test_human_output_keeps_the_historical_findings_visible(capsys, monkeypatch):
+def test_human_output_reports_no_historical_findings(capsys, monkeypatch):
     scanner = _scanner()
     monkeypatch.setattr("sys.argv", ["portability_check.py"])
     assert scanner.main() == 0
     output = capsys.readouterr().out
-    assert output.count("EXEMPT-HISTORICAL-EVIDENCE") == 8
-    assert "8 historical evidence finding(s)" in output
-    for approved in (
-        "experiments/poisson1d/environment_b_qualification.json",
-        "experiments/poisson2d/environment_b_qualification.json",
-    ):
-        assert approved in output, "an approved finding must stay visible, not vanish"
+    assert "EXEMPT-HISTORICAL-EVIDENCE" not in output
+    assert "0 historical evidence finding(s)" in output
 
 
 def test_the_scanner_actually_detects_a_binding(tmp_path, monkeypatch):

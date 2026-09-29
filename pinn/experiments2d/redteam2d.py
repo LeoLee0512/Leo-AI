@@ -106,24 +106,35 @@ def verdict(entry: Mapping[str, Any], base: Mapping[str, float], pert: Mapping[s
 
 def run_tier1(config: Mapping[str, Any], pool: Sequence[Sequence[float]], dev_points: Sequence[Sequence[float]],
               phys_points: Sequence[Sequence[float]], phys_weights: Sequence[float], baseline_run: Mapping[str, Any],
-              log=print) -> dict[str, Any]:
+              log=print, workers: int = 1) -> dict[str, Any]:
+    from .parallel2d import train_many
+
     threads = int(config["optimizer"].get("threads", 1))
     seeds = baseline_run["seeds"]
     base_model = pinn2d.model_from_weights(config, baseline_run["weights"], threads=threads)
     base = measure(base_model, dev_points, phys_points, phys_weights, threads=threads)
     collocation_count = int(config["sampling"]["collocationCount"])
-    results = []
+    # Every applicable perturbation is one independent retrain; they are trained first (side by side
+    # when workers > 1, bit-identical to one after another) and then measured in the fixed order.
+    jobs = []
     for entry in TIER1:
         if entry.get("applicable", True) is False:
-            results.append({"id": entry["id"], "dimension": entry["dimension"], "applicability": "NOT_APPLICABLE", "reason": entry["reason"]})
-            log(f"  {entry['id']}: NOT_APPLICABLE")
             continue
         perturbation = dict(entry["perturbation"])
         if "boundaryBandBias" in perturbation:
             perturbation = {"collocationIndices": boundary_band_indices(pool, collocation_count, seeds["sample"] + 900,
                                                                         float(perturbation["boundaryBandBias"])),
                             "label": f"boundary band {BOUNDARY_BAND}"}
-        run = pinn2d.train_run(config, pool, dev_points, seeds, collocation_count=collocation_count, perturbation=perturbation)
+        jobs.append({"config": config, "pool": pool, "dev_points": dev_points, "seeds": seeds,
+                     "collocation_count": collocation_count, "perturbation": perturbation})
+    trained = iter(train_many(jobs, workers=workers, log=log))
+    results = []
+    for entry in TIER1:
+        if entry.get("applicable", True) is False:
+            results.append({"id": entry["id"], "dimension": entry["dimension"], "applicability": "NOT_APPLICABLE", "reason": entry["reason"]})
+            log(f"  {entry['id']}: NOT_APPLICABLE")
+            continue
+        run = next(trained)
         kw: dict[str, Any] = {"threads": threads}
         if entry["id"] == "P8":
             kw["domain_scale"] = 2.0

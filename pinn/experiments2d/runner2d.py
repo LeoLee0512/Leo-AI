@@ -79,8 +79,16 @@ from pinn.governance.trust_vector import (
     seed_set_id,
 )
 
+from pinn.research.context import CURRENT, actor, data_path
+
 from . import datasets2d as ds
 from . import diagnostics2d, gates2d, pinn_torch2d as pinn2d, redteam2d, report2d
+from .parallel2d import train_many
+
+# Product mode (2.2.11): when the Leo research worker runs an attempt it sets a RunContext; every
+# location below then lives in the task's own data root, the code identity is the product's, and
+# the attempt carries its own ledger copy and current-decision pointers so it verifies offline.
+# Without a context (the historical calibration runs) nothing here changes behaviour.
 
 CONSTITUTION_VERSION = "1.2"
 EXECUTOR = "pinn.experiments2d.runner2d (Claude, captain)"
@@ -97,7 +105,7 @@ FDM_PATH = "scientific_reference/poisson2d_fdm.py"
 
 
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return CURRENT.get().code_root if CURRENT.get() else Path(__file__).resolve().parents[2]
 
 
 def log(message: str) -> None:
@@ -105,7 +113,8 @@ def log(message: str) -> None:
 
 
 def load_registry() -> dict[str, str]:
-    return load_json(REGISTRY_PATH) if REGISTRY_PATH.exists() else {}
+    path = data_path(REGISTRY_PATH)
+    return load_json(path) if path.exists() else {}
 
 
 def register_sample_set(manifest: Mapping[str, Any]) -> tuple[str, str]:
@@ -114,8 +123,9 @@ def register_sample_set(manifest: Mapping[str, Any]) -> tuple[str, str]:
     if registry.get(artifact, samples) != samples:
         raise SystemExit(f"registry binds artifact {artifact[:12]} to another sample identity")
     registry[artifact] = samples
-    REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    REGISTRY_PATH.write_text(json.dumps(registry, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    path = data_path(REGISTRY_PATH)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(registry, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     return artifact, samples
 
 
@@ -128,7 +138,7 @@ def write_ledger(path: Path, events: Sequence[Mapping[str, Any]]) -> None:
 
 
 def pool_members(problem_id: str) -> dict[str, Any]:
-    path = PROBLEMS_DIR / f"{problem_id}-claim-pool.json"
+    path = data_path(PROBLEMS_DIR) / f"{problem_id}-claim-pool.json"
     return load_json(path) if path.exists() else {"members": {}}
 
 
@@ -212,7 +222,7 @@ def build_problem_definition(config: Mapping[str, Any], sets: Mapping[str, Mappi
         },
         "status": "FROZEN",
         "frozenAt": frozen_at,
-        "frozenBy": EXECUTOR,
+        "frozenBy": actor(EXECUTOR),
     }
     document["specHash"] = problem_definition_spec_hash(document)
     return document
@@ -237,7 +247,7 @@ def dimension_entry(status: TrustStatus, checks: Sequence[Mapping[str, Any]], ev
     entry: dict[str, Any] = {"status": status.value}
     if status is TrustStatus.NOT_CHECKED:
         return entry
-    entry.update({"evidencePointers": [dict(e) for e in evidence], "judgedAt": utc_now(), "judgedBy": EXECUTOR,
+    entry.update({"evidencePointers": [dict(e) for e in evidence], "judgedAt": utc_now(), "judgedBy": actor(EXECUTOR),
                   "checks": [dict(c) for c in checks]})
     if notes:
         entry["notes"] = notes
@@ -255,8 +265,11 @@ def statuses_of(dimensions: Mapping[str, Mapping[str, Any]]) -> dict[str, TrustS
 class Attempt2D:
     def __init__(self, *, config_path: Path, attempt_id: str, problem_id: str, revision: int, out_root: Path,
                  ledger_path: Path, reenter_from: Path | None, claim_pool_member: str | None = None,
-                 seed_offset: int = 0, reproduction_of: Path | None = None) -> None:
+                 seed_offset: int = 0, reproduction_of: Path | None = None, workers: int = 1) -> None:
         self.root = repo_root()
+        # Execution parameter (like the device): how many seed trainings run side by side. Recorded,
+        # never read from the frozen config, so it cannot move codeHash or any result.
+        self.workers = max(1, int(workers))
         self.config_path = config_path
         self.config = load_json(config_path)
         self.attempt_id = attempt_id
@@ -303,10 +316,16 @@ class Attempt2D:
         # is decision-relevant, so the run declares it here and it enters the manifest.
         declared = [str(path).replace("\\", "/") for path in self.config.get("codeIdentityExtraFiles", [])]
         extra = [config_rel, *declared]
-        manifest = code_manifest(self.root, extra)
-        # Fail closed *before* PRELOCK and before any Gate: an incomplete manifest means the
-        # codeHash does not identify the method that produced the results.
-        assert_code_identity_complete(manifest, self.root, extra_required=extra)
+        if CURRENT.get():
+            # The product's identity: pinn/ and the governance files plus both product configs and the
+            # desktop's research surfaces (it asserts completeness and cleanliness itself).
+            from pinn.research.worker import scientific_identity
+            manifest = scientific_identity(self.root)
+        else:
+            manifest = code_manifest(self.root, extra)
+            # Fail closed *before* PRELOCK and before any Gate: an incomplete manifest means the
+            # codeHash does not identify the method that produced the results.
+            assert_code_identity_complete(manifest, self.root, extra_required=extra)
         self.code_hash = code_hash_from_manifest(manifest)
         self.code_manifest = manifest
         self.environment = environment_fingerprint()
@@ -317,6 +336,11 @@ class Attempt2D:
                                              "declaredByRun": declared, "decisionSurfaces": list(DECISION_SURFACES)},
                     "environment": self.environment, "environmentId": self.environment_id, "python": sys.version,
                     "constitutionVersion": CONSTITUTION_VERSION, "seedOffset": self.seed_offset, "spatialDimension": 2}
+        if CURRENT.get():
+            identity["executionContext"] = CURRENT.get().document()
+            identity["parallelWorkers"] = self.workers
+            if dirty:
+                raise SystemExit("formal product run requires clean code identity")
         self.store.write_json("identity.json", identity, role="IDENTITY")
         self.summary.update({"codeHash": self.code_hash, "environmentId": self.environment_id, "gitHead": identity["gitHead"],
                              "workspaceDirty": bool(dirty), "configId": self.config["configId"]})
@@ -331,7 +355,7 @@ class Attempt2D:
     def phase_problem(self) -> None:
         label = f"{self.problem_id}-r{self.revision}"
         members = pool_members(self.problem_id)["members"]
-        frozen_file = PROBLEMS_DIR / f"{self.problem_id}-r{self.revision}.json"
+        frozen_file = data_path(PROBLEMS_DIR) / f"{self.problem_id}-r{self.revision}.json"
         if self.claim_pool_member is None and frozen_file.exists():
             frozen_claim = load_json(frozen_file)["evaluationSets"]["claim"]["sha256"]
             for name, member in members.items():
@@ -420,7 +444,7 @@ class Attempt2D:
                 raise SystemExit(f"claim samples {claim_samples[:12]} are BURNT; refusing to seal")
             events.append(make_event(prev_event_id=events[-1]["eventId"] if events else "GENESIS", problemId=self.problem_id,
                                      revision=self.revision, specHash=pdef["specHash"], claimSetSha256=claim_artifact,
-                                     sampleSetHash=claim_samples, event="SEALED", actor=EXECUTOR, at=utc_now()))
+                                     sampleSetHash=claim_samples, event="SEALED", actor=actor(EXECUTOR), at=utc_now()))
             log(f"claim set {claim_artifact[:12]} (samples {claim_samples[:12]}) SEALED for {self.problem_id} r{self.revision}")
         write_ledger(self.ledger_path, events)
         self.events = events
@@ -431,7 +455,14 @@ class Attempt2D:
         self.pdef = pdef
         self.pdef_ref = self.store.write_canonical("problem_definition.json", pdef, role="PROBLEM_DEFINITION",
                                                    parents=[r["artifactId"] for r in self.set_refs.values()])
-        self.store.register("claim_set_ledger.json", canonical_sha256(events), role="LEDGER", note=str(self.ledger_path))
+        if CURRENT.get():
+            # Gate 1-3 refer to the sealed version even after OPENED rewrites the current record, and
+            # the attempt keeps its own copy of the ledger so it can be verified without the task.
+            self.pdef_ref = self.store.write_canonical("problem_definition_sealed.json", pdef, role="PROBLEM_DEFINITION",
+                                                       parents=[r["artifactId"] for r in self.set_refs.values()])
+            self.store.write_canonical("claim_set_ledger.json", events, role="LEDGER")
+        else:
+            self.store.register("claim_set_ledger.json", canonical_sha256(events), role="LEDGER", note=str(self.ledger_path))
         self.summary.update({"specHash": pdef["specHash"], "claimSetSha256": claim_artifact, "claimSampleSetHash": claim_samples,
                              "ledgerHead": events[-1]["eventId"], "claimPoolMember": self.claim_pool_member})
         log(f"ProblemDefinition FROZEN specHash={pdef['specHash'][:12]} sets={self.summary['evaluationSets']['sizes']}")
@@ -508,11 +539,21 @@ class Attempt2D:
         self.started_at = utc_now()
         self.runs = []
         run_refs = []
+        count = int(self.config["sampling"]["collocationCount"])
+        jobs = [{"config": self.config, "pool": self.pool, "dev_points": self.dev_points,
+                 "seeds": {k: t[k] for k in ("init", "sample", "batch")}, "collocation_count": count} for t in triplets]
+        if self.workers > 1:
+            log(f"training {len(jobs)} seed triplets in {min(self.workers, len(jobs))} parallel processes "
+                f"(each run is independent and single-threaded; results equal the sequential ones bit for bit)")
+        trained = iter(train_many(jobs, workers=self.workers, log=log) if self.workers > 1 else ())
         for triplet in triplets:
             seeds = {k: triplet[k] for k in ("init", "sample", "batch")}
-            log(f"training seed triplet {seeds} with collocationCount={self.config['sampling']['collocationCount']}")
-            run = pinn2d.train_run(self.config, self.pool, self.dev_points, seeds,
-                                   collocation_count=int(self.config["sampling"]["collocationCount"]))
+            if self.workers > 1:
+                run = next(trained)
+            else:
+                log(f"training seed triplet {seeds} with collocationCount={self.config['sampling']['collocationCount']}")
+                run = pinn2d.train_run(self.config, self.pool, self.dev_points, seeds,
+                                       collocation_count=int(self.config["sampling"]["collocationCount"]))
             run["runIndex"] = triplet["index"]
             run_refs.append(self.store.write_json(f"runs/run-{triplet['index']:02d}.json", run, role="RAW_MODEL_PREDICTION",
                                                   parents=[ledger_ref["artifactId"], self.set_refs["train"]["artifactId"]]))
@@ -532,7 +573,7 @@ class Attempt2D:
             "specHash": self.pdef["specHash"], "codeHash": self.code_hash, "codeManifest": self.code_manifest,
             "environment": self.environment, "environmentId": self.environment_id, "seeds": self.seed_values,
             "seedSetId": seed_set_id(self.seed_values), "evaluatedOn": evaluated,
-            "startedAt": self.started_at, "finishedAt": max(self.finished_at, utc_now()), "executedBy": EXECUTOR,
+            "startedAt": self.started_at, "finishedAt": max(self.finished_at, utc_now()), "executedBy": actor(EXECUTOR),
         }
         errors = validate_run_record(record)
         if errors:
@@ -608,9 +649,12 @@ class Attempt2D:
         claim_samples = self.summary["claimSampleSetHash"]
         self.events.append(make_event(prev_event_id=self.events[-1]["eventId"], problemId=self.problem_id, revision=self.revision,
                                       specHash=self.pdef["specHash"], claimSetSha256=claim_sha, sampleSetHash=claim_samples,
-                                      event="OPENED", codeHash=self.code_hash, actor=EXECUTOR, at=utc_now()))
+                                      event="OPENED", codeHash=self.code_hash, actor=actor(EXECUTOR), at=utc_now()))
         write_ledger(self.ledger_path, self.events)
-        self.store.register("claim_set_ledger.json", canonical_sha256(self.events), role="LEDGER", note=str(self.ledger_path))
+        if CURRENT.get():
+            self.store.write_canonical("claim_set_ledger.json", self.events, role="LEDGER")
+        else:
+            self.store.register("claim_set_ledger.json", canonical_sha256(self.events), role="LEDGER", note=str(self.ledger_path))
         self.pdef = apply_ledger_state(self.pdef, self.events)
         errors = validate_problem_definition(self.pdef, claim_set_events=self.events, evaluation_sets=self.sets,
                                              sample_set_hashes=load_registry())
@@ -699,7 +743,7 @@ class Attempt2D:
                                "missingPreconditions": list(gate.blocked.get(lvl, ()))}
                               for lvl in CLAIM_LEVELS if lvl not in gate.allowed],
             "weakestLink": {"dimensions": list(gate.weakest_dimensions), "status": gate.weakest_status.value, "evidenceRef": dict(tv_ref)},
-            "generatedAt": utc_now(), "decidedBy": EXECUTOR,
+            "generatedAt": utc_now(), "decidedBy": actor(EXECUTOR),
         }
         errors = validate_claim_gate_decision(decision, vector_doc, self.pdef, claim_set_events=self.events,
                                               run_records={self.run_record["runId"]: self.run_record})
@@ -727,6 +771,9 @@ class Attempt2D:
         decision = self.decision_document(vector_doc, tv_ref, stop=final_state is WorkflowState.STOPPED_THE_LINE)
         cgd_ref = self.store.write_canonical("claim_gate_decision.json", decision, role="CLAIM_GATE_DECISION",
                                              parents=[tv_ref["artifactId"]])
+        if CURRENT.get():
+            # Only an explicit current pointer can supply a product's displayed claim.
+            self.summary.update({"currentTrustVectorRef": tv_ref, "currentDecisionRef": cgd_ref})
         self.summary.update({"finalState": final_state.value, "trustVector": {d: self.dimensions[d]["status"] for d in DIMENSIONS},
                              "trustVectorRef": tv_ref, "decisionRef": cgd_ref, "finishedAt": utc_now()})
 
@@ -777,10 +824,10 @@ def resume_attempt(attempt_dir: Path) -> Attempt2D:
     identity = load_json(attempt_dir / "identity.json")
     pdef = load_json(attempt_dir / "problem_definition.json")
     state_doc = load_json(attempt_dir / "attempt_state.json")
-    ledger_path = LEDGER_DIR / f"{pdef['problemId']}.json"
+    ledger_path = data_path(LEDGER_DIR) / f"{pdef['problemId']}.json"
     attempt = Attempt2D(config_path=root / identity["configPath"], attempt_id=attempt_dir.name, problem_id=pdef["problemId"],
                         revision=pdef["revision"], out_root=attempt_dir.parent, ledger_path=ledger_path, reenter_from=None,
-                        seed_offset=identity.get("seedOffset", 0))
+                        seed_offset=identity.get("seedOffset", 0), workers=identity.get("parallelWorkers", 1))
     attempt.code_hash = identity["codeHash"]
     attempt.code_manifest = identity["codeManifest"]
     attempt.environment = identity["environment"]
@@ -917,10 +964,13 @@ def run_redteam(attempt_dir: Path, label: str = "tier1") -> None:
     baseline_run = load_json(attempt_dir / "runs/run-00.json")
     log("Tier-1 Red Team (2D): one retrain per applicable perturbation, D_dev only")
     tier1 = redteam2d.run_tier1(attempt.config, attempt.pool, attempt.dev_points, attempt.phys_points, attempt.phys_weights,
-                                baseline_run, log=log)
+                                baseline_run, log=log, workers=attempt.workers)
     tier_ref = attempt.store.write_json(f"{label}_redteam.json", tier1, role="RED_TEAM_REPORT", parents=["runs/run-00.json"])
     order = {"PASS": 0, "PARTIAL": 1, "FAIL": 2, "BLOCKED": 3, "NOT_CHECKED": 4}
-    prior = load_json(attempt_dir / "trust_vector.json")
+    current_ref = load_json(attempt_dir / "RUN_SUMMARY.json").get("currentTrustVectorRef") if CURRENT.get() else None
+    if current_ref and sha256_file(attempt_dir / current_ref["artifactId"]) != current_ref["sha256"]:
+        raise SystemExit("current trust vector identity mismatch")
+    prior = load_json(attempt_dir / (current_ref["artifactId"] if current_ref else "trust_vector.json"))
     dims = copy.deepcopy(prior["dimensions"])
     for dim, impact in tier1["dimensionImpact"].items():
         entry = dims[dim]
@@ -937,8 +987,11 @@ def run_redteam(attempt_dir: Path, label: str = "tier1") -> None:
     tv_ref = attempt.store.write_canonical(f"trust_vector_{label}.json", vector_doc, role="TRUST_VECTOR", parents=[tier_ref["artifactId"]])
     attempt.dimensions = dims
     decision = attempt.decision_document(vector_doc, tv_ref, suffix=f"_{label}")
-    attempt.store.write_canonical(f"claim_gate_decision_{label}.json", decision, role="CLAIM_GATE_DECISION", parents=[tv_ref["artifactId"]])
+    cgd_ref = attempt.store.write_canonical(f"claim_gate_decision_{label}.json", decision, role="CLAIM_GATE_DECISION",
+                                            parents=[tv_ref["artifactId"]])
     summary = load_json(attempt_dir / "RUN_SUMMARY.json")
+    if CURRENT.get():
+        summary.update({"currentTrustVectorRef": tv_ref, "currentDecisionRef": cgd_ref})
     summary.setdefault("redTeam", {})[label] = {
         "passed": tier1["passed"], "dimensionImpact": tier1["dimensionImpact"], "worstCase": tier1["worstCase"],
         "trustVectorAfter": {d: dims[d]["status"] for d in DIMENSIONS},
@@ -952,8 +1005,18 @@ def run_redteam(attempt_dir: Path, label: str = "tier1") -> None:
 # ------------------------------------------------------------------ G6
 
 def reproduction_tolerance(attempt_dir: Path | None = None) -> dict[str, Any]:
-    """The tolerance frozen in the reproduction package (preregistered before the formal run)."""
+    """The tolerance frozen in the reproduction package (preregistered before the formal run).
 
+    A product run has no such package: its tolerance is the ``reproduction`` block of its own frozen
+    configuration, which is inside its code identity -- never the calibration package that happens
+    to sit next to the code.
+    """
+
+    if CURRENT.get():
+        if attempt_dir is None:
+            raise SystemExit("no preregistered reproduction tolerance found")
+        identity = load_json(attempt_dir / "identity.json")
+        return load_json(repo_root() / identity["configPath"])["reproduction"]
     package = EXPERIMENT_DIR / "repro_package" / "PACKAGE_MANIFEST.json"
     if package.exists():
         return load_json(package)["expectedTolerance"]
@@ -1034,6 +1097,14 @@ def run_apply_g6(attempt_dir: Path, reproduction_dir: Path) -> None:
     if validate_run_record(repro_record):
         raise SystemExit("reproduction RunRecord invalid")
     status = TrustStatus(report_doc["cRepro"])
+    if CURRENT.get():
+        # The stored report is re-derived from the two run records before it may decide anything.
+        verified = judge_reproduction(attempt_dir, reproduction_dir, write=False,
+                                      environment_override=repro_record["environment"],
+                                      environment_id_override=repro_record["environmentId"])
+        for key in ("cRepro", "sameSpec", "sameCode", "independentEnvironments", "differentSeedSet", "withinTolerance", "metrics"):
+            if report_doc[key] != verified[key]:
+                raise SystemExit("reproduction report disagrees with measured records")
     reason = (f"independent reproduction {reproduction_dir.name}: environments independent={report_doc['independentEnvironments']} "
               f"(strong fields differing {report_doc['strongFieldsDiffering']}), same spec={report_doc['sameSpec']}, "
               f"same code={report_doc['sameCode']}, different seed set={report_doc['differentSeedSet']}, dev median A "
@@ -1042,9 +1113,24 @@ def run_apply_g6(attempt_dir: Path, reproduction_dir: Path) -> None:
               f"k/N {report_doc['metrics']['successRateA']} vs {report_doc['metrics']['successRateB']} -> {status.value}")
     evidence = [{"artifactId": f"{reproduction_dir.name}/reproduction_report.json", "sha256": sha256_file(reproduction_dir / "reproduction_report.json")},
                 {"artifactId": f"{reproduction_dir.name}/run_record.json", "sha256": sha256_file(reproduction_dir / "run_record.json")}]
+    current_ref = None
+    if CURRENT.get():
+        # Product evidence pointers resolve inside the original attempt: copy the exact bytes,
+        # keeping the separately verified reproduction attempt where it is.
+        for pointer in evidence:
+            target = attempt_dir / pointer["artifactId"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((reproduction_dir / Path(pointer["artifactId"]).name).read_bytes())
+            attempt.store.register(pointer["artifactId"], sha256_file(target), role="REPRODUCTION_EVIDENCE")
+        current_ref = load_json(attempt_dir / "RUN_SUMMARY.json").get("currentTrustVectorRef")
     g6 = [gates2d.check("G6-independentReproduction", status, reason, evidence)]
     g6_ref = attempt.store.write_json("gate6_reproducibility_executed.json", {"checks": g6, "reproduction": report_doc}, role="GATE_RESULT")
-    base_path = attempt_dir / "trust_vector_tier1.json" if (attempt_dir / "trust_vector_tier1.json").exists() else attempt_dir / "trust_vector.json"
+    if current_ref:
+        base_path = attempt_dir / current_ref["artifactId"]
+        if sha256_file(base_path) != current_ref["sha256"]:
+            raise SystemExit("current trust vector identity mismatch")
+    else:
+        base_path = attempt_dir / "trust_vector_tier1.json" if (attempt_dir / "trust_vector_tier1.json").exists() else attempt_dir / "trust_vector.json"
     prior = load_json(base_path)
     dims = copy.deepcopy(prior["dimensions"])
     dims["repro"] = dimension_entry(status, g6, [g6_ref])
@@ -1061,6 +1147,8 @@ def run_apply_g6(attempt_dir: Path, reproduction_dir: Path) -> None:
                                     f"allowed {attempt.summary['allowedClaims']}")
     attempt.save_state(after)
     summary = load_json(attempt_dir / "RUN_SUMMARY.json")
+    if CURRENT.get():
+        summary.update({"currentTrustVectorRef": tv_ref, "currentDecisionRef": cgd_ref})
     summary.update({"g6": {"cRepro": status.value, "reproductionAttempt": reproduction_dir.name, "report": report_doc["metrics"],
                            "independentEnvironments": report_doc["independentEnvironments"]},
                     "finalState": after.value, "trustVectorFinal": {d: dims[d]["status"] for d in DIMENSIONS},
@@ -1074,6 +1162,19 @@ def run_apply_g6(attempt_dir: Path, reproduction_dir: Path) -> None:
 # ------------------------------------------------------------------ CLI
 
 def main(argv: Sequence[str] | None = None) -> int:
+    values = list(sys.argv[1:] if argv is None else argv)
+    if "--context" in values:
+        # A product task's own locations (pinn.research.reproduce): the same wrapper as the 1D runner.
+        from pinn.research.context import RunContext, using
+        index = values.index("--context")
+        context_file = Path(values[index + 1])
+        del values[index:index + 2]
+        with using(RunContext.from_document(load_json(context_file))):
+            return _main(values)
+    return _main(values)
+
+
+def _main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Poisson 2D calibration experiment runner")
     sub = parser.add_subparsers(dest="command", required=True)
     a = sub.add_parser("attempt")
@@ -1087,6 +1188,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     a.add_argument("--claim-pool-member", default=None)
     a.add_argument("--seed-offset", type=int, default=0)
     a.add_argument("--reproduction-of", type=Path, default=None)
+    a.add_argument("--workers", type=int, default=1)
     rp = sub.add_parser("register-pool")
     rp.add_argument("--problem-id", required=True)
     rp.add_argument("--members", nargs="+", required=True)
@@ -1114,11 +1216,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "attempt":
-        ledger = args.ledger or LEDGER_DIR / f"{args.problem_id}.json"
+        ledger = args.ledger or data_path(LEDGER_DIR) / f"{args.problem_id}.json"
         attempt = Attempt2D(config_path=args.config, attempt_id=args.attempt_id, problem_id=args.problem_id, revision=args.revision,
                             out_root=args.out_root, ledger_path=ledger, reenter_from=args.reenter_from,
                             claim_pool_member=args.claim_pool_member, seed_offset=args.seed_offset,
-                            reproduction_of=args.reproduction_of)
+                            reproduction_of=args.reproduction_of, workers=args.workers)
         summary = attempt.run()
         print(json.dumps({k: summary[k] for k in ("attemptId", "finalState", "trustVector", "highestAllowedClaim") if k in summary},
                          ensure_ascii=False, indent=2))

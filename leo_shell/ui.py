@@ -123,6 +123,14 @@ class DesktopUI:
             paths=self._paths,
             logger=self._logger,
         )
+        self._api = api
+        # Approval modes and scheduled messages run beside the window for as long as it is open.
+        self._extensions = None
+        try:
+            from .extensions import Extensions
+            self._extensions = Extensions(api, self._paths, self._coordinator._bridge.client_url, logger=self._logger)
+        except Exception:
+            self._logger.exception("approval and schedule services could not start")
         # WebView2 otherwise silently cancels the user-requested knowledge-tree
         # export. pywebview presents its native Save dialog for every download.
         webview.settings["ALLOW_DOWNLOADS"] = True
@@ -295,11 +303,21 @@ class DesktopUI:
             self._minimized_recovered = True
         self._startup_guard_recover()
 
-    def _on_closing(self) -> None:
+    def _on_closing(self):
         with self._lock:
             if self._closed:
-                return
+                return None
+        if not self._research_close_allowed():
+            return False  # pywebview cancels the close
+        with self._lock:
+            if self._closed:
+                return None
             self._closed = True
+        try:
+            if getattr(self, "_extensions", None) is not None:
+                self._extensions.close()
+        except Exception:
+            self._logger.exception("approval and schedule services did not stop cleanly")
         try:
             if self._window is not None:
                 clear_window_branding(self._window.native.Handle.ToInt64())
@@ -309,6 +327,29 @@ class DesktopUI:
             self._coordinator.close()
         except Exception:
             self._logger.exception("coordinator close failed during window closing")
+
+    def _research_close_allowed(self) -> bool:
+        """A running research task is never left computing behind a closed window.
+
+        Runs on the UI thread inside the closing event, where a native message box is safe.
+        """
+        api = getattr(self, "_api", None)
+        try:
+            busy = api._research_busy_tasks() if api is not None else []
+        except Exception:
+            self._logger.exception("research state could not be read while closing")
+            busy = []
+        if not busy:
+            return True
+        text = ("有科研任务正在进行。\n\n关闭 Leo AI 会停止计算：正在运行的任务记为「已取消」，"
+                "已经产生的证据会保留；正在准备的确认包下次打开时会标为「准备中断」。\n\n确定关闭吗？")
+        if not _confirm_native(self._window, _WINDOW_TITLE, text):
+            return False
+        try:
+            api._research_stop_for_close()
+        except Exception:
+            self._logger.exception("research runs could not be stopped while closing")
+        return True
 
     # -- internals --------------------------------------------------------------
 
@@ -325,3 +366,14 @@ class DesktopUI:
             window.show()
         except Exception:
             self._logger.debug("startup guard recovery failed", exc_info=True)
+
+
+def _confirm_native(window, title: str, text: str) -> bool:
+    """OK/Cancel message box owned by the Leo window (Windows only; elsewhere, allow)."""
+    try:
+        import ctypes
+        owner = window.native.Handle.ToInt64() if window is not None else 0
+        # MB_OKCANCEL | MB_ICONWARNING | MB_DEFBUTTON2: cancelling is the default.
+        return ctypes.WinDLL("user32").MessageBoxW(owner, text, title, 0x1 | 0x30 | 0x100) == 1
+    except Exception:
+        return True

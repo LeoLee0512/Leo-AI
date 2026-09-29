@@ -1,7 +1,7 @@
 """Parallel training must be the sequential training, bit for bit.
 
 Needs torch: the governance virtualenv skips it, and
-``experiments/annulus/verify_tests_under_torch.py`` executes it under the training interpreter.
+the installed science interpreter (``tests/pinn`` under science-a) executes it under the training interpreter.
 """
 
 from __future__ import annotations

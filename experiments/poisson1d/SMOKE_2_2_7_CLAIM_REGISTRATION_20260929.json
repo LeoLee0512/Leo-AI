@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "leo.claimRegistration/1",
+  "registeredAt": "2026-09-29",
+  "registeredBy": "Claude (owner-approved 2026-09-29: re-smoke before the 2.2.7 release and register its grid)",
+  "purpose": "The 2.2.7 sandbox full-chain smoke reserved and opened this grid. It is the same grid (same sample-set hash) the owner's first in-product formal run opened on 2026-09-29 in the installed 2.2.6 (task research-a7fc950532844c7ea91564e0f045405a), because a sandbox research root cannot see the install's reservations and the repository registry held only GL1024. Registering it records that burnt grid in the repository as well, so a fresh install never draws it.",
+  "claimFile": "experiments/poisson1d/problems/pdef-research-41c03c7b150a432499cbd088ba402ab5-claim-GL1056-CGL4004.json",
+  "claimFileSha256": "b1d0c0295ebd72dabce6f937bcf0c720b05ed682175bb9cb9b0c9b4bfb9a75e3",
+  "member": "GL1056-CGL4004",
+  "glOrder": 1056,
+  "cglCount": 4004,
+  "sampleSetHash": "9a8c71c34bc792d110cfeb7c8dd82c2a9cb4d176b07b28fe72f063f1c4645d9c",
+  "sameGridAs": {"task": "research-a7fc950532844c7ea91564e0f045405a", "run": "owner's 1D Poisson formal run, ACCEPTED at C2, 2026-09-29"},
+  "origin": {
+    "kind": "sandbox smoke (throwaway research root, deleted after the smoke)",
+    "taskId": "research-41c03c7b150a432499cbd088ba402ab5",
+    "problemId": "pdef-research-41c03c7b150a432499cbd088ba402ab5",
+    "sourceCommit": "abf9371b7245709e1ff218915c4f43fa8d56755f",
+    "codeHash": "b14a43c23b6a690ee55e5bb024ef291fb4619c3784369ebb56b734ac5a6ea7af",
+    "specHash": "bb6c213e8e1ed69d714450ea18cf6610b5952b9ef6323057fe18a847906823a6",
+    "reservedAt": "2026-09-29T05:57:56Z",
+    "status": "OPENED by the smoke's main attempt; the grid was already BURNT by the owner's formal run"
+  },
+  "installQuotaEffect": "None beyond the owner's run: the installed desktop already counts GL1056 from its own task, so its quota stays at 2 used / 30 remaining.",
+  "scientificStanding": "None. A smoke run exercises the product chain; it is not evidence for any claim and is not pooled with formal runs."
+}

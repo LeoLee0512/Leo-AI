@@ -1,0 +1,25 @@
+[
+  {
+    "prevEventId": "GENESIS",
+    "problemId": "pdef-poisson1d-cal-v1-exp2",
+    "revision": 1,
+    "specHash": "081fd8c87d249db75c22d42c1845192d12041a0f4df81aac546cf4a12bde8623",
+    "claimSetSha256": "33ea07647a39cd2706bfe9c8d0fd3d294d73b749eb6b97c630c7b64c3a3f57fa",
+    "event": "SEALED",
+    "actor": "pinn.experiments.runner (Claude, captain)",
+    "at": "2026-09-16T07:00:47Z",
+    "eventId": "b4a2009e3896de7507a3b46b6aa44c2236c9e7e61947018963c94aba2b0f7272"
+  },
+  {
+    "prevEventId": "b4a2009e3896de7507a3b46b6aa44c2236c9e7e61947018963c94aba2b0f7272",
+    "problemId": "pdef-poisson1d-cal-v1-exp2",
+    "revision": 1,
+    "specHash": "081fd8c87d249db75c22d42c1845192d12041a0f4df81aac546cf4a12bde8623",
+    "claimSetSha256": "33ea07647a39cd2706bfe9c8d0fd3d294d73b749eb6b97c630c7b64c3a3f57fa",
+    "event": "OPENED",
+    "codeHash": "ff322e9c93368fc36fb394d250fce5deb89acec8950f17c1cf15a8d7a3af50d0",
+    "actor": "pinn.experiments.runner (Claude, captain)",
+    "at": "2026-09-16T07:08:32Z",
+    "eventId": "b7f6c878dcee4a8abc3657a7fc7ed37afd95754ab24890e3658388253d19ce69"
+  }
+]

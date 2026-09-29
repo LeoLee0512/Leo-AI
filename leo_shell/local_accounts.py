@@ -5,12 +5,12 @@ Passwords use salted PBKDF2; recovery secrets are returned once, never stored ra
 """
 from __future__ import annotations
 
-import hashlib
 import base64
-import struct
+import hashlib
 import hmac
 import re
 import secrets
+import struct
 import sqlite3
 import time
 from pathlib import Path

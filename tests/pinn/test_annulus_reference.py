@@ -2,7 +2,7 @@
 
 These need numpy (the polar finite-difference solver, the area-uniform sampler) or
 torch (autograd against the frozen analytic source), so the governance virtualenv
-skips them; ``experiments/annulus/verify_tests_under_torch.py`` runs the same
+skips them; the installed science interpreter (``tests/pinn`` under science-a) runs the same
 functions under the training interpreter and records the result.
 """
 

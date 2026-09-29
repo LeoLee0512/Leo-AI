@@ -20,25 +20,35 @@ class ClipboardError(RuntimeError):
     pass
 
 
-def get_text():
-    user32, kernel32 = _win32()
-    from ctypes import wintypes
-    user32.GetClipboardData.argtypes = [wintypes.UINT]
-    user32.GetClipboardData.restype = wintypes.HANDLE
-    kernel32.GlobalSize.argtypes = [wintypes.HGLOBAL]
-    kernel32.GlobalSize.restype = ctypes.c_size_t
-    if not user32.OpenClipboard(None): raise ClipboardError('CLIPBOARD_BUSY')
+def get_text(*, api=None) -> str:
+    """Return the clipboard's plain text, or ``""`` when it holds none."""
+    user32, kernel32 = api or _win32()
+    _open_clipboard(user32)
     try:
         handle = user32.GetClipboardData(_CF_UNICODETEXT)
-        if not handle: return ''
+        if not handle:
+            return ""
         size = kernel32.GlobalSize(handle)
-        if size > (MAX_CLIPBOARD_CHARS + 1)*2: raise ClipboardError('CLIPBOARD_TEXT_INVALID')
+        if size > (MAX_CLIPBOARD_CHARS + 1) * 2:
+            raise ClipboardError("CLIPBOARD_TEXT_INVALID")
         pointer = kernel32.GlobalLock(handle)
-        if not pointer: raise ClipboardError('CLIPBOARD_UNAVAILABLE')
-        try: return ctypes.string_at(pointer,size).decode('utf-16-le').split('\0',1)[0]
-        finally: kernel32.GlobalUnlock(handle)
+        if not pointer:
+            raise ClipboardError("CLIPBOARD_UNAVAILABLE")
+        try:
+            return ctypes.string_at(pointer, size).decode("utf-16-le", "replace").split("\0", 1)[0]
+        finally:
+            kernel32.GlobalUnlock(handle)
     finally:
         user32.CloseClipboard()
+
+
+def _open_clipboard(user32) -> None:
+    # Another process may hold the clipboard for a moment; retry briefly, never block.
+    for _ in range(10):
+        if user32.OpenClipboard(None):
+            return
+        time.sleep(0.02)
+    raise ClipboardError("CLIPBOARD_BUSY")
 
 
 def _win32():
@@ -54,6 +64,10 @@ def _win32():
     user32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
     user32.SetClipboardData.restype = wintypes.HANDLE
     user32.CloseClipboard.restype = wintypes.BOOL
+    user32.GetClipboardData.argtypes = [wintypes.UINT]
+    user32.GetClipboardData.restype = wintypes.HANDLE
+    kernel32.GlobalSize.argtypes = [wintypes.HGLOBAL]
+    kernel32.GlobalSize.restype = ctypes.c_size_t
     kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
     kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
     kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
@@ -69,13 +83,7 @@ def set_text(text: str, *, api=None) -> None:
         raise ClipboardError("CLIPBOARD_TEXT_INVALID")
     user32, kernel32 = api or _win32()
     data = (text + "\0").encode("utf-16-le")
-    # Another process may hold the clipboard for a moment; retry briefly, never block.
-    for _ in range(10):
-        if user32.OpenClipboard(None):
-            break
-        time.sleep(0.02)
-    else:
-        raise ClipboardError("CLIPBOARD_BUSY")
+    _open_clipboard(user32)
     try:
         if not user32.EmptyClipboard():
             raise ClipboardError("CLIPBOARD_UNAVAILABLE")

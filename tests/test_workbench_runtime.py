@@ -38,9 +38,9 @@ async function scenario(messages,expected,expectedCopy=expected[0]){
   vm.runInContext(source,ctx);await flush();
   const check=()=>assert.deepEqual(el('messages').children.filter(n=>n.className?.startsWith('message assistant'))
     .map(n=>n.children.filter(c=>c.className==='message-body').map(text).join('')),expected);
-  await el('history').children[0].onclick();check();
+  await el('history').children.find(c=>String(c.className).includes('history-row')).children[0].onclick();check();
   timer();await flush();check(); // The same persisted rows arrive again.
-  await el('history').children[0].onclick();check(); // Reopen history.
+  await el('history').children.find(c=>String(c.className).includes('history-row')).children[0].onclick();check(); // Reopen history.
   const answer=el('messages').children.find(n=>n.className==='message assistant');
   if(answer){await answer.children.at(-1).children[0].onclick();assert.equal(copied[0],expectedCopy);}
   assert.equal(JSON.stringify(messages),original,'rendering must not mutate stored messages');
@@ -54,15 +54,17 @@ const a=(seq,content,extra={})=>({seq,message_id:'a-'+seq,role:'assistant',conte
   await scenario([u(1),a(2,answer),a(3,answer)],[answer]);
   await scenario([u(1),a(2,'Hello\n\nCompleted work:\n- Answered the question')],['Hello']);
   await scenario([u(1),a(2,answer),u(3),a(4,answer)],[answer,answer]);
-  await scenario([u(1),a(2,'第一步'),a(3,'不同的补充')],['第一步','不同的补充']);
+  // 2.2.8: earlier remarks of a finished turn fold into 「思考与步骤」; the turn shows its answer.
+  await scenario([u(1),a(2,'第一步'),a(3,'不同的补充')],['不同的补充']);
   await scenario([u(1),a(2,'结果\n\n完成内容：\n- Computed the result\n\n限制与局限：\n尚未验证\n\n产物：\n- report.txt')],
     ['结果\n\n\n限制与局限：\n尚未验证\n\n产物：\n- report.txt']);
   await scenario([u(1),a(2,'> 完成内容：\n> - 用户引用的文字')],['> 完成内容：\n> - 用户引用的文字']);
   await scenario([u(1),a(2,answer),a(3,answer,{failure:{request_id:'failed-1'}})],[answer,answer]);
-  await scenario([u(1),a(2,answer),a(3,answer,{review_status:'candidate'})],[answer,answer]);
-  await scenario([u(1),a(2,answer),a(3,answer,{artifact_refs:[{id:'a-file'}]})],[answer,answer]);
-  // The same words inside a fenced example remain visible (as a code block).
-  await scenario([u(1),a(2,'Example\n```text\n完成内容：\n- A literal example\n```')],['Example\n'],'Example\n完成内容：\n- A literal example');
+  await scenario([u(1),a(2,answer),a(3,answer,{review_status:'candidate'})],[answer]);
+  await scenario([u(1),a(2,answer),a(3,answer,{artifact_refs:[{id:'a-file'}]})],[answer]);
+  // The same words inside a fenced example remain visible (as a code block). The blank line
+  // that only separates text from the block is dropped from the text (2.1.5); copy is unchanged.
+  await scenario([u(1),a(2,'Example\n```text\n完成内容：\n- A literal example\n```')],['Example'],'Example\n完成内容：\n- A literal example');
 })().catch(e=>{console.error(e);process.exitCode=1});
 '''
     result = subprocess.run([node, '-e', harness], input=json.dumps(source), encoding='utf-8', capture_output=True)
@@ -114,7 +116,7 @@ async function scenario(restoreFails=false,changed=false){
   assert.equal(el('settings-dialog').open,true);
   assert.equal(calls.find(c=>c[0]==='settings'),undefined);
   assert.equal(calls.find(c=>c[0]==='start'),undefined);
-  await el('history').children[0].onclick();
+  await el('history').children.find(c=>String(c.className).includes('history-row')).children[0].onclick();
   el('message-input').value='A real user question';
   await el('send').onclick();
   const sent=calls.find(c=>c[0]==='send');
@@ -191,7 +193,8 @@ const flush=async()=>{for(let i=0;i<20;i++)await new Promise(r=>setImmediate(r))
   assert.equal(el('nb-preview-body').children[0].textContent,'x,y');
   for(const name of ['open_computational_tools','return_to_workbench'])assert.ok(!methods.has(name),name);
   const ops=new Set(calls.map(c=>c.operation));
-  for(const op of ops)assert.ok(['projects','frames','notebook','kernel','artifacts','artifact_preview'].includes(op),op);
+  // 'schedules' is the sidebar badge read at start-up; the shell answers it locally, never the daemon.
+  for(const op of ops)assert.ok(['projects','frames','notebook','kernel','artifacts','artifact_preview','schedules'].includes(op),op);
 })().catch(e=>{console.error(e);process.exitCode=1});
 """
     result=subprocess.run([node,'-e',harness],input=json.dumps(source),text=True,capture_output=True)
@@ -235,7 +238,7 @@ const find=(node,pred)=>{if(pred(node))return node;for(const c of node.children|
     setTimeout:()=>1,clearTimeout(){}});
   vm.runInContext(source,ctx);
   await flush();
-  await el('history').children[0].onclick();
+  await el('history').children.find(c=>String(c.className).includes('history-row')).children[0].onclick();
   await flush();
   const rows=el('messages').children.filter(c=>String(c.className).startsWith('message '));
   assert.equal(rows.length,2);

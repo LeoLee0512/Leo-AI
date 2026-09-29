@@ -24,20 +24,6 @@ def test_verdicts_follow_the_preregistered_lines_and_never_upgrade():
     assert all(e.get("reason") for e in redteam.TIER1 if e.get("applicable") is False)
 
 
-def test_real_tier1_records_keep_run1_and_run2_side_by_side():
-    attempt = ROOT / "experiments/poisson1d/runs/exp3c-hard-bc-r2"
-    run1 = json.loads((attempt / "tier1_redteam.json").read_text(encoding="utf-8"))
-    run2 = json.loads((attempt / "tier1v2_redteam.json").read_text(encoding="utf-8"))
-    p8_1 = next(r for r in run1["results"] if r["id"] == "P8")
-    p8_2 = next(r for r in run2["results"] if r["id"] == "P8")
-    assert p8_1["status"] == "FAIL" and p8_2["status"] == "PASS"
-    for pid in ("P1", "P4", "P6", "P9", "P16"):
-        a = next(r for r in run1["results"] if r["id"] == pid)
-        b = next(r for r in run2["results"] if r["id"] == pid)
-        assert a["observed"] == b["observed"], pid                     # only the harness of P8 changed
-    assert (attempt / "POST_AUDIT_ANNOTATION.md").exists()
-
-
 def test_hard_parameterization_vanishes_at_both_ends_of_a_rescaled_domain():
     pytest.importorskip("torch")
     from pinn.experiments import pinn_torch

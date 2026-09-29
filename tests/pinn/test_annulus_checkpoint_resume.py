@@ -5,7 +5,7 @@ could not be continued after the fact. These tests pin the replacement: what a c
 contains, and that reloading one produces the run that would have happened anyway.
 
 They need torch, so the governance virtualenv skips them; they are executed under the
-training interpreter by ``experiments/annulus/verify_tests_under_torch.py``.
+training interpreter by the installed science interpreter (``tests/pinn`` under science-a).
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ _CACHE: dict[str, object] = {}
 
 def data():
     """Memoised, not a pytest fixture: this module must also run under the minimal harness in
-    ``experiments/annulus/verify_tests_under_torch.py``, which calls each test with no arguments."""
+    the installed science interpreter (``tests/pinn`` under science-a), which calls each test with no arguments."""
 
     if "data" not in _CACHE:
         _CACHE["data"] = (ds.area_uniform_interior(64, 20261230), ds.area_uniform_interior(48, 20261240))

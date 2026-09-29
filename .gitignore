@@ -11,12 +11,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
-# Generated theme bundle. tools/bundle_theme.py rebuilds it from
-# stage/unified-settings-adapter.js + stage/i18n-brand-patch.js +
-# stage/leo-inject.js on every build, so a committed copy could only ever be
-# stale or contradictory.
-stage/leo-inject.bundle.js
-leo-inject.bundle.js
+# Build inputs record written next to a build's output.
 build-inputs.json
 
 # Release manifests are generated per build; the schema is committed, the
@@ -44,13 +39,11 @@ wheelhouse-science/
 # are not repository sources.
 docs/manual-acceptance-evidence/
 
-# The installed product and the Leo Tree project live INSIDE this checkout
-# (decided 2026-09-14). `LeoAIStudio/` is the deployed app: launcher EXE,
-# WebView2 runtime, the pinned upstream OpenAI4S checkout and, under `user/`,
-# DPAPI credentials and session state -- none of which is source. Build,
-# deploy and verify tools default their AppRoot to it (override with
-# LEO_APP_ROOT). `leotree/` is a separate project with its own git repository.
-# Neither is ever committed here.
+# An app root or the separate Leo Tree project may sit inside a checkout. `LeoAIStudio/` is the
+# default AppRoot of the build, deploy and verify tools (override with LEO_APP_ROOT or -AppRoot):
+# launcher EXE, WebView2 runtime, the pinned upstream OpenAI4S checkout and, under `user/`,
+# DPAPI credentials and session state -- none of which is source. `leotree/` is a separate
+# project with its own git repository. Neither is ever committed here.
 LeoAIStudio/
 leotree/
 

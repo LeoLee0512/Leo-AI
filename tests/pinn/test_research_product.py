@@ -24,7 +24,8 @@ def raw():
 @pytest.fixture
 def service(tmp_path):
     paths = SimpleNamespace(root=tmp_path, user=tmp_path / "user")
-    return ResearchService(paths, confirm=lambda *_: True,
+    # Preparation runs inline so each test sees its outcome; the app runs it in the background.
+    return ResearchService(paths, confirm=lambda *_: True, background=False,
         draft_provider=lambda frame, prompt: validate_draft(raw(), prompt))
 
 
@@ -346,7 +347,8 @@ def test_a_preparation_timeout_is_recorded_not_swallowed(service, tmp_path):
         raise subprocess.TimeoutExpired(args, kwargs.get("timeout"), output=b"partial", stderr=b"")
     service.runtime_override, service.command_runner = _runtime(tmp_path), slow
     result = call(service, "prepare", task)
-    assert result == {"ok": False, "code": "PREPARATION_TIMED_OUT", "task": result["task"]}
+    # The outcome is recorded on the task (the panel reads it there), and the task can be forked.
+    assert result["ok"] is True and result["task"]["state"] == "MODEL_CONFIRMED"
     directory = service._directory(task["taskId"])
     assert result["task"]["preparationError"] == "PREPARATION_TIMED_OUT"
     assert read(directory / f"events/{result['task']['version']:08d}.json")["event"] == "PREPARATION_TIMED_OUT"

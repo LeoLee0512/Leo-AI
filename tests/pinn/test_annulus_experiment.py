@@ -2,7 +2,7 @@
 
 Pure Python where possible so the governance virtualenv runs it; the pieces that
 need numpy (the area-uniform draw) are skipped there and executed under the
-training interpreter by ``experiments/annulus/verify_tests_under_torch.py``.
+training interpreter by the installed science interpreter (``tests/pinn`` under science-a).
 """
 
 import ast
