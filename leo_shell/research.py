@@ -21,6 +21,8 @@ from .evidence_guide import build_guide, write_guide
 from .research_draft import validate_draft
 # Display-only wall times live outside the research code identity; the plan's budget is the limit.
 from .research_estimates import ESTIMATE_MINUTES
+# 3.2.0 · The panel's plain words live outside the identity too; they only explain, never decide.
+from . import research_words
 
 ID = re.compile(r"^research-[0-9a-f]{32}$")
 ACTIVE = {"RUNNING", "CANCELLING"}
@@ -29,8 +31,99 @@ BUSY = ACTIVE | {"PREPARING"}
 COMPLETION_FIELDS = ("state", "phase", "exitCode", "reason", "at")
 # Preparation scans each candidate claim grid against the training and dev points (pure Python);
 # 2D grids are larger and grow along the list, so a 2D preparation may take several minutes.
-PREPARE_TIMEOUT_SECONDS = {"poisson1d": 300, "poisson2d": 900}
+# 3.2.2 · An annulus grid holds up to ~15 000 samples and is scanned against ~8 200 others.
+PREPARE_TIMEOUT_SECONDS = {"poisson1d": 300, "poisson2d": 900, "annulus": 1800}
 GUIDE_ERRORS = (ValueError, OSError, KeyError, TypeError)
+_STILL_ACTIVE = 259
+_QUERY_PROCESS = 0x1000
+
+
+def process_alive(pid):
+    """Whether *pid* is still running. A dead or unusable id is not alive."""
+    if isinstance(pid, bool) or not isinstance(pid, int) or pid <= 0:
+        return False
+    if os.name == "nt":
+        import ctypes
+        from ctypes import wintypes
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel.OpenProcess.restype = wintypes.HANDLE
+        kernel.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        kernel.GetExitCodeProcess.restype = wintypes.BOOL
+        kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel.CloseHandle.restype = wintypes.BOOL
+        handle = kernel.OpenProcess(_QUERY_PROCESS, False, pid)
+        if not handle:
+            return False
+        try:
+            code = wintypes.DWORD()
+            if not kernel.GetExitCodeProcess(handle, ctypes.byref(code)):
+                return False
+            return code.value == _STILL_ACTIVE
+        finally:
+            kernel.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def _kill_pid(pid):
+    """Stop *pid* and the children it started. A process that is already gone is success."""
+    if not process_alive(pid):
+        return
+    if os.name == "nt":
+        subprocess.run(["taskkill", "/T", "/F", "/PID", str(pid)], capture_output=True,
+                       creationflags=0x08000000, timeout=30)
+        return
+    try:
+        os.kill(pid, 15)
+    except OSError:
+        return
+    for _ in range(50):
+        if not process_alive(pid):
+            return
+        time.sleep(0.1)
+    try:
+        os.kill(pid, 9)
+    except OSError:
+        pass
+
+
+def _plain(value, limit):
+    text = value if isinstance(value, str) else str(value)
+    text = " ".join(text.split())
+    return text if len(text) <= limit else text[:limit] + "…"
+
+
+def _approval_body(kind, content):
+    """The lines the confirmation shows, so the hash is not the only thing on screen."""
+    if not isinstance(content, dict):
+        return ""
+    lines = []
+    if kind == "RUN":
+        family = content.get("family")
+        code = content.get("codeHash")
+        config = (content.get("solverConfiguration") or {}).get("configId") if isinstance(content.get("solverConfiguration"), dict) else None
+        if isinstance(family, str) and family:
+            lines.append("问题族：" + _plain(family, 40))
+        if isinstance(config, str) and config:
+            lines.append("求解配置：" + _plain(config, 80))
+        if isinstance(code, str) and code:
+            lines.append("代码指纹：" + code[:12])
+    else:
+        template = content.get("templateId")
+        equation = content.get("equation")
+        if isinstance(template, str) and template:
+            lines.append("模板：" + _plain(template, 80))
+        if isinstance(equation, str) and equation:
+            lines.append("方程：" + _plain(equation, 300))
+        if content.get("domain") is not None:
+            lines.append("区域：" + _plain(content.get("domain"), 120))
+        if content.get("boundary") is not None:
+            lines.append("边界：" + _plain(content.get("boundary"), 160))
+    return ("\n" + "\n".join(lines)) if lines else ""
 
 
 def task_family(task):
@@ -67,9 +160,36 @@ class ResearchService:
             raise ValueError("TASK_ID_INVALID")
         return contained(self.root, "tasks/" + task_id)
 
+    def _roll_forward(self, directory, task):
+        """Adopt an event that was committed when the following state write did not finish.
+
+        ``_save`` writes the event file first. A crash in between leaves ``state.json`` on the
+        previous version and the next exclusive event create can never succeed. A readable event
+        that chains from the state on disk is the task; an unreadable fragment is not, and is
+        removed so the same version can be written again.
+        """
+        for _ in range(8):
+            nxt = directory / "events" / f"{task['version'] + 1:08d}.json"
+            if not nxt.is_file():
+                return task
+            try:
+                snapshot = read(nxt)
+            except (ValueError, OSError):
+                nxt.unlink(missing_ok=True)
+                return task
+            prior = digest(read(directory / "events" / f"{task['version']:08d}.json")) if task.get("version") else "GENESIS"
+            recovered = snapshot.get("task") if isinstance(snapshot, dict) else None
+            if (not isinstance(recovered, dict) or snapshot.get("previousEventHash") != prior
+                    or snapshot.get("taskHash") != digest(recovered)
+                    or recovered.get("version") != task["version"] + 1 or recovered.get("taskId") != task.get("taskId")):
+                return task
+            write(directory / "state.json", recovered)
+            task = recovered
+        return task
+
     def _load(self, payload, *, mutation=False):
         directory = self._directory(payload.get("taskId"))
-        task = read(directory / "state.json")
+        task = self._roll_forward(directory, read(directory / "state.json"))
         if task["taskId"] != directory.name:
             raise ValueError("TASK_IDENTITY_MISMATCH")
         if mutation and (type(payload.get("expectedVersion")) is not int or task["version"] != payload["expectedVersion"]):
@@ -129,33 +249,92 @@ class ResearchService:
         for path in sorted((self.root / "tasks").glob("research-*/state.json")):
             directory, task = self._load({"taskId": path.parent.name})
             if every or task["frameId"] == payload.get("frameId"):
-                tasks.append({k: task[k] for k in ("taskId", "state", "version", "prompt", "updatedAt", "frameId")})
+                tasks.append({**{k: task[k] for k in ("taskId", "state", "version", "prompt", "updatedAt", "frameId")},
+                              "family": TEMPLATE_FAMILIES.get((task.get("draft") or {}).get("templateId")),
+                              "hasDraft": bool(task.get("draft"))})
         if every:
             tasks.sort(key=lambda t: t["updatedAt"], reverse=True)
         return {"ok": True, "tasks": tasks}
 
+    def _owner_pid(self, directory, name):
+        path = directory / name
+        if not path.is_file():
+            return None
+        try:
+            pid = read(path).get("pid")
+        except (ValueError, OSError, AttributeError):
+            return None
+        return pid if isinstance(pid, int) and not isinstance(pid, bool) else None
+
+    def _supervisor_alive(self, directory):
+        return process_alive(self._owner_pid(directory, "launch.json"))
+
+    def _seconds_since_update(self, task):
+        try:
+            updated = datetime.fromisoformat(str(task.get("updatedAt", "")).replace("Z", "+00:00"))
+        except ValueError:
+            return 0
+        return (datetime.now(timezone.utc) - updated).total_seconds()
+
+    def _stop_preparation(self, directory):
+        """End a preparation whose parent app is gone, so it cannot keep writing afterwards."""
+        pid = self._owner_pid(directory, "preparation-owner.json")
+        if process_alive(pid):
+            _kill_pid(pid)
+
+    def _adopt_completion(self, directory, task):
+        completion = read(directory / "completion.json")
+        task["state"] = completion["state"]
+        task["completionHash"] = digest(completion)
+        task["completion"] = {k: completion[k] for k in COMPLETION_FIELDS if k in completion}
+        self._save(directory, task, "WORKER_FINISHED")
+        return task
+
+    def _lose_worker(self, directory, task):
+        task["state"] = "INTERRUPTED"
+        task["completion"] = {"state": "INTERRUPTED", "reason": "WORKER_LOST", "at": utc_now()}
+        self._save(directory, task, "WORKER_INTERRUPTED")
+        return task
+
     def _refresh(self, directory, task):
         """Settle a RUNNING/CANCELLING task whose worker finished or died while nobody was looking."""
         if task["state"] == "PREPARING" and task["taskId"] not in self._preparing:
-            # The preparation thread belonged to an earlier session of the app.
-            task["state"] = "MODEL_CONFIRMED"
-            task["preparationError"] = "PREPARATION_INTERRUPTED"
-            self._save(directory, task, "PREPARATION_INTERRUPTED")
+            # The preparation thread belonged to an earlier session. Stop it before recording
+            # the outcome, or it can still create work/ after the task has left PREPARING.
+            self._stop_preparation(directory)
+            plan_path = directory / "execution-plan.json"
+            if plan_path.is_file():
+                try:
+                    task["planHash"] = digest(read(plan_path))
+                except (ValueError, OSError):
+                    plan_path = None
+            if plan_path is not None and plan_path.is_file():
+                task.pop("preparationError", None)
+                task["state"] = "READY_FOR_RUN_APPROVAL"
+                self._save(directory, task, "PLAN_PREPARED")
+            else:
+                task["state"] = "MODEL_CONFIRMED"
+                task["preparationError"] = "PREPARATION_INTERRUPTED"
+                self._save(directory, task, "PREPARATION_INTERRUPTED")
         if task["state"] in ACTIVE:
             if (directory / "completion.json").exists():
-                completion = read(directory / "completion.json")
-                task["state"] = completion["state"]
-                task["completionHash"] = digest(completion)
-                # Why and where the run ended travels with the task, not only in a log.
-                task["completion"] = {k: completion[k] for k in COMPLETION_FIELDS if k in completion}
-                self._save(directory, task, "WORKER_FINISHED")
-            elif ((directory / "worker-owner.json").exists() or
-                  (datetime.now(timezone.utc) - datetime.fromisoformat(task["updatedAt"].replace("Z", "+00:00"))).total_seconds() > 60):
+                return self._adopt_completion(directory, task)
+            # The worker writes its owner file only after it takes worker.lock, and it holds that
+            # lock until completion. A live pid with no owner file is still importing: do not
+            # declare it lost. Once the owner file exists, a free lock means that process has
+            # left the run, even if the recorded pid was later reused.
+            if self._supervisor_alive(directory) and not (directory / "worker-owner.json").exists():
+                return task
+            abandoned = ((directory / "launch.json").exists() or (directory / "worker-owner.json").exists()
+                         or self._seconds_since_update(task) > 60)
+            if abandoned:
                 try:
                     with locked(directory / "worker.lock"):
-                        task["state"] = "INTERRUPTED"
-                        task["completion"] = {"state": "INTERRUPTED", "reason": "WORKER_LOST", "at": utc_now()}
-                        self._save(directory, task, "WORKER_INTERRUPTED")
+                        if (directory / "completion.json").exists():
+                            return self._adopt_completion(directory, task)
+                        if self._supervisor_alive(directory) and not (directory / "worker-owner.json").exists():
+                            return task
+                        return self._lose_worker(directory, task)
                 except ValueError as error:
                     if str(error) != "RESOURCE_BUSY":
                         raise
@@ -197,6 +376,9 @@ class ResearchService:
             result["estimateMinutes"] = ESTIMATE_MINUTES.get((result["plan"].get("solverConfiguration") or {}).get("configId"))
         if (directory / "progress.json").exists():
             result["progress"] = read(directory / "progress.json")
+        if task["state"] == "PREPARING" and (directory / "preparation-progress.json").exists():
+            result["preparationProgress"] = read(directory / "preparation-progress.json")
+        result["words"] = research_words.panel_words(family)
         if task["state"] == "COMPLETED":
             result["verification"] = self._verified(directory, task)
             if result["verification"].get("verified"):
@@ -210,6 +392,12 @@ class ResearchService:
             failure = self._failure(directory, task) if task["state"] not in BUSY else None
             if failure:
                 result["verification"]["failure"] = failure
+            if task["state"] in ("STOPPED", "INTERRUPTED", "CANCELLED", "TIMED_OUT"):
+                try:
+                    result["verification"]["story"] = research_words.failure_story(directory, task, failure)
+                except GUIDE_ERRORS:
+                    pass
+        research_words.annotate_verification(result["verification"])
         return result
 
     def _verified(self, directory, task, *, fresh=False):
@@ -322,7 +510,8 @@ class ResearchService:
             tail = "确认后将运行主实验、Tier-1 和独立复现，" + duration + "；失败不会自动调参。"
         else:
             tail = "该确认不改变任何 Gate 或机器允许的 Claim。"
-        text = ("请核对面板中的完整内容。\n任务：" + task["taskId"] + "\n确认类型：" + kind +
+        text = ("请核对接下来列出的内容。确认记录保存的是同一份内容的 SHA-256。\n任务：" + task["taskId"]
+                + "\n确认类型：" + kind + _approval_body(kind, content) +
                 "\n内容 SHA-256：" + content_hash + "\n" + tail)
         if self.confirm("Leo AI 科研人工确认", text) is not True:
             raise ValueError("HUMAN_CONFIRMATION_DECLINED")
@@ -338,11 +527,29 @@ class ResearchService:
         task["state"] = "MODEL_CONFIRMED"
         return self._save(directory, task, "MODEL_CONFIRMED")
 
-    def _command(self, runtime, command, directory, extra=(), timeout=180):
+    def _command(self, runtime, command, directory, extra=(), timeout=180, *, owned=False):
         args = [runtime["pythonA"], "-u", "-m", "pinn.research.worker", command,
                 "--task-root", str(directory), "--code-root", runtime["codeRoot"], *extra]
+        if owned and self.command_runner is subprocess.run:
+            return self._run_owned(args, runtime["codeRoot"], directory, timeout)
         return self.command_runner(args, cwd=runtime["codeRoot"], capture_output=True,
             timeout=timeout, creationflags=0x08000000 if os.name == "nt" else 0)
+
+    def _run_owned(self, args, cwd, directory, timeout):
+        """Run preparation as a process this service can stop when the app closes."""
+        proc = subprocess.Popen(args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                creationflags=0x08000000 if os.name == "nt" else 0)
+        write(directory / "preparation-owner.json", {"pid": proc.pid, "at": utc_now()})
+        try:
+            out, err = proc.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired as expired:
+            _kill_pid(proc.pid)
+            try:
+                out, err = proc.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                out, err = b"", b""
+            raise subprocess.TimeoutExpired(args, timeout, output=out, stderr=err) from expired
+        return SimpleNamespace(returncode=proc.returncode, stdout=out or b"", stderr=err or b"")
 
     def _prepare(self, payload):
         """Start preparation; the panel polls while it runs, so nothing waits on this call."""
@@ -355,6 +562,7 @@ class ResearchService:
         runtime = self._runtime()
         task.pop("preparationError", None)
         task["state"] = "PREPARING"
+        task["preparationStartedAt"] = utc_now()
         saved = self._save(directory, task, "PREPARATION_STARTED")
         self._preparing.add(task["taskId"])
         timeout = PREPARE_TIMEOUT_SECONDS[task_family(task)]
@@ -368,7 +576,8 @@ class ResearchService:
     def _finish_preparation(self, directory, runtime, *, relock=True, timeout=300):
         try:
             try:
-                result = self._command(runtime, "prepare", directory, ("--python-b", runtime["pythonB"]), timeout=timeout)
+                result = self._command(runtime, "prepare", directory, ("--python-b", runtime["pythonB"]),
+                                       timeout=timeout, owned=True)
                 output = result.stdout + result.stderr
                 code = "PREPARATION_FAILED_SEE_EVIDENCE" if result.returncode else None
             except subprocess.TimeoutExpired as expired:
@@ -393,11 +602,73 @@ class ResearchService:
                     self._save(directory, task, "PLAN_PREPARED")
         finally:
             self._preparing.discard(directory.name)
+            owner = directory / "preparation-owner.json"
+            pid = self._owner_pid(directory, "preparation-owner.json")
+            if owner.exists() and not process_alive(pid):
+                owner.unlink(missing_ok=True)
+
+    def _can_relaunch(self, directory, task):
+        """A launch that never entered the worker can be started again. One that did cannot:
+        it may already have opened the blind set."""
+        if task.get("state") != "INTERRUPTED" or not task.get("runApproval"):
+            return False
+        if (directory / "worker-owner.json").exists() or (directory / "completion.json").exists():
+            return False
+        return not self._supervisor_alive(directory)
+
+    def _mark_launch_failed(self, directory):
+        _, task = self._load({"taskId": directory.name})
+        if task["state"] != "RUNNING":
+            return
+        task["state"] = "INTERRUPTED"
+        task["completion"] = {"state": "INTERRUPTED", "reason": "WORKER_LAUNCH_FAILED", "at": utc_now()}
+        self._save(directory, task, "WORKER_LAUNCH_FAILED")
+
+    def _spawn_supervisor(self, directory, runtime):
+        command = [runtime["pythonA"], "-u", "-m", "pinn.research.worker", "run", "--task-root", str(directory),
+                   "--code-root", runtime["codeRoot"]]
+        log_path = directory / "supervisor.log"
+        process = None
+        try:
+            log = log_path.open("ab" if log_path.exists() else "xb")
+        except OSError:
+            self._mark_launch_failed(directory)
+            raise ValueError("WORKER_LAUNCH_FAILED") from None
+        try:
+            process = subprocess.Popen(command, cwd=runtime["codeRoot"], stdout=log, stderr=subprocess.STDOUT,
+                                       creationflags=0x08000000 if os.name == "nt" else 0)
+            write(directory / "launch.json", {"pid": process.pid, "at": utc_now()})
+        except OSError:
+            if process is not None and process.poll() is None:
+                _kill_pid(process.pid)
+            self._mark_launch_failed(directory)
+            raise ValueError("WORKER_LAUNCH_FAILED") from None
+        finally:
+            log.close()
+
+    def _relaunch(self, directory, task):
+        runtime = self._runtime()
+        plan = read(directory / "execution-plan.json")
+        approval = read(directory / "run-approval.json")
+        if (approval.get("contentHash") != digest(plan) or approval.get("taskId") != directory.name
+                or digest(plan) != task.get("planHash")):
+            raise ValueError("RUN_PLAN_IDENTITY_CHANGED")
+        if self._command(runtime, "check", directory).returncode:
+            raise ValueError("RUN_PLAN_IDENTITY_CHANGED")
+        task["state"] = "RUNNING"
+        task.pop("completion", None)
+        self._save(directory, task, "RUN_ADMITTED")
+        self._spawn_supervisor(directory, runtime)
+        return {"ok": True, "task": self._load({"taskId": directory.name})[1]}
 
     def _approve_run(self, payload):
         directory, task = self._load(payload)
         # Retrying an admitted request is safe, including after losing its first response.
+        # A launch that failed before the worker existed is the exception: it has an approval
+        # and no computation, and used to answer alreadyAdmitted without ever starting.
         if task.get("runApproval"):
+            if self._can_relaunch(directory, task):
+                return self._relaunch(directory, task)
             return {"ok": True, "task": task, "alreadyAdmitted": True}
         directory, task = self._load(payload, mutation=True)
         if task["state"] != "READY_FOR_RUN_APPROVAL":
@@ -421,18 +692,8 @@ class ResearchService:
         write(directory / "run-approval.json", approval, exclusive=True)
         task.update({"runApproval": approval, "state": "RUNNING"})
         self._save(directory, task, "RUN_ADMITTED")
-        command = [runtime["pythonA"], "-u", "-m", "pinn.research.worker", "run", "--task-root", str(directory),
-                   "--code-root", runtime["codeRoot"]]
-        try:
-            with (directory / "supervisor.log").open("xb") as log:
-                process = subprocess.Popen(command, cwd=runtime["codeRoot"], stdout=log, stderr=subprocess.STDOUT,
-                    creationflags=0x08000000 if os.name == "nt" else 0)
-            write(directory / "launch.json", {"pid": process.pid, "at": utc_now()})
-        except OSError:
-            task["state"] = "INTERRUPTED"
-            self._save(directory, task, "WORKER_LAUNCH_FAILED")
-            raise ValueError("WORKER_LAUNCH_FAILED") from None
-        return {"ok": True, "task": task}
+        self._spawn_supervisor(directory, runtime)
+        return {"ok": True, "task": self._load({"taskId": directory.name})[1]}
 
     def _fork(self, payload):
         """Start over from a task's draft. Its prepared data and reserved claim set stay as evidence."""
@@ -526,7 +787,14 @@ class ResearchService:
         """Closing the app stops its runs: each supervisor ends its phase and records CANCELLED."""
         with self.mutex, locked(self.root / "tasks.lock"):
             for path in sorted((self.root / "tasks").glob("research-*/state.json")):
-                if read(path)["state"] != "RUNNING":
+                state = read(path)["state"]
+                directory = path.parent
+                if state == "PREPARING":
+                    # Leave the state for the next session to record. Stop the process now, or it
+                    # keeps writing after that record says the preparation ended.
+                    self._stop_preparation(directory)
+                    continue
+                if state != "RUNNING":
                     continue
                 directory, task = self._load({"taskId": path.parent.name})
                 write(directory / "cancel-request.json", {"taskId": task["taskId"], "at": utc_now(), "reason": "APP_CLOSED"})

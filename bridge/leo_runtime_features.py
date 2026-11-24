@@ -26,6 +26,16 @@ COMPONENTS = (
     "leo_turn_binding_runtime.py", "leo_thought_runtime.py", "leo_reasoning.py",
 )
 MAX_SOURCE = 4 * 1024 * 1024
+# Audited earlier releases of the whole-file runtime modules: an upgrade may replace exactly these
+# bytes (and nothing else unknown). Each entry is the full-file SHA-256 of a released module.
+PREVIOUS_RUNTIME_MODULES = {
+    "openai4s/leo_reasoning.py": frozenset({
+        # Leo AI through 3.2.5 (f394665): six local effort levels; replaced in 3.2.6.
+        "905cbd29ca54f608dc464322eba536d1501bc509586210c408db2cab5799f620",
+        # Leo AI 3.2.6 through 3.2.10 (c5e05dc…783056d): four effort levels; replaced in 3.2.11.
+        "11ce20cfe7e7a90f40362e9653e66263b1af338fe3c007e91636444c9ff757ec",
+    }),
+}
 
 # Audited whole-file LF/CRLF identities for UPSTREAM_REVISION. Windows checkout
 # bytes are transported unchanged to WSL by the existing source installer.
@@ -295,6 +305,12 @@ def compose(relative: str, original: bytes, contract: dict) -> tuple[bytes, byte
     return base, updated
 
 
+def runtime_module_replacement_allowed(relative: str, original: bytes | None, updated: bytes) -> bool:
+    """A runtime module may be written when absent, unchanged, or an audited earlier release."""
+    return (original is None or original == updated
+            or hashlib.sha256(original).hexdigest() in PREVIOUS_RUNTIME_MODULES.get(relative, ()))
+
+
 def _prepare(base: Path, contracts: dict, runtime: dict) -> tuple[Path, list]:
     source = _source(base)
     prepared = []
@@ -305,10 +321,10 @@ def _prepare(base: Path, contracts: dict, runtime: dict) -> tuple[Path, list]:
             canonical, updated = compose(relative, original, contracts[relative])
         else:
             canonical, updated = None, runtime[relative]
-            # There is no previously released full-features module version in
-            # v1. Future upgrades must register audited old hashes in code;
-            # a historical receipt alone cannot bless arbitrary old bytes.
-            if original is not None and original != updated:
+            # Upgrades replace only audited earlier releases registered in
+            # PREVIOUS_RUNTIME_MODULES; a historical receipt alone cannot bless
+            # arbitrary old bytes.
+            if not runtime_module_replacement_allowed(relative, original, updated):
                 raise FeaturesError("RUNTIME_FEATURES_RUNTIME_MODULE_UNKNOWN")
         prepared.append({"relative": relative, "path": target, "original": original,
                          "canonical": canonical, "updated": updated})

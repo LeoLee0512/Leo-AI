@@ -45,17 +45,17 @@ function input_(label) {const l=body.querySelectorAll('label').find(n=>n.textCon
   await click('创建任务并生成草案');
   const page=text(body);
   for(const piece of ['二维 Poisson · 已验证模板','−(u_xx + u_yy) = 2π² sin(πx) sin(πy)','0 < x < 1，0 < y < 1',
-                      '左边（x = 0） u = 0；右边（x = 1） u = 0；下边（y = 0） u = 0；上边（y = 1） u = 0','4 层 × 64 神经元'])
+                      '左边 x = 0|u = 0','右边 x = 1|u = 0','下边 y = 0|u = 0','上边 y = 1|u = 0','4 层 × 64 神经元'])
     assert.ok(page.includes(piece),piece);
   await click('修改模型草案');
   assert.equal(input_('y 上限').value,'1');
-  assert.equal(input_('上边（y 上限处）Dirichlet 值').value,'0');
-  await click('改为一维问题');
-  assert.equal(input_('区域左端').value,'0');
+  assert.equal(input_('上边').value,'0');
+  await click('一维');
+  assert.equal(input_('x 下限').value,'0');
   assert.ok(!body.querySelectorAll('label').some(n=>n.textContent==='y 上限'),'the 1D editor has no y');
-  await click('改为二维问题');
+  await click('二维');
   input_('x 上限').value='2';
-  await click('保存修改并撤销原模型确认');
+  await click('保存修改');
   const update=calls.find(c=>c.operation==='update');
   assert.equal(JSON.stringify(update.draft.domain),'[[0,2],[0,1]]');
   assert.equal(JSON.stringify(update.draft.boundary),'{"left":0,"right":0,"bottom":0,"top":0}');
@@ -63,7 +63,8 @@ function input_(label) {const l=body.querySelectorAll('label').find(n=>n.textCon
   task={...task,state:'MODEL_CONFIRMED'};
   await click('运行');
   const run=text(body);
-  assert.ok(run.includes('1 个二维盲测集（剩余 31 / 32；一维与二维分开计数）'),run);
+  // 3.2.2: three families, each counted apart.
+  assert.ok(run.includes('1 个二维盲测集（剩余 31 / 32；一维、二维、环形各自分开计数）'),run);
   console.log('ok');
 })().catch(e=>{console.error(e);process.exitCode=1;});
 '''

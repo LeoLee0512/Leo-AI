@@ -282,7 +282,8 @@ class ShellApi:
 
 ### 整理成知识树 / 导出到 LeoTree
 
-- 从会话菜单进入，只在用户点选后读取该会话；复用上游 `fetchAllMessages(fid)` 分页读取并要求 `complete:true`。空会话、不完整读取、超过 500 节点或节点内容超过 4 MiB 时拒绝输出完整草稿，不自动截断冒充完整导出。
+- 3.2.16 起：入口在工作台「文件 → 整理成知识树…」，作用于当前打开的对话；没有打开对话时菜单项禁用，对话仍在生成（`state.execution`）时拒绝。读取复用工作台的 `allMessages(frame)`（与「导出当前对话」共用，分页读完，分页不前进即报错），再经 `displayMessages` 去掉思考内容。纯映射逻辑在 `stage/workbench.js` 的 `LEO-TREE-EXPORT` 标记之间，`tests/test_leotree_export_3216.py` 用 node 直接运行它；保存走现有的 `download()`，由 pywebview 弹出系统保存窗口。（2026-09-07 的原实现位于已删除的注入层 `stage/leo-inject.js`，入口曾是上游会话菜单、读取复用上游 `fetchAllMessages(fid)`。）
+- 空会话、不完整读取、超过 500 节点或节点内容超过 4 MiB 时拒绝输出完整草稿，不自动截断冒充完整导出。
 - 当前整理是原文驱动的可编辑草稿，不调用模型或声称已事实核验：用户问题归入“问题与目标”，助手原文按 Markdown 标题分入“知识与推导”，代码围栏中的标题不拆成节点。可编辑树名、节点标题、笔记并取消不需要的节点。
 - 导出格式是 LeoTree 支持的单树 `{schemaVersion:3, tree:{...}}`，文件名为清洗后的树名加 `-LeoTree.json`；保持 `.json` 因目标导入选择器只接受 `.json/.zip`。产品文案使用“整理成知识树”“导出到 LeoTree”。发起 Blob 下载只显示已请求保存，不能据此声明文件已落盘。
 - 全部节点初始 `todo`，`statusHistory:[]`、`firstDoneAt:null`、`attachments:[]`；树的 logs、reviews、learningHistory 为空，`historyComplete:false`。源会话 ID 和导出时间保存在来源 metadata，不伪造掌握历史、实践完成或附件引用。普通导出不包含附件字节。

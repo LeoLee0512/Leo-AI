@@ -158,7 +158,8 @@ def test_the_background_preparation_does_not_hold_the_service(tmp_path):
     with pytest.raises(ValueError, match="FORK_REQUIRES_STOPPED_WORKER"):
         call(service, "fork", task)
     release.set()
-    for _ in range(200):
+    # Up to 15 s: on a busy machine the preparation thread can take a few seconds to write its state.
+    for _ in range(750):
         if read(service._directory(task["taskId"]) / "state.json")["state"] != "PREPARING":
             break
         __import__("time").sleep(0.02)
@@ -206,6 +207,95 @@ def test_a_lost_worker_is_named_as_such(tmp_path):
     write(directory / "worker-owner.json", {"pid": 99999999})
     after = call(service, "get", task)["task"]
     assert after["state"] == "INTERRUPTED" and after["completion"]["reason"] == "WORKER_LOST"
+
+
+def test_a_supervisor_still_starting_is_not_marked_lost(tmp_path):
+    import os
+    service = make(tmp_path)
+    directory, task = _running(service, confirmed(service))
+    write(directory / "launch.json", {"pid": os.getpid()})
+    after = call(service, "get", task)["task"]
+    assert after["state"] == "RUNNING"
+
+
+def test_a_launch_that_never_started_can_be_started_again(tmp_path, monkeypatch):
+    from pinn.research.storage import digest
+    started = []
+
+    class Proc:
+        pid = 5151
+
+        def poll(self):
+            return None
+
+    monkeypatch.setattr("leo_shell.research.subprocess.Popen", lambda *args, **kwargs: started.append(args) or Proc())
+    service = make(tmp_path, command_runner=lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout=b"", stderr=b""))
+    task = confirmed(service)
+    directory = service._directory(task["taskId"])
+    plan = {"taskId": task["taskId"], "modelHash": digest(task["draft"])}
+    write(directory / "execution-plan.json", plan)
+    approval = {"contentHash": digest(plan), "taskId": task["taskId"]}
+    write(directory / "run-approval.json", approval)
+    (directory / "supervisor.log").write_bytes(b"")
+    task.update(state="INTERRUPTED", runApproval=approval, planHash=digest(plan))
+    task = service._save(directory, task, "WORKER_LAUNCH_FAILED")["task"]
+    result = call(service, "approve_run", task)
+    assert result["task"]["state"] == "RUNNING" and "alreadyAdmitted" not in result
+    assert read(directory / "launch.json")["pid"] == 5151 and len(started) == 1
+    assert call(service, "approve_run", result["task"])["alreadyAdmitted"] and len(started) == 1
+    write(directory / "worker-owner.json", {"pid": 99999999})
+    task = read(directory / "state.json")
+    task["state"] = "INTERRUPTED"
+    task = service._save(directory, task, "WORKER_INTERRUPTED")["task"]
+    assert call(service, "approve_run", task)["alreadyAdmitted"] and len(started) == 1
+
+
+def test_an_event_left_ahead_of_its_state_is_adopted_and_a_fragment_is_not(tmp_path):
+    service = make(tmp_path)
+    task = call(service, "create", prompt="验证基准", frameId="f-a", projectId="p-a")["task"]
+    directory = service._directory(task["taskId"])
+    previous = (directory / "state.json").read_bytes()
+    service._save(directory, dict(task), "EXTRA")
+    (directory / "state.json").write_bytes(previous)
+    loaded = service._load({"taskId": task["taskId"]})[1]
+    assert loaded["version"] == task["version"] + 1
+    fragment = directory / "events" / f"{loaded['version'] + 1:08d}.json"
+    fragment.write_text("{", encoding="utf-8")
+    again = service._load({"taskId": task["taskId"]})[1]
+    assert again["version"] == loaded["version"] and not fragment.exists()
+    before = again["version"]
+    saved = service._save(directory, again, "AFTER")["task"]
+    assert saved["version"] == before + 1
+
+
+def test_an_orphan_preparation_is_stopped_before_it_is_marked_interrupted(tmp_path, monkeypatch):
+    killed = []
+    monkeypatch.setattr("leo_shell.research.process_alive", lambda pid: pid == 77)
+    monkeypatch.setattr("leo_shell.research._kill_pid", lambda pid: killed.append(pid) or None)
+    service = make(tmp_path)
+    task = confirmed(service)
+    directory = service._directory(task["taskId"])
+    task["state"] = "PREPARING"
+    service._save(directory, task, "PREPARATION_STARTED")
+    write(directory / "preparation-owner.json", {"pid": 77})
+    fresh = make(tmp_path)
+    after = call(fresh, "get", task)["task"]
+    assert killed == [77]
+    assert after["state"] == "MODEL_CONFIRMED" and after["preparationError"] == "PREPARATION_INTERRUPTED"
+
+
+def test_a_preparation_that_already_wrote_its_plan_is_ready(tmp_path, monkeypatch):
+    from pinn.research.storage import digest
+    monkeypatch.setattr("leo_shell.research.process_alive", lambda pid: False)
+    service = make(tmp_path)
+    task = confirmed(service)
+    directory = service._directory(task["taskId"])
+    task["state"] = "PREPARING"
+    service._save(directory, task, "PREPARATION_STARTED")
+    plan = {"taskId": task["taskId"]}
+    write(directory / "execution-plan.json", plan)
+    after = call(make(tmp_path), "get", task)["task"]
+    assert after["state"] == "READY_FOR_RUN_APPROVAL" and after["planHash"] == digest(plan)
 
 
 def test_closing_the_app_stops_runs_and_leaves_preparations_to_be_marked(tmp_path):

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "leo.claimRegistration/1",
+  "registeredAt": "2026-09-29",
+  "registeredBy": "Claude (owner-approved 2026-09-29: real sandbox smoke of BOTH 1D and 2D before the 3.2.0 release, one grid each)",
+  "purpose": "The 3.2.0 sandbox full-chain smoke reserved and opened this blind claim grid. Registering it here puts it in every later product preparation's historical claim search and in the install quota, so a formal run can never draw it again.",
+  "claimFile": "experiments/poisson1d/problems/pdef-research-82b5d8ffdee3475f8e8a0e5f281e3897-claim-GL1152-CGL4010.json",
+  "claimFileSha256": "1cfe5dffb8f65427ed661fb22d0ed80f8d5c43bb3a3f15173fa96ed8a2b96637",
+  "member": "GL1152-CGL4010",
+  "glOrder": 1152,
+  "cglCount": 4010,
+  "sampleSetHash": "7a16bc001a65dc1a1806fbccfd5df2845eb37f19059b1314893a30ca55671d99",
+  "origin": {
+    "kind": "sandbox smoke (throwaway research root, deleted after the smoke)",
+    "family": "poisson1d",
+    "taskId": "research-82b5d8ffdee3475f8e8a0e5f281e3897",
+    "problemId": "pdef-research-82b5d8ffdee3475f8e8a0e5f281e3897",
+    "sourceCommit": "cc610a5ff173d317a3d657e1b486628ed0ad6329",
+    "codeHash": "aa2f6ef046cdb09870b193cfa96cbd006481343efa335d224f924d3a468c6c8f",
+    "specHash": "357e04fffe15f424085977fcb0278fb2d9f3120eae0669264d83145a9d145f52",
+    "reservedAt": "2026-09-29T21:18:39Z",
+    "openedAt": "2026-09-29T21:20:49Z",
+    "status": "OPENED by the smoke's main attempt; BURNT for any formal use"
+  },
+  "installQuotaEffect": "1D: 5 used / 27 remaining of 32 once released (GL1024, GL1056, GL1088, GL1120, GL1152).",
+  "scientificStanding": "None. A smoke run exercises the product chain; it is not evidence for any claim and is not pooled with formal runs."
+}

@@ -56,9 +56,11 @@ const a=(seq,content,extra={})=>({seq,message_id:'a-'+seq,role:'assistant',conte
   await scenario([u(1),a(2,answer),u(3),a(4,answer)],[answer,answer]);
   // 2.2.8: earlier remarks of a finished turn fold into 「思考与步骤」; the turn shows its answer.
   await scenario([u(1),a(2,'第一步'),a(3,'不同的补充')],['不同的补充']);
+  // 3.1.0: answers render as Markdown, so the visible text is the paragraphs' and list items' words;
+  // copying still gives the answer's own text.
   await scenario([u(1),a(2,'结果\n\n完成内容：\n- Computed the result\n\n限制与局限：\n尚未验证\n\n产物：\n- report.txt')],
-    ['结果\n\n\n限制与局限：\n尚未验证\n\n产物：\n- report.txt']);
-  await scenario([u(1),a(2,'> 完成内容：\n> - 用户引用的文字')],['> 完成内容：\n> - 用户引用的文字']);
+    ['结果限制与局限：\n尚未验证产物：report.txt'],'结果\n\n\n限制与局限：\n尚未验证\n\n产物：\n- report.txt');
+  await scenario([u(1),a(2,'> 完成内容：\n> - 用户引用的文字')],['完成内容：用户引用的文字'],'> 完成内容：\n> - 用户引用的文字');
   await scenario([u(1),a(2,answer),a(3,answer,{failure:{request_id:'failed-1'}})],[answer,answer]);
   await scenario([u(1),a(2,answer),a(3,answer,{review_status:'candidate'})],[answer]);
   await scenario([u(1),a(2,answer),a(3,answer,{artifact_refs:[{id:'a-file'}]})],[answer]);

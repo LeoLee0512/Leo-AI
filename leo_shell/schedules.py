@@ -117,9 +117,24 @@ class Scheduler:
         self._now = now
         self._stop = threading.Event()
         self._thread = None
+        # A previous process may have recorded "sending" and then exited before the result was
+        # written. Nothing in this process is mid-send yet, so that entry can be retried by hand.
+        self._fail_interrupted_sends()
         if start:
             self._thread = threading.Thread(target=self._run, name="leo-scheduler", daemon=True)
             self._thread.start()
+
+    def _fail_interrupted_sends(self) -> None:
+        with self._store.lock:
+            document = self._store.read()
+            changed = False
+            for entry in document["history"]:
+                if entry.get("status") == "sending":
+                    entry["status"] = "failed"
+                    entry["detail"] = "SEND_INTERRUPTED"
+                    changed = True
+            if changed:
+                self._store.write(document)
 
     # -- page operations -----------------------------------------------------------------------
 

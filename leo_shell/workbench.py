@@ -1,10 +1,11 @@
 """Bounded native gateway for Leo's own frontend. No daemon token enters HTML."""
 import base64
+import binascii
 import hashlib
 import json
 import re
 from urllib.error import HTTPError
-from urllib.parse import parse_qs, urlencode, urlsplit
+from urllib.parse import parse_qs, quote, urlencode, urlsplit
 from urllib.request import Request, ProxyHandler, build_opener
 
 from .bridge_client import WslBridge
@@ -58,6 +59,117 @@ def text_value(value, limit):
     return value.strip()
 
 
+# 3.1.0 · Files a person adds to a conversation. The daemon places them in the conversation's working
+# directory, where the AI opens them by name; Leo keeps names to letters, digits, "_", "-" and "." so a
+# name also works when it is mentioned in a message.
+UPLOAD_MAX_BYTES = 25 * 1024 * 1024
+
+
+def upload_name(value):
+    if not isinstance(value, str) or not value.strip() or len(value) > 400:
+        raise ValueError("WORKBENCH_INVALID_REQUEST")
+    name = value.replace("\\", "/").rsplit("/", 1)[-1].strip()
+    stem, dot, extension = name.rpartition(".")
+    if not dot or not stem.strip("."):  # a leading dot (.bashrc) starts a name, not an extension
+        stem, extension = name, ""
+    stem = re.sub(r"[^\w.-]+", "_", stem).strip("._")[:100] or "file"
+    extension = re.sub(r"[^A-Za-z0-9]+", "", extension)[:12]
+    return stem + ("." + extension if extension else "")
+
+
+def upload_content(value):
+    """The page's base64 text, checked strictly; the bytes themselves are never kept here."""
+    if not isinstance(value, str) or len(value) > (UPLOAD_MAX_BYTES + 2) // 3 * 4:
+        raise ValueError("WORKBENCH_UPLOAD_TOO_LARGE")
+    try:
+        size = len(base64.b64decode(value, validate=True))
+    except (ValueError, binascii.Error):
+        raise ValueError("WORKBENCH_INVALID_REQUEST") from None
+    if size > UPLOAD_MAX_BYTES:
+        raise ValueError("WORKBENCH_UPLOAD_TOO_LARGE")
+    return value
+
+
+# 3.1.0 · A command typed into 「终端」 runs as one cell in the conversation's own sandboxed kernel,
+# through host.bash, so the same approval policy applies as to the AI's commands. The page sends
+# only the command text; Leo writes the cell. The command enters the cell as ascii() of the string,
+# an exact ASCII-only Python literal, so nothing in it can become code. The first line repeats it as
+# JSON so the notebook and 「终端」 can show the command instead of the cell.
+TERMINAL_MARK = "# leo-terminal "
+TERMINAL_TIMEOUT = 300
+
+
+def terminal_code(command, run_id):
+    return (f"{TERMINAL_MARK}{run_id} {json.dumps(command, ensure_ascii=True)}\n"
+            "def _leo_terminal():\n"
+            "    import sys\n"
+            "    try:\n"
+            f"        result = host.bash({ascii(command)}, timeout={TERMINAL_TIMEOUT})\n"
+            "    except Exception as error:\n"
+            "        print('[没有执行] ' + str(error))\n"
+            "        return\n"
+            "    print(result.get('stdout') or '', end='')\n"
+            "    if result.get('stderr'):\n"
+            "        print(result['stderr'], end='', file=sys.stderr)\n"
+            "    print('\\n[exit %s]' % result.get('exit_code'))\n"
+            "_leo_terminal()\n"
+            "del _leo_terminal\n")
+
+
+def terminal_command(value):
+    if not isinstance(value, str) or not value.strip() or len(value) > 8000 or "\x00" in value:
+        raise ValueError("WORKBENCH_INVALID_REQUEST")
+    return value.strip()
+
+
+# 3.1.0 · 「插件」. Skills are the daemon's own catalogue. Connectors (MCP servers) run outside the kernel
+# sandbox with the daemon's rights, so Leo adds only the ones it has checked, never an arbitrary command,
+# and never shows a connector's launch command, arguments or error text to the page.
+CONNECTOR_ALLOWLIST = {
+    "example": ("示例连接器", "回显、当前时间、计算器和随机整数。不联网、不需要安装，用来确认连接器能正常工作。"),
+}
+SKILL_DOCUMENT_LIMIT = 1024 * 1024
+
+
+def plugin_name(value):
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", value):
+        raise ValueError("WORKBENCH_INVALID_REQUEST")
+    return quote(value, safe="")
+
+
+def flag(value):
+    if type(value) is not bool:
+        raise ValueError("WORKBENCH_INVALID_REQUEST")
+    return value
+
+
+# 3.2.1 · 「Python」: code typed in the side panel runs as one cell in the conversation's sandboxed
+# kernel, exactly as typed (it is the person's own code; the kernel's sandbox and its approvals for host
+# calls stay in force). The first line marks the cell so the panel can show it as the person's.
+PYTHON_MARK = "# leo-python "
+PYTHON_MAX_CODE = 100_000
+
+
+def python_code(code, run_id):
+    if not isinstance(code, str) or not code.strip() or len(code) > PYTHON_MAX_CODE or "\x00" in code:
+        raise ValueError("WORKBENCH_INVALID_REQUEST")
+    return f"{PYTHON_MARK}{run_id}\n{code}"
+
+
+def terminal_run_id(value):
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{16}", value):
+        raise ValueError("WORKBENCH_INVALID_REQUEST")
+    return value
+
+
+def search_key(value):
+    """A search API key as typed: visible ASCII only, no spaces inside, at most 256 characters."""
+    key = value.strip() if isinstance(value, str) else ""
+    if not key or len(key) > 256 or any(not 33 <= ord(c) <= 126 for c in key):
+        raise ValueError("WORKBENCH_INVALID_REQUEST")
+    return key
+
+
 def route(payload):
     """The browser chooses operations, never an arbitrary URL or HTTP method."""
     if not isinstance(payload, dict):
@@ -75,6 +187,33 @@ def route(payload):
         return "GET", "/frames?" + urlencode(query), None
     if op == "create_frame":
         return "POST", "/frames", {"project_id": identifier(payload.get("projectId"))}
+    if op == "skills":
+        return "GET", "/skills/catalog", None
+    if op == "skill_toggle":
+        return "PUT", "/skills/catalog/" + plugin_name(payload.get("name")) + "/enabled", {"enabled": flag(payload.get("enabled"))}
+    if op == "skill_import":
+        content = payload.get("content")
+        if not isinstance(content, str) or not content.strip() or len(content.encode("utf-8")) > SKILL_DOCUMENT_LIMIT:
+            raise ValueError("WORKBENCH_INVALID_REQUEST")
+        return "POST", "/skills/import", {"content": content}
+    if op == "skill_delete":
+        return "DELETE", "/skills/" + plugin_name(payload.get("name")), None
+    if op == "connectors":
+        return "GET", "/connectors", None
+    if op == "connector_toggle":
+        return "PUT", "/connectors/" + plugin_name(payload.get("id")) + "/enabled", {"enabled": flag(payload.get("enabled"))}
+    if op == "connector_probe":
+        return "POST", "/connectors/" + plugin_name(payload.get("id")) + "/probe", {}
+    if op == "connector_delete":
+        return "DELETE", "/connectors/" + plugin_name(payload.get("id")), None
+    # 3.2.9 · The search API key goes straight to the daemon's own search setting (stored in its secret
+    # store); Leo keeps no copy, and the page only ever learns whether a key is set.
+    if op == "search_config":
+        return "GET", "/search/config", None
+    if op == "search_key_save":
+        return "PUT", "/search/config", {"api_key": search_key(payload.get("apiKey"))}
+    if op == "search_key_clear":
+        return "PUT", "/search/config", {"clear_api_key": True}
     frame = identifier(payload.get("frameId"))
     path = "/frames/" + frame
     if op == "frame":
@@ -109,8 +248,29 @@ def route(payload):
         return "GET", path + "/execution-queue", None
     if op == "timeline":
         return "GET", path + "/action-timeline?limit=300", None
+    if op == "context":
+        return "GET", path + "/context", None
     if op == "thoughts":
         return "GET", path + "/leo-projections", None
+    if op == "steps":
+        return "GET", path + "/steps", None
+    if op == "terminal_run":
+        run_id = terminal_run_id(payload.get("runId"))
+        return "POST", path + "/kernel/execute", {"code": terminal_code(terminal_command(payload.get("command")), run_id),
+            "language": "python", "execution_id": "leo-term-" + run_id}
+    if op == "python_run":
+        run_id = terminal_run_id(payload.get("runId"))
+        return "POST", path + "/kernel/execute", {"code": python_code(payload.get("code"), run_id),
+            "language": "python", "execution_id": "leo-py-" + run_id}
+    if op == "python_interrupt":
+        run_id = terminal_run_id(payload.get("runId"))
+        # A REPL cell's owner is the user REPL with the cell's own execution id (upstream submit_repl).
+        return "POST", path + "/kernel/interrupt", {"execution_id": "leo-py-" + run_id,
+            "owner": {"kind": "user_repl", "id": "leo-py-" + run_id}}
+    if op == "upload":
+        # Only the conversation, a cleaned name and checked content; never a project or workspace id.
+        return "POST", "/uploads", {"frame_id": frame, "filename": upload_name(payload.get("filename")),
+                                    "content_base64": upload_content(payload.get("data"))}
     if op == "artifacts":
         return "GET", path + "/artifacts", None
     if op == "notebook":
@@ -171,8 +331,17 @@ def shape_notebook(result):
         seconds = row.get("cpu_seconds")
         status = row.get("status") if isinstance(row.get("status"), str) else "ok"
         language = row.get("language") if row.get("language") in ("python", "r") else "python"
+        terminal = _terminal_cell(row.get("source"))
+        python_run = _python_cell(row.get("source"))
+        if python_run:
+            # Show the person's code, not Leo's marker line.
+            clipped["source"] = _clip(row["source"].split("\n", 1)[1] if "\n" in row["source"] else "")[0]
         entries.append({
             "ordinal": ordinal,
+            "origin": "user" if row.get("origin") == "user" else "agent",
+            "terminalRun": terminal[0] if terminal else None,
+            "pythonRun": python_run,
+            "command": terminal[1] if terminal else None,
             "cellIndex": _count(row.get("cell_index")),
             "language": language,
             "status": status[:32],
@@ -187,6 +356,29 @@ def shape_notebook(result):
             "cpuSeconds": seconds if isinstance(seconds, (int, float)) and not isinstance(seconds, bool) and seconds >= 0 else None,
         })
     return {"entries": entries, "total": len(rows), "omitted": max(0, len(rows) - _NOTEBOOK_MAX_ENTRIES)}
+
+
+def _python_cell(source):
+    """The run id when a cell is one the person ran from 「Python」, else None."""
+    if not isinstance(source, str) or not source.startswith(PYTHON_MARK):
+        return None
+    run_id = source.split("\n", 1)[0][len(PYTHON_MARK):]
+    return run_id if re.fullmatch(r"[0-9a-f]{16}", run_id) else None
+
+
+def _terminal_cell(source):
+    """(run id, command) when a cell is one Leo wrote for 「终端」, else None."""
+    if not isinstance(source, str) or not source.startswith(TERMINAL_MARK):
+        return None
+    first = source.split("\n", 1)[0][len(TERMINAL_MARK):]
+    run_id, _, literal = first.partition(" ")
+    try:
+        command = json.loads(literal)
+    except ValueError:
+        return None
+    if not re.fullmatch(r"[0-9a-f]{16}", run_id) or not isinstance(command, str):
+        return None
+    return run_id, _clip(command, 8000)[0]
 
 
 def _version_id(row):
@@ -278,8 +470,42 @@ def shape_timeline(result):
             "names": names,
             "permission": {"decisionId": _clip(permission.get("decision_id"), 120)[0],
                            "state": _clip(permission.get("state"), 40)[0]} if permission else None,
+            # 3.2.11 · 「用量」: the model call's own token counts (numbers only) and model name.
+            "model": _clip(group.get("model"), 120)[0] or None,
+            "usage": _usage(group.get("usage")),
         })
     return {"groups": shaped}
+
+
+_USAGE_KEYS = {"input_tokens": "input", "output_tokens": "output", "cache_read": "cacheRead",
+               "reasoning_tokens": "reasoning"}
+
+
+def _usage(value):
+    if not isinstance(value, dict):
+        return None
+    usage = {name: value[key] for key, name in _USAGE_KEYS.items() if _count(value.get(key)) is not None}
+    return usage or None
+
+
+# The daemon's context parts, in Chinese for the 「用量」 panel.
+_CONTEXT_LAYERS = {"system_prompt": "系统提示", "text": "对话文字", "images": "图片", "tool_schemas": "工具说明",
+                   "tool_calls": "工具调用", "tool_results": "工具结果", "artifact_refs": "文件引用", "wire_state": "其他"}
+
+
+def shape_context(result):
+    """The daemon's estimate of what the conversation sends each turn, and the model's limit (numbers only)."""
+    if not isinstance(result, dict):
+        raise ValueError("WORKBENCH_RESPONSE_INVALID")
+    layers = []
+    for layer in result.get("layers") if isinstance(result.get("layers"), list) else []:
+        kind = layer.get("kind") if isinstance(layer, dict) else None
+        tokens = _count(layer.get("token_count")) if isinstance(layer, dict) else None
+        if kind in _CONTEXT_LAYERS and tokens:
+            layers.append({"kind": kind, "label": _CONTEXT_LAYERS[kind], "tokens": tokens})
+    return {"estimate": _count(result.get("token_count")), "limit": _count(result.get("token_limit")),
+            "outputReserve": _count(result.get("output_reserve")), "messages": _count(result.get("message_count")),
+            "compactions": _count(result.get("compaction_count")) or 0, "layers": layers}
 
 
 _THOUGHT_SOURCES = {"reasoning_content", "reasoning"}
@@ -316,10 +542,174 @@ def shape_thoughts(result):
     return {"thoughts": thoughts[omitted:], "hasMore": result.get("has_more") is True or omitted > 0}
 
 
+_STEP_LIMIT = 200
+_OUTPUT_PREVIEW = 4000
+
+
+def _web_url(value):
+    """An address the page may show and offer to open: http(s) only, bounded."""
+    if not isinstance(value, str) or len(value) > 2048 or not re.match(r"https?://", value, re.I):
+        return None
+    return value
+
+
+def _when(value):
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return value
+    return _clip(value, 64)[0] or None
+
+
+def shape_steps(result):
+    """3.1.0 · What the AI (or the person, from 「终端」) ran and read, for 「终端」 and 「网页」.
+
+    Commands keep the daemon's own redacted text and output previews; searches keep titles,
+    addresses and snippets; page reads keep the address and a short excerpt. Everything is text for
+    the page, nothing is rendered as HTML, and the daemon returns only a conversation's first 800 steps.
+    """
+    rows = result.get("steps") if isinstance(result, dict) else None
+    if not isinstance(rows, list):
+        raise ValueError("WORKBENCH_RESPONSE_INVALID")
+    commands, web = [], []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        kind = row.get("kind")
+        given = row.get("input") if isinstance(row.get("input"), dict) else {}
+        out = row.get("output") if isinstance(row.get("output"), dict) else {}
+        base = {"seq": _count(row.get("seq")), "status": _clip(row.get("status"), 40)[0], "at": _when(row.get("created_at")),
+                "summary": _clip(row.get("summary"), 240)[0]}
+        if kind == "bash":
+            streams = {}
+            for name in ("stdout", "stderr"):
+                stream = out.get(name)
+                text = stream.get("preview") if isinstance(stream, dict) else stream
+                clipped, cut = _clip(text if isinstance(text, str) else "", _OUTPUT_PREVIEW)
+                streams[name] = clipped
+                streams[name + "Truncated"] = cut or (isinstance(stream, dict) and (stream.get("truncated") is True
+                                                                                   or (_count(stream.get("dropped_chars")) or 0) > 0))
+            diff = out.get("workspace_diff") if isinstance(out.get("workspace_diff"), dict) else {}
+            changed = [name for key in ("created", "modified", "deleted") for name in _names(diff.get(key))][:50]
+            code = out.get("exit_code")
+            commands.append({**base, "command": _clip(given.get("command"), 1000)[0], "cwd": _clip(given.get("cwd"), 300)[0],
+                             "exitCode": code if isinstance(code, int) and not isinstance(code, bool) else None,
+                             "durationMs": _count(out.get("duration_ms")), **streams, "changed": changed,
+                             "error": _clip(out.get("error"), 600)[0]})
+        elif kind == "search":
+            results = []
+            for item in out.get("results") if isinstance(out.get("results"), list) else []:
+                if isinstance(item, dict) and len(results) < 8:
+                    results.append({"title": _clip(item.get("title"), 300)[0], "url": _web_url(item.get("url")),
+                                    "snippet": _clip(item.get("snippet"), 300)[0]})
+            web.append({**base, "type": "search", "query": _clip(given.get("query"), 400)[0],
+                        "database": _clip(given.get("database"), 80)[0], "source": _clip(out.get("source"), 80)[0],
+                        "results": results})
+        elif kind == "fetch":
+            content = out.get("content") if isinstance(out.get("content"), str) else ""
+            web.append({**base, "type": "fetch", "url": _web_url(given.get("url")), "finalUrl": _web_url(out.get("url")),
+                        "download": bool(given.get("path")), "excerpt": _clip(content, 600)[0], "chars": len(content),
+                        "error": _clip(out.get("error"), 600)[0]})
+    seqs = [_count(row.get("seq")) for row in rows if isinstance(row, dict)]
+    return {"commands": commands[-_STEP_LIMIT:], "web": web[-_STEP_LIMIT:], "capped": len(rows) >= 800,
+            "lastSeq": max([n for n in seqs if n is not None], default=0)}
+
+
+def shape_skills(result):
+    rows = result.get("skills") if isinstance(result, dict) else None
+    if not isinstance(rows, list):
+        raise ValueError("WORKBENCH_RESPONSE_INVALID")
+    skills = []
+    for row in rows[:2000]:
+        if not isinstance(row, dict) or not isinstance(row.get("name"), str):
+            continue
+        readiness = row.get("readiness") if isinstance(row.get("readiness"), dict) else {}
+        skills.append({"name": _clip(row["name"], 128)[0], "title": _clip(row.get("displayName") or row["name"], 160)[0],
+                       "description": _clip(row.get("description"), 400)[0],
+                       "scope": row.get("scope") if row.get("scope") in ("bundled", "personal", "project") else "bundled",
+                       "collection": _clip(row.get("collection"), 80)[0], "editable": row.get("editable") is True,
+                       "enabled": row.get("enabled") is not False,
+                       "ready": readiness.get("state") if readiness.get("state") in ("ready", "needs_setup", "unknown") else "unknown",
+                       "missing": _names(readiness.get("missing"))[:8]})
+    return {"skills": skills}
+
+
+def shape_connectors(result):
+    """Name, description and state only: no launch command, arguments or environment names."""
+    rows = result.get("connectors") if isinstance(result, dict) else None
+    if not isinstance(rows, list):
+        raise ValueError("WORKBENCH_RESPONSE_INVALID")
+    connectors = []
+    for row in rows[:200]:
+        ident = row.get("connector_id") if isinstance(row, dict) else None
+        if not isinstance(ident, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", ident):
+            continue
+        known = CONNECTOR_ALLOWLIST.get(ident)
+        connectors.append({"id": ident, "name": known[0] if known else _clip(row.get("name") or ident, 120)[0],
+                           "description": known[1] if known else _clip(row.get("description"), 400)[0],
+                           "enabled": row.get("enabled") is not False and row.get("enabled") != 0,
+                           "managed": row.get("managed") is True, "hasCredentials": row.get("has_env") is True,
+                           "leoChecked": known is not None})
+    available = [{"id": ident, "name": name, "description": text} for ident, (name, text) in CONNECTOR_ALLOWLIST.items()
+                 if ident not in {c["id"] for c in connectors}]
+    return {"connectors": connectors, "available": available}
+
+
+def shape_probe(result):
+    """Tool names when the connector answered; a failure carries no text (it can echo arguments)."""
+    if not isinstance(result, dict) or result.get("ok") is not True:
+        return {"ok": False, "tools": []}
+    tools = result.get("tools") if isinstance(result.get("tools"), list) else []
+    names = [_clip(tool.get("name"), 80)[0] for tool in tools if isinstance(tool, dict) and isinstance(tool.get("name"), str)]
+    return {"ok": True, "tools": names[:50], "count": len(names)}
+
+
+def shape_ok(result):
+    return {"ok": True}
+
+
+def shape_search_config(result):
+    """Only whether a search key is set; the daemon never returns the key, and nothing else is passed on."""
+    if not isinstance(result, dict):
+        raise ValueError("WORKBENCH_RESPONSE_INVALID")
+    return {"configured": result.get("api_key_configured") is True}
+
+
+def shape_python_interrupt(result):
+    # The daemon answers ok: false when that cell holds no running lease (still queued, or already done).
+    if not isinstance(result, dict) or result.get("ok") is False:
+        raise ValueError("PYTHON_INTERRUPT_REFUSED")
+    return {"ok": True}
+
+
+def shape_terminal_run(result):
+    if not isinstance(result, dict) or result.get("status") != "accepted":
+        raise ValueError("WORKBENCH_RESPONSE_INVALID")
+    position = result.get("queue_position")
+    return {"accepted": True, "queuePosition": position if isinstance(position, int) and not isinstance(position, bool) else None}
+
+
+def shape_upload(result):
+    if not isinstance(result, dict):
+        raise ValueError("WORKBENCH_RESPONSE_INVALID")
+    ident = result.get("artifact_id") or result.get("id")
+    if not isinstance(ident, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", ident):
+        raise ValueError("WORKBENCH_RESPONSE_INVALID")
+    return {"id": ident, "filename": _clip(result.get("filename"), 255)[0]}
+
+
 _SHAPERS = {"notebook": shape_notebook, "artifacts": shape_artifacts, "kernel": shape_kernel,
-            "feedback": shape_feedback, "timeline": shape_timeline, "thoughts": shape_thoughts}
+            "feedback": shape_feedback, "timeline": shape_timeline, "thoughts": shape_thoughts,
+            "steps": shape_steps, "terminal_run": shape_terminal_run, "python_run": shape_terminal_run,
+            "python_interrupt": shape_python_interrupt, "upload": shape_upload,
+            "skills": shape_skills, "connectors": shape_connectors, "connector_probe": shape_probe,
+            "skill_toggle": shape_ok, "skill_import": shape_ok, "skill_delete": shape_ok,
+            "connector_toggle": shape_ok, "connector_delete": shape_ok,
+            "context": shape_context,
+            "search_config": shape_search_config, "search_key_save": shape_search_config,
+            "search_key_clear": shape_search_config}
 # Operations whose raw daemon answer may exceed the ordinary limit before it is trimmed.
-_LARGE_OPERATIONS = {"notebook", "thoughts"}
+_LARGE_OPERATIONS = {"notebook", "thoughts", "steps", "skills"}
+# Operations that may take longer than an ordinary call: a file of up to 25 MB crosses to the daemon.
+_SLOW_OPERATIONS = {"upload": 180, "connector_probe": 90}
 
 
 class WorkbenchGateway:
@@ -340,6 +730,28 @@ class WorkbenchGateway:
             raise ValueError("WORKBENCH_RESPONSE_INVALID")
         return result
 
+    def add_connector(self, payload):
+        """3.1.0 · Add a connector from the daemon's own directory, only if Leo has checked it."""
+        ident = payload.get("id") if isinstance(payload, dict) else None
+        if ident not in CONNECTOR_ALLOWLIST:
+            raise ValueError("WORKBENCH_INVALID_REQUEST")
+        raw, _ = self._exchange("GET", "/connectors/directory", None, _JSON_LIMIT)
+        try:
+            directory = json.loads(raw).get("directory")
+        except (ValueError, AttributeError):
+            raise ValueError("WORKBENCH_RESPONSE_INVALID") from None
+        entry = next((item for item in directory or [] if isinstance(item, dict) and item.get("id") == ident), None)
+        command = entry.get("command") if entry else None
+        if (not isinstance(command, list) or not command or not all(isinstance(part, str) for part in command)
+                or entry.get("env")):
+            raise ValueError("WORKBENCH_RESPONSE_INVALID")
+        body = {"connector_id": ident, "name": entry.get("name") or ident, "description": entry.get("description") or "",
+                "command": command, "enabled": True}
+        if isinstance(entry.get("args"), list):
+            body["args"] = entry["args"]
+        self._exchange("POST", "/connectors", body, _JSON_LIMIT)
+        return {"ok": True}
+
     def request(self, payload):
         operation = payload.get("operation") if isinstance(payload, dict) else None
         local = _LOCAL_HANDLERS.get(operation) if isinstance(operation, str) else None
@@ -349,7 +761,8 @@ class WorkbenchGateway:
         if operation == "artifact_preview":
             return {"ok": True, "data": self._preview(payload, path)}
         limit = _NOTEBOOK_JSON_LIMIT if operation in _LARGE_OPERATIONS else _JSON_LIMIT
-        raw, _ = self._exchange(method, path, body, limit)
+        slow = _SLOW_OPERATIONS.get(operation)
+        raw, _ = self._exchange(method, path, body, limit, slow) if slow else self._exchange(method, path, body, limit)
         if len(raw) > limit:
             raise ValueError("WORKBENCH_RESPONSE_INVALID")
         try:
@@ -378,24 +791,24 @@ class WorkbenchGateway:
         if callable(invalidate):
             invalidate()
 
-    def _exchange(self, method, path, body, limit):
+    def _exchange(self, method, path, body, limit, timeout=30):
         """Read at most ``limit + 1`` bytes so callers can tell a cut from a fit.
 
         A refused token (401/403) never ran anything, so it is retried once with a fresh URL.
         A connection failure is retried only for reads: a write may already have landed.
         """
         try:
-            return self._exchange_once(method, path, body, limit)
+            return self._exchange_once(method, path, body, limit, timeout)
         except _StaleEndpoint as stale:
             self._forget_url()
             if not stale.retry and method != "GET":
                 raise ValueError("WORKBENCH_UNAVAILABLE") from None
             try:
-                return self._exchange_once(method, path, body, limit)
+                return self._exchange_once(method, path, body, limit, timeout)
             except _StaleEndpoint:
                 raise ValueError("WORKBENCH_UNAVAILABLE") from None
 
-    def _exchange_once(self, method, path, body, limit):
+    def _exchange_once(self, method, path, body, limit, timeout=30):
         url = self._client_url()
         if not WslBridge._is_valid_client_url(url):
             raise ValueError("WORKBENCH_UNAVAILABLE")
@@ -408,7 +821,7 @@ class WorkbenchGateway:
                           data=json.dumps(body, allow_nan=False).encode() if body is not None else None,
                           headers=headers, method=method)
         try:
-            with self._opener.open(request, timeout=30) as response:
+            with self._opener.open(request, timeout=timeout) as response:
                 raw = response.read(limit + 1)
                 received = getattr(response, "headers", None)
                 content_type = received.get("Content-Type", "") if received is not None else ""

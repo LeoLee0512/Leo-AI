@@ -126,6 +126,21 @@ def test_pause_resume_edit_and_delete(tmp_path):
     assert scheduler.list()["items"] == []
 
 
+def test_a_send_interrupted_by_closing_leo_can_be_sent_by_hand(tmp_path):
+    scheduler, _, sent = make(tmp_path)
+    with scheduler._store.lock:
+        document = scheduler._store.read()
+        document["history"].append({"id": "run_left", "scheduleId": "sch_1", "frameId": "f1", "frameName": "对话",
+                                     "text": "检索新论文", "due": "2026-09-29T08:30", "status": "sending",
+                                     "at": "2026-09-29T08:30", "detail": ""})
+        scheduler._store.write(document)
+    reopened, _, sent = make(tmp_path)
+    assert reopened.list()["history"][0]["status"] == "failed"
+    assert reopened.list()["history"][0]["detail"] == "SEND_INTERRUPTED"
+    reopened.send_now("run_left")
+    assert sent == [("f1", "检索新论文")] and reopened.list()["history"][0]["status"] == "sent_late"
+
+
 def test_a_corrupt_file_reads_as_empty_rather_than_crashing(tmp_path):
     (tmp_path / "schedules.json").write_text("{not json", encoding="utf-8")
     scheduler, _, _ = make(tmp_path)

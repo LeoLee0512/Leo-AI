@@ -108,8 +108,9 @@ def test_credentials_are_never_shown_and_long_input_is_clipped():
     assert len(long["input"]) <= 1201
 
 
-def test_the_standing_pattern_is_the_broadest_non_wildcard_suggestion():
-    assert standing_pattern(public_request(EVENT, 0)) == "git *"
+def test_the_standing_pattern_is_the_narrowest_suggestion():
+    assert standing_pattern(public_request(EVENT, 0)) == "git push"
+    assert standing_pattern({"patterns": ["git *", "git push *"], "target": "git push"}) == "git push *"
     assert standing_pattern({"patterns": ["*"], "target": "a.txt"}) == "a.txt"
 
 
@@ -120,7 +121,7 @@ def test_answers_go_to_the_decision_route(tmp_path):
     c.decide("f1", "perm-1a2b3c", True, "conversation")
     method, path, body = gateway.calls[-1]
     assert (method, path) == ("POST", "/frames/f1/decision")
-    assert body == {"decision_id": "perm-1a2b3c", "allow": True, "scope": "conversation", "pattern": "git *"}
+    assert body == {"decision_id": "perm-1a2b3c", "allow": True, "scope": "conversation", "pattern": "git push"}
     assert c.pending("f1")["requests"] == []
     c.decide("f1", "perm-9", False, "conversation")
     assert gateway.calls[-1][2]["scope"] == "once" and "message" in gateway.calls[-1][2]

@@ -9,4 +9,6 @@ which is inside the identity.
 #: Minutes, measured on the reference machine (the 1D number from the 2.2.6 smoke and the owner's
 #: run; the 2D number from the 2.2.11 sandbox smoke with ten seeds trained side by side: 16.2 minutes
 #: from the run confirmation to COMPLETED, measured while a 1D smoke ran alongside).
-ESTIMATE_MINUTES = {"leo-poisson1d-hard-bc-v1": 8, "leo-poisson2d-hard-bc-v1": 17}
+#: The annulus number (3.2.2) is the sandbox smoke of 2026-09-29/30 on commit 588d4f4: 341 minutes from
+#: the run confirmation to COMPLETED (main 136, Tier-1 90, reproduction 115, G6 1), ten seeds side by side.
+ESTIMATE_MINUTES = {"leo-poisson1d-hard-bc-v1": 8, "leo-poisson2d-hard-bc-v1": 17, "leo-annulus-poisson-hard-bc-v1": 345}

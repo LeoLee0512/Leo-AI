@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "pinn.claimGateDecision/1.2",
+  "decisionId": "cgd-exp2d-poisson-calibration-r1-g6-p11",
+  "problemId": "pdef-poisson2d-cal-v1",
+  "revision": 1,
+  "specHash": "05328d507582e20e57d00a339f6cddb783b40be4c138acdd85a31a5540552c6d",
+  "codeHash": "a39aa07e23d030b3804a098fe69f7f3b6e465782aa02f289349a38a6ddc30df6",
+  "claimSetSha256": "d4d2dd4a4d1c05b6ca31d67d5ee23c04c09481347f6acf51d0b0577ed37ff4e6",
+  "ledgerHead": "1dac14f667847f61bdc001140e76a69572f7bb8dc8d7fdd0939f3b6b024f91d9",
+  "trustVectorRef": {
+    "artifactId": "tv-exp2d-poisson-calibration-r1-g6-p11",
+    "sha256": "8a0415a220618f9206a067f195c05289faf98ae51f3f43a5d67009693cad6ffb"
+  },
+  "referenceEvidenceLevel": "A",
+  "runMode": "FORMAL",
+  "qualifiedC2Runs": [],
+  "allowedClaims": [
+    {
+      "level": "C0",
+      "statementRef": {
+        "artifactId": "claim_statements_g6_p11.json",
+        "sha256": "5aead66f5415529399cae99d7b40829f138b4638345ddc787f9008635b827905"
+      },
+      "evidenceRefs": [
+        {
+          "artifactId": "trust_vector_g6_p11.json",
+          "sha256": "8a0415a220618f9206a067f195c05289faf98ae51f3f43a5d67009693cad6ffb"
+        },
+        {
+          "artifactId": "gate4_training.json",
+          "sha256": "a42fa1aa7191d940d02de0b8638bacd8102a50448acd534641392faab8d43afc"
+        },
+        {
+          "artifactId": "gate5b_external.json",
+          "sha256": "53ee9f22c5bc32f4d2ac428d681e4ff81f0680da31c2f3082fa3e68972e78d41"
+        }
+      ],
+      "failureConditions": [
+        {
+          "condition": "the frozen ProblemDefinition, reference or code identity is revised",
+          "consequence": "INVALIDATE_DECISION"
+        },
+        {
+          "condition": "a later independent reproduction falls outside the preregistered tolerance",
+          "consequence": "DOWNGRADE"
+        }
+      ]
+    },
+    {
+      "level": "C1",
+      "statementRef": {
+        "artifactId": "claim_statements_g6_p11.json",
+        "sha256": "5aead66f5415529399cae99d7b40829f138b4638345ddc787f9008635b827905"
+      },
+      "evidenceRefs": [
+        {
+          "artifactId": "trust_vector_g6_p11.json",
+          "sha256": "8a0415a220618f9206a067f195c05289faf98ae51f3f43a5d67009693cad6ffb"
+        },
+        {
+          "artifactId": "gate4_training.json",
+          "sha256": "a42fa1aa7191d940d02de0b8638bacd8102a50448acd534641392faab8d43afc"
+        },
+        {
+          "artifactId": "gate5b_external.json",
+          "sha256": "53ee9f22c5bc32f4d2ac428d681e4ff81f0680da31c2f3082fa3e68972e78d41"
+        }
+      ],
+      "failureConditions": [
+        {
+          "condition": "the frozen ProblemDefinition, reference or code identity is revised",
+          "consequence": "INVALIDATE_DECISION"
+        },
+        {
+          "condition": "a later independent reproduction falls outside the preregistered tolerance",
+          "consequence": "DOWNGRADE"
+        }
+      ]
+    },
+    {
+      "level": "C2",
+      "statementRef": {
+        "artifactId": "claim_statements_g6_p11.json",
+        "sha256": "5aead66f5415529399cae99d7b40829f138b4638345ddc787f9008635b827905"
+      },
+      "evidenceRefs": [
+        {
+          "artifactId": "trust_vector_g6_p11.json",
+          "sha256": "8a0415a220618f9206a067f195c05289faf98ae51f3f43a5d67009693cad6ffb"
+        },
+        {
+          "artifactId": "gate4_training.json",
+          "sha256": "a42fa1aa7191d940d02de0b8638bacd8102a50448acd534641392faab8d43afc"
+        },
+        {
+          "artifactId": "gate5b_external.json",
+          "sha256": "53ee9f22c5bc32f4d2ac428d681e4ff81f0680da31c2f3082fa3e68972e78d41"
+        }
+      ],
+      "failureConditions": [
+        {
+          "condition": "the frozen ProblemDefinition, reference or code identity is revised",
+          "consequence": "INVALIDATE_DECISION"
+        },
+        {
+          "condition": "a later independent reproduction falls outside the preregistered tolerance",
+          "consequence": "DOWNGRADE"
+        }
+      ]
+    }
+  ],
+  "blockedClaims": [
+    {
+      "level": "C3",
+      "reason": "no independently qualified C2 runs supplied",
+      "missingPreconditions": [
+        "no independently qualified C2 runs supplied"
+      ]
+    }
+  ],
+  "weakestLink": {
+    "dimensions": [
+      "math",
+      "impl",
+      "train",
+      "physics",
+      "external",
+      "repro"
+    ],
+    "status": "PASS",
+    "evidenceRef": {
+      "artifactId": "trust_vector_g6_p11.json",
+      "sha256": "8a0415a220618f9206a067f195c05289faf98ae51f3f43a5d67009693cad6ffb"
+    }
+  },
+  "generatedAt": "2026-09-17T03:44:23Z",
+  "decidedBy": "pinn.experiments2d.runner2d (Claude, captain)"
+}

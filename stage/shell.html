@@ -16,7 +16,7 @@
       --accent:#E0642E;--accent-strong:#C94F20;--accent-soft:#EFA983;--accent-wash:#FBEDE4;
       --ok:#4E8C63;--warn:#B4472F;
       /* Workbench radius scale: 8 / 16 / 22. */
-      --radius:8px;--radius-card:16px;--radius-lg:22px;
+      --radius:8px;--radius-card:12px;--radius-lg:12px;
       /* Same dark badge the workbench puts behind .leo-brand-mark.  The lion
          artwork is a near-white mark on transparency, so without this plate it
          disappears against the cream ground. */
@@ -81,9 +81,10 @@
     .brand-tag{font-size:9px;color:var(--faint);letter-spacing:.22em;text-transform:uppercase}
     .top-actions{display:flex;align-items:center;gap:12px}
 
-    .ghost,.primary{height:40px;border-radius:var(--radius);padding:0 18px;font-size:14px;transition:.18s}
-    .ghost{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2)}
-    .ghost:hover{border-color:var(--accent-soft);background:var(--accent-wash);color:var(--accent-strong)}
+    /* 3.1.0 · Buttons 34 high (large calls to action 40–44), weight 500, neutral hover on secondary. */
+    .ghost,.primary{height:34px;border-radius:var(--radius);padding:0 16px;font-size:13px;font-weight:500;transition:.18s}
+    .ghost{border:1px solid var(--line-2);background:var(--surface);color:var(--ink)}
+    .ghost:hover{border-color:var(--line-2);background:color-mix(in srgb,var(--ink) 4%,var(--surface));color:var(--ink)}
     .primary{border:1px solid var(--accent);background:var(--accent);color:#fff;font-weight:500;
       box-shadow:0 8px 20px rgba(224,100,46,.20)}
     .primary:hover{background:var(--accent-strong);border-color:var(--accent-strong)}
@@ -124,21 +125,23 @@
     .pane{display:none;padding-top:14px}
     .pane.active{display:block}
     .field{margin:16px 0}
-    .field label{display:block;margin-bottom:8px;font-size:12px;color:var(--ink-2)}
-    .field input,.field select{width:100%;height:44px;padding:0 13px;border:1px solid var(--line-2);
+    .field label{display:block;margin-bottom:6px;font-size:12.5px;font-weight:500;color:var(--ink-2)}
+    .field input,.field select{width:100%;height:36px;padding:0 12px;font-size:13.5px;border:1px solid var(--line-2);
       border-radius:var(--radius);background:var(--surface);outline:0;transition:.16s}
-    .field input:focus,.field select:focus{border-color:var(--accent-soft);box-shadow:0 0 0 3px var(--accent-wash)}
+    .field input:focus,.field select:focus{border-color:color-mix(in srgb,var(--accent) 55%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+    .field input::placeholder{color:var(--faint)}
     .field input[readonly]{background:var(--surface-2);color:var(--muted)}
     .hint{margin:0;font-size:12px;line-height:1.85;color:var(--muted)}
     .form-status{min-height:20px;margin-top:16px;font-size:12.5px;line-height:1.7;color:var(--accent-strong)}
     .form-status.error{color:var(--warn)}
-    .drawer .primary{width:100%;margin-top:14px}
-    .profile-tools{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end}
-    .profile-tools .field{margin-bottom:8px}
-    .small-action{height:44px;padding:0 14px;border:1px solid var(--line-2);border-radius:var(--radius);
-      background:var(--surface);color:var(--ink-2);font-size:13px}
-    .small-action:hover{border-color:var(--accent-soft);color:var(--accent-strong)}
-    .small-action.danger:hover{border-color:#D9A79B;color:var(--warn)}
+    .drawer .primary{width:100%;height:40px;margin-top:14px}
+    .profile-tools{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;margin-bottom:8px}
+    .profile-tools .field{margin-bottom:0}
+    .small-action{height:36px;padding:0 14px;border:1px solid var(--line-2);border-radius:var(--radius);
+      background:var(--surface);color:var(--ink);font-size:13px;font-weight:500}
+    .small-action:hover{background:color-mix(in srgb,var(--ink) 4%,var(--surface))}
+    .small-action.danger{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 32%,transparent)}
+    .small-action.danger:hover{background:color-mix(in srgb,var(--warn) 8%,var(--surface));color:var(--warn)}
     .theme-choice{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
     .theme-card{padding:16px;border:1px solid var(--line-2);border-radius:var(--radius-card);
       background:var(--surface);color:var(--ink);text-align:left;font-size:13px;transition:.16s}
@@ -191,48 +194,69 @@
       --shell-branch:url("__LEO_BG_INK_AUTUMN_BRANCH__");
       --shell-branch-warm:url("__LEO_BG_INK_AUTUMN_BRANCH_WARM__");
     }
-    html[data-leo-theme="ink-autumn"]{
-      --bg:#F2E8D8;--bg-2:#EADCC6;--surface:#FAF4E9;--surface-2:#F5EDDF;
-      --ink:#30271F;--ink-2:#594B3C;--muted:#736451;--faint:#87745E;
-      --accent:#9C3A28;--accent-strong:#842D20;--accent-soft:#B86E54;--accent-wash:#EDDDCA;
-      --line:rgba(105,78,43,.13);--line-2:rgba(105,78,43,.23);
+    /* 3.1.0 · Off-white rice paper (the workbench's own values), and 「素白」 on a neutral white. */
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]){
+      --bg:#F7F4EE;--bg-2:#EFEAE1;--surface:#FDFCF9;--surface-2:#F4F1EB;
+      --ink:#2B2621;--ink-2:#4F4740;--muted:#72685E;--faint:#8A8075;
+      --accent:#9C3A28;--accent-strong:#842D20;--accent-soft:#B86E54;--accent-wash:#F3E4DE;
+      --line:rgba(43,38,33,.08);--line-2:rgba(43,38,33,.15);
       --mark-badge-start:#473627;--mark-badge-end:#241E17;--mark-ring:rgba(153,113,61,.42);
     }
-    html[data-leo-theme="ink-autumn"] .wash{background:none}
-    html[data-leo-theme="ink-autumn"] .topbar{background:color-mix(in srgb,var(--surface) 70%,transparent)}
-    html[data-leo-theme="ink-autumn"] main{padding:clamp(32px,7vh,72px) clamp(26px,5vw,76px)}
-    html[data-leo-theme="ink-autumn"] .hero{position:relative;isolation:isolate;max-width:1240px;min-height:min(520px,68vh);margin:auto;padding:30px 0}
-    html[data-leo-theme="ink-autumn"] .hero::after{
+    html[data-leo-theme="plain-white"]{
+      --bg:#F6F5F2;--bg-2:#EDEBE7;--surface:#FFFFFF;--surface-2:#F7F6F3;
+      --ink:#26231F;--ink-2:#4A4540;--muted:#6F6A64;--faint:#88837C;--accent-wash:#F4E6E1;
+      --line:rgba(38,35,31,.08);--line-2:rgba(38,35,31,.14);
+    }
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .wash{background:none}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .topbar{background:color-mix(in srgb,var(--surface) 70%,transparent)}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) main{padding:clamp(32px,7vh,72px) clamp(26px,5vw,76px)}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero{position:relative;isolation:isolate;max-width:1240px;min-height:min(520px,68vh);margin:auto;padding:30px 0}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero::after{
       content:"";position:absolute;z-index:-1;pointer-events:none;inset:-34px -54px -70px 14%;
       background:var(--shell-tree) right center/contain no-repeat;opacity:.64;
       mask-image:radial-gradient(ellipse 26% 45% at 74% 50%,#000 10%,transparent 100%);
     }
-    html[data-leo-theme="ink-autumn"] .hero h1{font-family:"Noto Serif SC","Songti SC","STSong","SimSun",serif;font-size:clamp(32px,4.2vw,56px);font-weight:500;line-height:1.35;letter-spacing:.025em}
-    html[data-leo-theme="ink-autumn"] .hero h1::before{content:"LEO · RESEARCH STUDIO";display:block;margin-bottom:22px;font:600 10px/1.6 "Segoe UI",sans-serif;letter-spacing:.28em;color:var(--muted)}
-    html[data-leo-theme="ink-autumn"] .hero p{max-width:min(520px,58%)}
-    html[data-leo-theme="ink-autumn"] .hero-note{max-width:520px}
-    html[data-leo-theme="ink-autumn"] .primary{box-shadow:0 8px 22px rgba(92,52,27,.13)}
-    html[data-leo-theme="ink-autumn"] .drawer{isolation:isolate}
-    html[data-leo-theme="ink-autumn"] .drawer::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:var(--shell-branch) right bottom/auto 72% no-repeat;opacity:.09}
-    html[data-leo-theme="ink-autumn"] #splash::before{content:"";position:absolute;inset:0;pointer-events:none;background:var(--shell-branch-warm) center/cover no-repeat;opacity:.08}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero h1{font-family:"Noto Serif SC","Songti SC","STSong","SimSun",serif;font-size:clamp(32px,4.2vw,56px);font-weight:500;line-height:1.35;letter-spacing:.025em}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero h1::before{content:"LEO · RESEARCH STUDIO";display:block;margin-bottom:22px;font:600 10px/1.6 "Segoe UI",sans-serif;letter-spacing:.28em;color:var(--muted)}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero p{max-width:min(520px,58%)}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero-note{max-width:520px}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .primary{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 1px 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero-actions .primary{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 18px color-mix(in srgb,var(--accent) 18%,transparent)}
+    /* 3.2.0 · Buttons as in the workbench (owner's pick 1A): warm-ink primary, regular 13.5px text, a true red for delete. */
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) :is(.ghost,.primary){height:36px;font-size:13.5px;font-weight:400;letter-spacing:.02em}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .primary{border-color:#2E2924;background:#2E2924;color:#FBF8F2;box-shadow:0 1px 2px rgba(43,38,33,.10),inset 0 1px 0 rgba(255,255,255,.08)}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .primary:hover{border-color:#1F1B17;background:#1F1B17}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero-actions .primary{height:44px;font-size:14px;box-shadow:0 1px 2px rgba(43,38,33,.10),0 8px 20px -10px rgba(43,38,33,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .drawer .primary{height:40px}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .case-foot .primary{height:40px}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .small-action.danger{color:#B42318;border-color:rgba(180,35,24,.40)}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .small-action.danger:hover{background:#FCE8E6;color:#B42318}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .profile-confirm-actions .danger{border-color:#B42318;background:#B42318;color:#FFFFFF}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .drawer{isolation:isolate}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .drawer::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:var(--shell-branch) right bottom/auto 72% no-repeat;opacity:.09}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) #splash::before{content:"";position:absolute;inset:0;pointer-events:none;background:var(--shell-branch-warm) center/cover no-repeat;opacity:.08}
     @media(prefers-color-scheme:dark){
-      html[data-leo-theme="ink-autumn"]{--bg:#211D18;--bg-2:#2C251D;--surface:#2B251E;--surface-2:#30291F;--ink:#EADCC6;--ink-2:#C7B69B;--muted:#B4A187;--faint:#A18C6F;--accent:#D2705A;--accent-strong:#DE8A75;--accent-soft:#AD644D;--accent-wash:#423025;--line:rgba(208,174,121,.14);--line-2:rgba(208,174,121,.26);color-scheme:dark}
-      html[data-leo-theme="ink-autumn"] .hero::after{opacity:.13}
-      html[data-leo-theme="ink-autumn"] .primary{color:#211D18}
-      html[data-leo-theme="ink-autumn"] .drawer::before{opacity:.04}
-      html[data-leo-theme="ink-autumn"] #splash::before{opacity:.035}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]){--bg:#211D18;--bg-2:#2C251D;--surface:#2B251E;--surface-2:#30291F;--ink:#EADCC6;--ink-2:#C7B69B;--muted:#B4A187;--faint:#A18C6F;--accent:#D2705A;--accent-strong:#DE8A75;--accent-soft:#AD644D;--accent-wash:#423025;--line:rgba(208,174,121,.14);--line-2:rgba(208,174,121,.26);color-scheme:dark}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero::after{opacity:.13}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .primary{border-color:#EADCC6;background:#EADCC6;color:#211D18}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .primary:hover{border-color:#F6EBD9;background:#F6EBD9}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .small-action.danger{color:#F08A80;border-color:rgba(240,138,128,.40)}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .small-action.danger:hover{background:#43201C;color:#F08A80}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .profile-confirm-actions .danger{border-color:#F08A80;background:#F08A80;color:#211D18}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .drawer::before{opacity:.04}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) #splash::before{opacity:.035}
     }
     @media(max-width:720px){
-      html[data-leo-theme="ink-autumn"] .hero{min-height:0;padding:12px 0 80px}
-      html[data-leo-theme="ink-autumn"] .hero::after{inset:0 -24px -70px 0;opacity:.2;background-position:right bottom}
-      html[data-leo-theme="ink-autumn"] .hero p{max-width:100%}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero{min-height:0;padding:12px 0 80px}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero::after{inset:0 -24px -70px 0;opacity:.2;background-position:right bottom}
+      html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero p{max-width:100%}
       .topbar{padding:0 20px}.brand-tag{letter-spacing:.12em}
       .drawer{width:min(516px,100vw);padding:24px 20px 32px}
       .profile-tools{grid-template-columns:1fr 1fr}.profile-tools .field{grid-column:1/-1}
       .theme-choice{grid-template-columns:1fr}.hero-actions{gap:10px}.hero-actions button{height:auto;min-height:42px;padding:10px 16px}
     }
-    @media(max-width:720px) and (prefers-color-scheme:dark){html[data-leo-theme="ink-autumn"] .hero::after{opacity:.055}}
-    @media(max-height:620px){html[data-leo-theme="ink-autumn"] main{padding:24px 28px}html[data-leo-theme="ink-autumn"] .hero{padding-top:8px}html[data-leo-theme="ink-autumn"] .hero h1{font-size:32px}html[data-leo-theme="ink-autumn"] .hero h1::before{margin-bottom:12px}}
+    @media(max-width:720px) and (prefers-color-scheme:dark){html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero::after{opacity:.055}}
+    @media(max-height:620px){html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) main{padding:24px 28px}html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero{padding-top:8px}html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero h1{font-size:32px}html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) .hero h1::before{margin-bottom:12px}}
     /* Opening animation (launch only; see leo_shell/intro.py). The window paints #FBF7F2
        before any document, so the layer starts in that colour and the film fades in over it.
        The film is shown whole (contain); a blurred copy of itself fills the margins. */
@@ -252,7 +276,7 @@
     button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
     .account-actions{display:flex;align-items:center;gap:12px;padding-left:20px;border-left:1px solid var(--line-2)}
     .account-actions .ghost{height:34px;font-size:12px;padding:0 14px}
-    html[data-leo-theme="ink-autumn"] main{padding:clamp(30px,6vh,72px) clamp(24px,4.8vw,76px) 20px}
+    html:is([data-leo-theme="ink-autumn"],[data-leo-theme="plain-white"]) main{padding:clamp(30px,6vh,72px) clamp(24px,4.8vw,76px) 20px}
     html[data-leo-theme] .hero{display:grid;grid-template-columns:1.05fr 1fr;align-items:center;gap:48px;max-width:1360px;min-height:520px;padding:28px 0 40px;margin:auto}
     html[data-leo-theme] .hero::after,html[data-leo-theme] .hero h1::before{display:none}
     .eyebrow{margin-bottom:25px;font:600 10px/1.7 "Segoe UI",sans-serif;letter-spacing:.25em;color:var(--muted)}
@@ -264,7 +288,7 @@
     html[data-leo-theme] main>*{width:100%;flex-shrink:0}
     .capabilities{display:flex;flex-wrap:wrap;gap:8px 16px;margin:24px 0 0;padding:0;list-style:none;color:var(--muted);font-size:11px}
     .capabilities li{padding-right:16px;border-right:1px solid var(--line-2)}.capabilities li:last-child{border:0;padding-right:0}
-    .hero-actions{gap:22px;margin-top:34px}.hero-actions .primary{height:46px;padding:0 22px;font-size:14px}
+    .hero-actions{gap:22px;margin-top:34px}.hero-actions .primary{height:44px;padding:0 22px;font-size:14px}
     .hero-actions .text-link{font-size:12px;text-underline-offset:5px;text-decoration:underline;text-decoration-color:var(--line-2)}
     .research-desk{position:relative;height:450px;min-width:0;isolation:isolate}
     .research-desk::before{content:"";position:absolute;z-index:-1;inset:-70px -40px;background:var(--shell-tree) center/contain no-repeat;opacity:.16;mask-image:radial-gradient(ellipse at center,#000 20%,transparent 68%);pointer-events:none}
@@ -283,7 +307,7 @@
     .journey[hidden]{display:none}.journey h2{font:500 26px/1.5 "Songti SC","SimSun",serif;margin:0 0 12px}.journey>p{font-size:13px;color:var(--muted);line-height:1.8}
     .journey-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:24px}.journey-grid article{padding-left:15px;border-left:1px solid var(--line-2)}
     .journey-grid small{font:11px Georgia,serif;color:var(--accent)}.journey-grid h3{font-size:14px;font-weight:500;margin:12px 0}.journey-grid p{font-size:12px;line-height:1.85;color:var(--muted)}
-    .home-dialog{width:min(450px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid var(--line-2);border-radius:16px;padding:30px;background:var(--surface);color:var(--ink);box-shadow:0 30px 100px rgba(30,22,15,.2)}
+    .home-dialog{width:min(450px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid var(--line-2);border-radius:12px;padding:30px;background:var(--surface);color:var(--ink);box-shadow:0 30px 100px rgba(30,22,15,.2)}
     .home-dialog::backdrop{background:rgba(37,28,19,.32);backdrop-filter:blur(3px)}
     .dialog-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.dialog-heading h2{margin:0;font:500 25px/1.5 "Songti SC","SimSun",serif}
     .home-dialog .primary{width:100%;margin-top:12px}.home-dialog .tabs{margin-top:22px}.home-dialog .hint{margin-top:16px}
@@ -311,6 +335,12 @@
     .literature{padding:26px 30px 70px}
     .structure-card .case-name{font-size:15px}.structure-card .case-eq{font-size:13px}
     .computation-card{grid-template-columns:1fr 104px}
+    /* 3.1.0 · Case 01 sits a little higher so case 03 no longer covers its last line, and short case
+       texts wrap evenly instead of leaving one word (“6.4×”, “准”) alone on a line. */
+    .literature{top:-12px}
+    .case-name,.case-eq,.case-line{text-wrap:balance}
+    /* In one column the footer follows the desk closely; its caption stays just under the cards. */
+    @media(max-width:800px){.research-desk .desk-caption{bottom:-30px}.research-desk{margin-bottom:44px}}
     .seed-chart{width:104px;height:70px;overflow:visible}
     .seed-chart .axis{stroke:var(--line-2)}.seed-chart .limit{stroke:#9C3A28;stroke-dasharray:3 3;opacity:.8}
     .seed-chart .bar{fill:var(--faint);opacity:.55}.seed-chart .bar-over{fill:#9C3A28}
@@ -332,7 +362,7 @@
     .case-detail .journey-grid{grid-template-columns:repeat(5,1fr)}
     .case-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:26px;padding-top:18px;border-top:1px solid var(--line)}
     .case-foot small{font:11px/1.6 Consolas,"Microsoft YaHei UI",monospace;color:var(--muted);overflow-wrap:anywhere}
-    .case-foot .primary{height:42px;padding:0 20px;font-size:13px}
+    .case-foot .primary{height:40px;padding:0 20px;font-size:13px}
     @media(max-width:1050px){.case-detail .journey-grid{grid-template-columns:repeat(3,1fr)}.literature{padding:22px 24px 60px}.case-name{font-size:15px}}
     @media(max-width:800px){.case-detail .journey-grid{grid-template-columns:1fr 1fr}.case-head{flex-direction:column}}
     @media(max-width:440px){.case-detail .journey-grid{grid-template-columns:1fr}.case-name{font-size:13px}.case-eq{font-size:12px}.case-line{display:none}.case-chip{font-size:10px;padding:2px 7px}.seed-chart{width:80px}.computation-card{grid-template-columns:1fr 80px}}
@@ -485,7 +515,7 @@
       for(const lang of ["zh","en"])Object.assign(COPY[lang],HOME_COPY[lang]);
       let runtimeStatus=null,accountMode="login";
       function applyHomeLocale(){document.querySelectorAll("[data-home]").forEach(n=>n.textContent=tr(n.dataset.home));document.querySelectorAll("[data-close]").forEach(n=>n.setAttribute("aria-label",tr("close")));document.querySelector(".home-nav").setAttribute("aria-label",locale==="en"?"Main navigation":"主导航");document.querySelector(".research-desk").setAttribute("aria-label",locale==="en"?"Four real cases: choose a card to see the full record":"四个真实案例：点击卡片查看完整过程");renderConnection();renderAccountMode();renderCases()}
-      function renderConnection(){const node=$("connection-status"),active=activeProfile();const connected=runtimeStatus?.status==="ready"&&["cloud","local"].includes(runtimeStatus.mode);const name=active?.model==="deepseek-v4-pro"?"DeepSeek v4 Pro":active?.model==="deepseek-v4-flash"?"DeepSeek v4 Flash":active?.model;node.classList.toggle("connected",connected);node.textContent=connected?(name?name+" · ":"")+tr("connected"):runtimeStatus?.status==="connecting"?tr("connectingShort"):active?tr("disconnected"):tr("localWorkspace")}
+      function renderConnection(){const node=$("connection-status"),active=activeProfile();const connected=runtimeStatus?.status==="ready"&&["cloud","local"].includes(runtimeStatus.mode);const name=active?.model==="local-qwen3-4b"?localModelCopy():active?.model==="deepseek-v4-pro"?"DeepSeek v4 Pro":active?.model==="deepseek-v4-flash"?"DeepSeek v4 Flash":active?.model;node.classList.toggle("connected",connected);node.textContent=connected?(name?name+" · ":"")+tr("connected"):runtimeStatus?.status==="connecting"?tr("connectingShort"):active?tr("disconnected"):tr("localWorkspace")}
       async function refreshConnection(){try{runtimeStatus=await window.pywebview?.api?.get_runtime_state?.()}catch(_){runtimeStatus=null}renderConnection()}
 
       let localAccount=null,accountBusy=false;
@@ -504,7 +534,7 @@
       const STEP_LABELS={zh:["问题","模型","计算","验证","结论"],en:["Question","Model","Compute","Verify","Claim"]},STEP_KEYS=["QUESTION","MODEL","COMPUTE","VERIFY","CLAIM"];
       let openCaseId=null;
       const caseCopy=c=>c[locale==="en"?"en":"zh"];
-      function renderCases(){for(const card of document.querySelectorAll(".case-card")){const c=CASES.find(x=>x.id===card.dataset.case),t=caseCopy(c),on=c.id===openCaseId;card.querySelector(".case-label").textContent=(locale==="en"?"CASE ":"案例 ")+c.no;card.querySelector(".case-name").textContent=t.name;card.querySelector(".case-eq").textContent=t.eq;card.querySelector(".case-chip").textContent=t.chip;card.querySelector(".case-line").textContent=t.line;card.setAttribute("aria-label",t.name+"，"+t.chip+"。"+(locale==="en"?"Show the full record":"查看完整过程"));card.classList.toggle("active",on);card.setAttribute("aria-expanded",String(on&&!$("research-journey").hidden));}
+      function renderCases(){for(const card of document.querySelectorAll(".case-card")){const c=CASES.find(x=>x.id===card.dataset.case),t=caseCopy(c),on=c.id===openCaseId;card.querySelector(".case-label").textContent=(locale==="en"?"CASE ":"案例 ")+c.no;card.querySelector(".case-name").textContent=t.name;card.querySelector(".case-eq").textContent=t.eq;card.querySelector(".case-chip").textContent=t.chip;card.querySelector(".case-line").textContent=t.line.replace(/e-(\d)/g,"e\u2011$1");card.setAttribute("aria-label",t.name+"，"+t.chip+"。"+(locale==="en"?"Show the full record":"查看完整过程"));card.classList.toggle("active",on);card.setAttribute("aria-expanded",String(on&&!$("research-journey").hidden));}
         for(const tab of document.querySelectorAll(".case-tab")){const c=CASES.find(x=>x.id===tab.dataset.case);tab.textContent=caseCopy(c).name;tab.setAttribute("aria-selected",String(c.id===openCaseId));}
         $("case-close").setAttribute("aria-label",locale==="en"?"Close the case":"收起案例");if(openCaseId)renderCaseDetail();}
       function renderCaseDetail(){const c=CASES.find(x=>x.id===openCaseId),t=caseCopy(c),labels=STEP_LABELS[locale==="en"?"en":"zh"];$("case-kicker").textContent=(locale==="en"?"CASE ":"案例 ")+c.no+" · "+(locale==="en"?"FROM LEO'S RECORDS":"来自 Leo 的实验记录");$("journey-title").textContent=t.name;$("case-intro").textContent=t.intro;const verdict=$("case-verdict");verdict.textContent=t.verdict;verdict.className="case-verdict "+c.kind;
@@ -554,7 +584,7 @@
       const tr=key=>(COPY[locale]&&COPY[locale][key])||COPY.zh[key]||key;
       function publicMessage(message,fallback=""){const code=String(message||"");const table=locale==="en"?{APP_PACKAGE_INCOMPLETE:"This preview or installation is missing workbench files. Open the complete Leo AI installation from your desktop, or restore the installation and try again.",APP_CLOSING:"Leo AI Studio is closing. Reopen it and try again.",MODEL_CONNECTION_FAILED:"Model connection failed. Check the model, API endpoint, and network, then try again.",MODEL_SETTINGS_INVALID:"The model settings are invalid. Check the provider, model, and API endpoint.",MODEL_SETTINGS_RECOVERY_REQUIRED:"The model settings could not be restored safely. Run Diagnostics before trying again.",MODEL_SETTINGS_UNAVAILABLE:"The model settings are temporarily unavailable. Reopen Settings and try again."}:{APP_PACKAGE_INCOMPLETE:"当前预览或安装缺少工作台启动文件。请从桌面打开完整的 Leo AI，或补齐安装文件后重试。",APP_CLOSING:"Leo AI Studio 正在关闭，请重新打开后重试。",MODEL_CONNECTION_FAILED:"模型连接失败。请检查模型、API 地址和网络后重试。",MODEL_SETTINGS_INVALID:"模型设置无效。请检查供应商、模型和 API 地址。",MODEL_SETTINGS_RECOVERY_REQUIRED:"模型设置未能安全恢复。请先运行诊断，再重试。",MODEL_SETTINGS_UNAVAILABLE:"模型设置暂时不可用。请重新打开设置后重试。"};return table[code]||code||fallback}
       function activeProfile(){if(!state)return null;const list=Array.isArray(state.profiles)?state.profiles:[];const id=state.active_profile_id;return list.find(item=>item&&item.id===id)||null}
-      function localModelCopy(){return locale==="en"?"Local Qwen3 · No API key required":"本地 Qwen3 · 无需密钥"}
+      function localModelCopy(){return locale==="en"?"Local model":"本地模型"}
       function heroStory(){return tr("heroCopy")}
       function renderThemeChoices(){
         const grid=$("theme-choices");
@@ -619,7 +649,7 @@
         }catch(_){setFormStatus(tr("deleteFailed"),true)}
         finally{profileDeletePending=false}
       }
-      function syncPreset(reset=true){const item=presets[$("preset").value];if(!item)return;const local=item.requires_key===false;if(reset||local||!$("model").value)$("model").value=item.model;if(reset||local||!$("base").value)$("base").value=item.base_url;$("model").readOnly=local;$("base").readOnly=!item.editable_base_url;$("key").disabled=local;if(local)$("key").value="";$("key-wrap").style.display=local?"none":"";$("local-model-note").hidden=!local;$("local-model-note").textContent=localModelCopy();}
+      function syncPreset(reset=true){const item=presets[$("preset").value];if(!item)return;const local=item.requires_key===false;if(reset||local||!$("model").value)$("model").value=item.model;if(reset||local||!$("base").value)$("base").value=item.base_url;$("model").readOnly=local;$("base").readOnly=!item.editable_base_url;$("key").disabled=local;if(local)$("key").value="";if(local&&!$("profile-name").value)$("profile-name").value=localModelCopy();$("key-wrap").style.display=local?"none":"";$("local-model-note").hidden=!local;$("local-model-note").textContent=localModelCopy();}
       function selectProfile(id){const item=profiles[id];if(!item){$("profile-select").value="";$("profile-name").value="";$("preset").value="deepseek";$("model").value="";$("base").value="";syncPreset(true);$("key").value="";$("key").placeholder=tr("keyEnter");return}$("profile-select").value=item.id;$("profile-name").value=item.name;$("preset").value=item.preset;$("model").value=item.model;$("base").value=item.base_url;syncPreset(false);$("key").value="";$("key").placeholder=item.has_key?tr("keyKeep"):tr("keyEnter")}
       function render(next){state=next||{};const appearance=state.appearance||{};document.documentElement.dataset.leoTheme=(state.themes||[]).some(theme=>theme.id===appearance.theme)?appearance.theme:"ink-autumn";applyLocale(appearance.locale||locale);try{localStorage.setItem("leo-shell-locale",locale)}catch(_){}presets={};$("preset").replaceChildren();for(const item of state.presets||[]){presets[item.id]=item;const option=document.createElement("option");option.value=item.id;option.textContent=item.requires_key===false?localModelCopy():item.label;$("preset").appendChild(option)}profiles={};$("profile-select").replaceChildren();const createOption=document.createElement("option");createOption.value="";createOption.textContent=tr("newProfile");$("profile-select").appendChild(createOption);for(const item of state.profiles||[]){profiles[item.id]=item;const option=document.createElement("option");option.value=item.id;option.textContent=(item.id===state.active_profile_id?"● ":"")+item.name;$("profile-select").appendChild(option)}const selected=state.active_profile_id&&profiles[state.active_profile_id]?state.active_profile_id:Object.keys(profiles)[0];if(selected)selectProfile(selected);else if(state.settings){$("preset").value=state.settings.preset;$("model").value=state.settings.model;$("base").value=state.settings.base_url;$("profile-name").value=tr("defaultModel");syncPreset(false)}else selectProfile("");$("hero-copy").textContent=heroStory();$("locale").value=appearance.locale||locale;renderThemeChoices()}
 

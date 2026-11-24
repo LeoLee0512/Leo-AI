@@ -1,0 +1,314 @@
+{
+  "codeHash": "a39aa07e23d030b3804a098fe69f7f3b6e465782aa02f289349a38a6ddc30df6",
+  "codeManifest": [
+    {
+      "path": "experiments/poisson2d/configs/exp2d_baseline.json",
+      "sha256": "bf933c93b3f7fecd668872ff0d37487cda9770a076b9a07c504aead7868719c7"
+    },
+    {
+      "path": "governance/PINN_RESEARCH_CONSTITUTION.md",
+      "sha256": "2f4484027cc95fc949b2df46ca3f76f1ecace8279db4b93d9d26ceaf8f15357e"
+    },
+    {
+      "path": "governance/POISSON_1D_V1.0_lock.draft.json",
+      "sha256": "d02239ef58191dcbe71db074d0216e9a647e52de8abe06e07d6de7ca5d27afe6"
+    },
+    {
+      "path": "governance/POISSON_1D_V1.0_protocol.draft.json",
+      "sha256": "38b57304b1e95169c82c204c8e7e9db01216b2f8e7f55fda6805d32953239851"
+    },
+    {
+      "path": "governance/POISSON_1D_V1.0_spec.draft.json",
+      "sha256": "53580ebcc99af50bb47ebf1e1d92a0722af757b6497573661e0e717a718ac125"
+    },
+    {
+      "path": "pinn/__init__.py",
+      "sha256": "42ae7ca4670a402cab9b7b959a7f8938aa4cf4cd10cc558692f89a26b69ea724"
+    },
+    {
+      "path": "pinn/experiments/__init__.py",
+      "sha256": "26ae33127312341ae615302010597c0569f493d73a8a64bf62839867755da727"
+    },
+    {
+      "path": "pinn/experiments/bc_diagnosis.py",
+      "sha256": "f3ded7e28704ce24d245e7e9aea04218c20c99f20abeaac4fdb572df9ce87717"
+    },
+    {
+      "path": "pinn/experiments/claim_metrics.py",
+      "sha256": "cc467696589eb66f734dc94e5d8294b14bd6bf6fec7b98072a26744c7ed2e345"
+    },
+    {
+      "path": "pinn/experiments/common.py",
+      "sha256": "754214130a77f3db97971d881984573ae7474d5b6d285941a008019f6db8e764"
+    },
+    {
+      "path": "pinn/experiments/criteria.py",
+      "sha256": "5de0e182a44b12e9a3f979cce4a65e5594b4b39f07b39e76da8c86e9c5b97146"
+    },
+    {
+      "path": "pinn/experiments/datasets.py",
+      "sha256": "ad5e7936d35a1b49255733bc665326195e846b6369d7fb8c6cd0c7a943e4e6ed"
+    },
+    {
+      "path": "pinn/experiments/diagnosis.py",
+      "sha256": "d9777be323d27cb454afd4391484057a466ff870f6db532a9bda52d557110979"
+    },
+    {
+      "path": "pinn/experiments/gates.py",
+      "sha256": "b0ce7ff5a4b5d8792adea68b75b17c8667f48851d38c4f652f9b1cbfd2d723d3"
+    },
+    {
+      "path": "pinn/experiments/pinn_torch.py",
+      "sha256": "4cae92e6ff908252f63ba23801ef865ff6230829d33bc64e46c3ffd7c04574ae"
+    },
+    {
+      "path": "pinn/experiments/redteam.py",
+      "sha256": "7e273a31a4618d63cfffe84e258c899f00421d59fedff7958a6c27eb97bcf0b1"
+    },
+    {
+      "path": "pinn/experiments/report.py",
+      "sha256": "19c3da8713e65658b040ab88e677c3d3840f125a332ec91b9a51731d79db1f42"
+    },
+    {
+      "path": "pinn/experiments/repro_package.py",
+      "sha256": "b7aaf184ee42a0687a94d2946a33179445b866302a77a076017283d1f93c20aa"
+    },
+    {
+      "path": "pinn/experiments/runner.py",
+      "sha256": "2928a877c8ad07108bb4c3d7a7ce0204e08924c8012b9c58511b3ada7e507dc5"
+    },
+    {
+      "path": "pinn/experiments2d/__init__.py",
+      "sha256": "abd6049bf9ba74d998e01c58ea05e5775e974939c2b341419141b0c5ce82798d"
+    },
+    {
+      "path": "pinn/experiments2d/datasets2d.py",
+      "sha256": "034fa031ed4e8feb7ec497a9c98e77ff81f7949a042092b46d11c62e4ba12afe"
+    },
+    {
+      "path": "pinn/experiments2d/diagnostics2d.py",
+      "sha256": "38187e6b18dc48bb99334a52d4e2264c2ad18c20ff50d501dca78621d8f44970"
+    },
+    {
+      "path": "pinn/experiments2d/gates2d.py",
+      "sha256": "780001014c139d6bd2bd7622e2fe256b6490654d24de6e7783db2e925b1d88a8"
+    },
+    {
+      "path": "pinn/experiments2d/pinn_torch2d.py",
+      "sha256": "8f23b4367cd4b2d54ae14addc20193bf0cc608894911b4f5f8c3afc0bd7600e7"
+    },
+    {
+      "path": "pinn/experiments2d/redteam2d.py",
+      "sha256": "628bdb6db1234d33c9f098b05f0a25b87e438ef8e432300127abe0817d3429ac"
+    },
+    {
+      "path": "pinn/experiments2d/report2d.py",
+      "sha256": "dedde86d0b69fc953117e3c9fbe480adc0986c1ef0f021ae99884a7974c6941b"
+    },
+    {
+      "path": "pinn/experiments2d/repro_package2d.py",
+      "sha256": "3acf0d71b3766fa936904b4a8f02847a699561223ed42a2b593c7a42a4d22142"
+    },
+    {
+      "path": "pinn/experiments2d/runner2d.py",
+      "sha256": "0ec42de04e1f70c1a8b0a74bbcc63d4d0a9a41beef26c110637b2de669866a72"
+    },
+    {
+      "path": "pinn/governance/__init__.py",
+      "sha256": "850ae11a007175b36347cdbcace8ff9450bb9f267003dcfbd55db98ae3bbac11"
+    },
+    {
+      "path": "pinn/governance/amendments.py",
+      "sha256": "36b72b5d0f7a0ab94a86041d94ca6b6c80c71d93eca99d809f2e379a32da412c"
+    },
+    {
+      "path": "pinn/governance/canonical.py",
+      "sha256": "8e81957fe753a27b3b78667ede0dded7dd1413e6fbdc612b1e0dfff019b8be5f"
+    },
+    {
+      "path": "pinn/governance/claim_set_ledger.py",
+      "sha256": "c983b38b6d27cd96af15f7e156451a30422e4963ded29652582c0f7bf881d2a3"
+    },
+    {
+      "path": "pinn/governance/evaluation_sets.py",
+      "sha256": "e69bf7188fb03d6ec20668e7ecfa0ffc1d16a468f48f7d4a09ff70ab00aeba9e"
+    },
+    {
+      "path": "pinn/governance/jsonschema_lite.py",
+      "sha256": "591e42afeb6429570c2436a69b37735254f07989dcdc185437bf8913d56771d1"
+    },
+    {
+      "path": "pinn/governance/leakage.py",
+      "sha256": "9e82d502823b8aeb04e349b38705f90f5d8d97365aebedae3b997e30b23bee16"
+    },
+    {
+      "path": "pinn/governance/locking.py",
+      "sha256": "e231f4532a35c1e1ba9992898f2e13887e9479c0e12905d11f098dcd9fffe54e"
+    },
+    {
+      "path": "pinn/governance/nodes.py",
+      "sha256": "b22e754fe5173d4cf5e40d8b9bc40416f1627d6919b30ae60d35c2c27155c3b7"
+    },
+    {
+      "path": "pinn/governance/poisson2d_contract.py",
+      "sha256": "99f1fd453ad19bb1be0235367bac4664c62f9f78a691c7f69f472e8549bbbb31"
+    },
+    {
+      "path": "pinn/governance/poisson_contract.py",
+      "sha256": "f6c863725b75fe00051a9b5487ad2a5e4f47eb07bc99098aea45ca63c62a763b"
+    },
+    {
+      "path": "pinn/governance/prelock.py",
+      "sha256": "60d4d92182161728e4d1555af195e106a169d8cbfc90d974c186abc42b1f56ac"
+    },
+    {
+      "path": "pinn/governance/provenance.py",
+      "sha256": "e1331c17c278d1cd825eebe59ef581f5e5562db1bf2082e4467410c0990c6753"
+    },
+    {
+      "path": "pinn/governance/schemas/adversarial-manifest.schema.json",
+      "sha256": "4b3fda55e47208dce8719956036212cfb64395e933b9747b5eab87b335f09cd1"
+    },
+    {
+      "path": "pinn/governance/schemas/claim-gate-decision.schema.json",
+      "sha256": "d8d2ebb55b68f38bed63aac2360cb2b1c6673e1d5487424fc160b244c3ae0885"
+    },
+    {
+      "path": "pinn/governance/schemas/claim-set-event.schema.json",
+      "sha256": "e2068cfe0e7fc732d1f63073d974808a3ce450d4a35f423f2f34c2e1b4d29adc"
+    },
+    {
+      "path": "pinn/governance/schemas/diagnosis-record.schema.json",
+      "sha256": "b531e12c4768c4092bcc9da852acb768c0adaba9b20bc284a18085ae35988e7e"
+    },
+    {
+      "path": "pinn/governance/schemas/evaluation-set.schema.json",
+      "sha256": "05ed8385d32a5a6171481606be11b1781f6a2f4cad7a12618ee84635e5dce861"
+    },
+    {
+      "path": "pinn/governance/schemas/lock.schema.json",
+      "sha256": "508b1d53dfed983b1741513caa457ce753cbaa86296324b3bfe8508f9c51e0fc"
+    },
+    {
+      "path": "pinn/governance/schemas/problem-definition.schema.json",
+      "sha256": "8b31e5794bd7e8adccc3e46488097906b2764aeb23fe4e7eb822e112ab00b3a4"
+    },
+    {
+      "path": "pinn/governance/schemas/protocol.schema.json",
+      "sha256": "6fba8231e2c06cee80113628a4913259cd377d6fa86bc8bc1a942600de92d924"
+    },
+    {
+      "path": "pinn/governance/schemas/run-record.schema.json",
+      "sha256": "b57aa842c0bbcf778f20cb1969b8f3e1f20310256b7fca23cda8e3d8fba77c0d"
+    },
+    {
+      "path": "pinn/governance/schemas/spec.schema.json",
+      "sha256": "a43bf115434bc042f6510ef53d402fd2b6009dbd8ec23adb8e39458cf4cefbec"
+    },
+    {
+      "path": "pinn/governance/schemas/trust-vector.schema.json",
+      "sha256": "598799c0de22cdb4a1d0c3a8f8aa0145fb51fd3aeddc25b2248f360fd6c8683f"
+    },
+    {
+      "path": "pinn/governance/semantic.py",
+      "sha256": "6a8007ff19aa2a131af7221cd844792a93b3ecc44cc4b98e3fe5a4ce9c0278c2"
+    },
+    {
+      "path": "pinn/governance/state_machine.py",
+      "sha256": "96510c5d5211cfa17fc02887aec3b61cb8a0412adf833feede860544fe78c861"
+    },
+    {
+      "path": "pinn/governance/trust_loop.py",
+      "sha256": "a093ace6f0e5fae62bbcbb22febfc61f173fa3c90eafe7921876f712c4eb68bc"
+    },
+    {
+      "path": "pinn/governance/trust_vector.py",
+      "sha256": "4296acecf9c7bb599b0b191763ae454005ae68c4e95fa2bd2b4e56bb2c79007d"
+    },
+    {
+      "path": "pinn/reference/__init__.py",
+      "sha256": "bc3b30020f05d7977f2262250d145b73e819a63b24c828c1e806c5919519915c"
+    },
+    {
+      "path": "pinn/reference/analytic_poisson.py",
+      "sha256": "d792fd0ec91827bb6fcf38039893839024517c603bb4e5efcd0f7fe54b30a06d"
+    },
+    {
+      "path": "pinn/reference/analytic_poisson2d.py",
+      "sha256": "a387d8cfc79db224c41fd68d8771fed76a7b3f32c76a893c3ce016b169ecbbca"
+    },
+    {
+      "path": "pinn/validation/__init__.py",
+      "sha256": "59bcf353790f7c0967de1135663cd5f2532b5d5cf94020cb4495e1d96f2a30ac"
+    },
+    {
+      "path": "pinn/validation/diagnose.py",
+      "sha256": "952e57ac74da9433ea487f73c3c8512144dc1e7fa555d2a72d9cbe51596b6210"
+    },
+    {
+      "path": "pinn/validation/fixtures.py",
+      "sha256": "3bf4c25ed283786036e704e317dc0aad54ee49d83b75c8c66a49d1c5b17b48b1"
+    },
+    {
+      "path": "pinn/validation/poisson.py",
+      "sha256": "e9daa553b2f4261ae4b24a5ec47a6cfa38623d98d114060e22a6b65459877d77"
+    },
+    {
+      "path": "pinn/validation/poisson2d.py",
+      "sha256": "5bceba52a3acfab404a9be1b392be962aebf09ef906bdee583cabcfa9a01c515"
+    },
+    {
+      "path": "scientific_reference/POISSON_DERIVATION.md",
+      "sha256": "de4dd0208aa1d2cd150406e21f12323cf3093595c1a337152258e51207ff9ab4"
+    },
+    {
+      "path": "scientific_reference/__init__.py",
+      "sha256": "8bed654d4bcbb0b6a3a71da824816f3875d93ced16009b42f42090c88cac79e3"
+    },
+    {
+      "path": "scientific_reference/poisson2d_fdm.py",
+      "sha256": "874f20b598346d9e44c19026faf97e8279a63f9b5fc358851e24c03dac9a5b77"
+    },
+    {
+      "path": "scientific_reference/poisson_fdm.py",
+      "sha256": "075f856dba84a9a8dc7fc9216f6317b256668d24ece1f0c74fc4772e3257300f"
+    },
+    {
+      "path": "specs/poisson-1d/v1.0/assets/CGL2000.npy",
+      "sha256": "81e98be345a69e0859097557533defa0b533b57f930b60db9fd9200482d23773"
+    },
+    {
+      "path": "specs/poisson-1d/v1.0/assets/GL512_nodes.npy",
+      "sha256": "1d50c2db39cdfa8d741e23e9152a3cb8665991a8885c2e3ea5a505eae4e993db"
+    },
+    {
+      "path": "specs/poisson-1d/v1.0/assets/GL512_weights.npy",
+      "sha256": "f1fc34beda32cf34e6a0e7b6b9f98486d4833b2aed94a04a189bda203deb8ebd"
+    },
+    {
+      "path": "specs/poisson-2d/v1.0/POISSON_2D_V1.0_spec.json",
+      "sha256": "46e98c699e00ca108d39f11bd38b37933bea8323b2f24d2af48fc8f7dcdb5269"
+    }
+  ],
+  "configPath": "experiments/poisson2d/configs/exp2d_baseline.json",
+  "configSha256": "bf933c93b3f7fecd668872ff0d37487cda9770a076b9a07c504aead7868719c7",
+  "constitutionVersion": "1.2",
+  "dirtyCodeIdentityPaths": [],
+  "environment": {
+    "acceleratorClass": "cpu-only",
+    "acceleratorDriver": "",
+    "blasBackend": "mkl",
+    "dependencyLockHash": "75efe91aa4e18600ad67eedef99da3cbfcacfa8b2131253a5029ba5f883d2d42",
+    "frameworkVersion": "torch-2.12",
+    "installationId": "prefix-689a1fbe8610a998",
+    "machineId": "win-60a9b43e-b66d-4186-8afb-43e9ada3342e",
+    "osFamily": "windows",
+    "osVersion": "10.0.26200",
+    "pythonVersion": "3.12.9"
+  },
+  "environmentId": "e986dbc039e0c73b754d48609c86324d6a6b32da81c46e61a961690de20af488",
+  "gitHead": "ad9f029d2075eec5014b453210ead91b15fe6a2b",
+  "python": "3.12.9 | packaged by conda-forge | (main, Mar  4 2025, 22:37:18) [MSC v.1943 64 bit (AMD64)]",
+  "seedOffset": 0,
+  "spatialDimension": 2
+}

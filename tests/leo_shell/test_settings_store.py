@@ -72,6 +72,8 @@ def test_state_defaults(store: SettingsStore) -> None:
             assert preset["editable_base_url"] is False
             assert preset["model"] == "local-qwen3-4b"
             assert preset["base_url"] == "http://127.0.0.1:8080/v1"
+            # 3.2.2 · the owner's wording: the local model is shown simply as 「本地模型」.
+            assert preset["label"] == "本地模型"
         else:
             assert set(preset) == preset_keys
     assert state["presets"][0]["id"] == "deepseek"
@@ -200,6 +202,11 @@ def test_save_profile_custom_preset(store: SettingsStore) -> None:
     )
     assert profile.provider == "chatgpt"
     assert profile.base_url == "https://llm.example.com/v1"
+    local = store.save_profile(
+        {"profile_id": None, "preset": "custom", "model": "local-proxy",
+         "base_url": "http://127.0.0.1:8080/v1", "activate": False}
+    )
+    assert local.base_url == "http://127.0.0.1:8080/v1"
 
 
 # ---------------------------------------------------------------------------
@@ -217,6 +224,10 @@ def test_save_profile_custom_preset(store: SettingsStore) -> None:
         {"preset": "deepseek", "model": "m", "base_url": "example.com"},
         {"preset": "deepseek", "model": "m", "base_url": "http://user:pass@example.com"},
         {"preset": "deepseek", "model": "m", "base_url": "https://example.com/#frag"},
+        {"preset": "custom", "model": "m", "base_url": "http://10.1.2.3:8080/v1"},
+        {"preset": "custom", "model": "m", "base_url": "http://192.168.1.5/v1"},
+        {"preset": "custom", "model": "m", "base_url": "http://169.254.169.254/"},
+        {"preset": "custom", "model": "m", "base_url": "http://127.0.0.1%2e:8080/v1"},
         {"preset": "deepseek", "model": "m", "name": "n" * 81},
         {"preset": "custom", "model": "m", "base_url": ""},
         {"profile_id": "profile-does-not-exist", "preset": "deepseek", "model": "m"},

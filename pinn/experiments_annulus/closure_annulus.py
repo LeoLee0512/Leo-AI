@@ -24,6 +24,7 @@ from pinn.experiments.common import ArtifactStore, load_json, sha256_file, utc_n
 from pinn.governance.canonical import canonical_sha256
 from pinn.governance.state_machine import IllegalTransition, WorkflowState, advance
 from pinn.governance.trust_loop import validate_run_record, validate_trust_vector
+from pinn.research.context import CURRENT, actor
 from pinn.governance.trust_vector import (
     EnvironmentFingerprint,
     RunQualification,
@@ -45,9 +46,12 @@ def _decision(attempt_dir: Path, vector_doc: Mapping[str, Any], tv_ref: Mapping[
 
     first = load_json(attempt_dir / "claim_gate_decision.json")
     store = ArtifactStore(attempt_dir, producer=EXECUTOR)
+    # A product attempt carries its own ledger copy; the historical ones name the repository ledger.
+    ledger = (attempt_dir / "claim_set_ledger.json" if CURRENT.get()
+              else runner.LEDGER_DIR / f"{first['problemId']}.json")
     decision, _gate = build_decision(
         vector_doc, tv_ref, pdef=load_json(attempt_dir / "problem_definition.json"),
-        code_hash=first["codeHash"], events=load_json(runner.LEDGER_DIR / f"{first['problemId']}.json"),
+        code_hash=first["codeHash"], events=load_json(ledger),
         run_record=load_json(attempt_dir / "run_record.json"), statement_ref=store.ref("claim_statements.json"),
         evidence_refs=[dict(tv_ref)],
         # decisionId allows [a-z0-9-] only (schema 1.2); the file suffixes use "_", the ids use "-"
@@ -73,6 +77,19 @@ def _state(attempt_dir: Path) -> WorkflowState:
     return WorkflowState(load_json(attempt_dir / "attempt_state.json")["state"])
 
 
+def _current_vector(attempt_dir: Path, fallback: str) -> tuple[str, dict[str, Any]]:
+    """The vector a closure step supersedes: a product attempt names it by its current pointer."""
+
+    if CURRENT.get():
+        ref = load_json(attempt_dir / "RUN_SUMMARY.json").get("currentTrustVectorRef")
+        if not ref:
+            raise SystemExit("product attempt has no current trust vector")
+        if sha256_file(attempt_dir / ref["artifactId"]) != ref["sha256"]:
+            raise SystemExit("current trust vector identity mismatch")
+        return ref["artifactId"], load_json(attempt_dir / ref["artifactId"])
+    return fallback, load_json(attempt_dir / fallback)
+
+
 def merge_tier1(attempt_dir: Path) -> dict[str, Any]:
     """Fold ``tier1_redteam.json`` into a superseding trust vector and decision (downgrade only)."""
 
@@ -82,7 +99,7 @@ def merge_tier1(attempt_dir: Path) -> dict[str, Any]:
     store = ArtifactStore(attempt_dir, producer=EXECUTOR)
     tier1 = load_json(attempt_dir / "tier1_redteam.json")
     tier_ref = store.ref("tier1_redteam.json")
-    prior = load_json(attempt_dir / "trust_vector.json")
+    _name, prior = _current_vector(attempt_dir, "trust_vector.json")
     dims = copy.deepcopy(prior["dimensions"])
     for dim, impact in tier1["dimensionImpact"].items():
         entry = dims.get(dim)
@@ -95,17 +112,19 @@ def merge_tier1(attempt_dir: Path) -> dict[str, Any]:
             entry["notes"] = (entry.get("notes", "") + f"; Tier-1 Red Team downgraded to {impact}: "
                               f"{tier1['worstCase'][dim]}").strip("; ")
         entry["evidencePointers"] = list(entry.get("evidencePointers", [])) + [tier_ref]
-        entry["judgedAt"], entry["judgedBy"] = utc_now(), EXECUTOR
+        entry["judgedAt"], entry["judgedBy"] = utc_now(), actor(EXECUTOR)
     vector_doc = _superseding_vector(attempt_dir, prior, dims, "-tier1")
     decision = _decision(attempt_dir, vector_doc, {"artifactId": "trust_vector_tier1.json",
                                                    "sha256": canonical_sha256(vector_doc)},
                          "_tier1")
     tv_ref = store.write_canonical("trust_vector_tier1.json", vector_doc, role="TRUST_VECTOR",
                                    parents=[tier_ref["artifactId"]])
-    store.write_canonical("claim_gate_decision_tier1.json", decision, role="CLAIM_GATE_DECISION",
-                          parents=[tv_ref["artifactId"]])
+    cgd_ref = store.write_canonical("claim_gate_decision_tier1.json", decision, role="CLAIM_GATE_DECISION",
+                                    parents=[tv_ref["artifactId"]])
     allowed = [c["level"] for c in decision["allowedClaims"]]
     summary = load_json(attempt_dir / "RUN_SUMMARY.json")
+    if CURRENT.get():
+        summary.update({"currentTrustVectorRef": tv_ref, "currentDecisionRef": cgd_ref})
     summary.setdefault("redTeam", {})["tier1"] = {
         "passed": tier1["passed"], "dimensionImpact": tier1["dimensionImpact"], "worstCase": tier1["worstCase"],
         "trustVectorAfter": {d: dims[d]["status"] for d in dims}, "allowedClaimsAfter": allowed}
@@ -183,15 +202,30 @@ def apply_g6(attempt_dir: Path, reproduction_dir: Path) -> dict[str, Any]:
     report = load_json(reproduction_dir / "reproduction_report.json")
     if report["reproductionOf"] != attempt_dir.name:
         raise SystemExit("the reproduction report belongs to another attempt")
+    if CURRENT.get():
+        # The stored report is re-derived from the two run records before it may decide anything.
+        verified = judge_reproduction(attempt_dir, reproduction_dir, write=False)
+        for key in ("cRepro", "sameSpec", "sameCode", "independentEnvironments", "differentSeedSet",
+                    "withinTolerance", "metrics"):
+            if report[key] != verified[key]:
+                raise SystemExit("reproduction report disagrees with measured records")
     status = TrustStatus(report["cRepro"])
     evidence = [{"artifactId": f"{reproduction_dir.name}/{name}", "sha256": sha256_file(reproduction_dir / name)}
                 for name in ("reproduction_report.json", "run_record.json")]
-    g6 = [gates.check("G6-independentReproduction", status, report["summaryLine"], evidence)]
     store = ArtifactStore(attempt_dir, producer=EXECUTOR)
+    if CURRENT.get():
+        # Product evidence pointers resolve inside the original attempt: copy the exact bytes,
+        # keeping the separately verified reproduction attempt where it is.
+        for pointer in evidence:
+            target = attempt_dir / pointer["artifactId"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((reproduction_dir / Path(pointer["artifactId"]).name).read_bytes())
+            store.register(pointer["artifactId"], sha256_file(target), role="REPRODUCTION_EVIDENCE")
+    g6 = [gates.check("G6-independentReproduction", status, report["summaryLine"], evidence)]
     g6_ref = store.write_json("gate6_reproducibility_executed.json", {"checks": g6, "reproduction": report},
                               role="GATE_RESULT")
     base = "trust_vector_tier1.json" if (attempt_dir / "trust_vector_tier1.json").exists() else "trust_vector.json"
-    prior = load_json(attempt_dir / base)
+    base, prior = _current_vector(attempt_dir, base)
     dims = copy.deepcopy(prior["dimensions"])
     dims["repro"] = dimension_entry(status, g6, [g6_ref])
     vector_doc = _superseding_vector(attempt_dir, prior, dims, "-g6")
@@ -216,6 +250,8 @@ def apply_g6(attempt_dir: Path, reproduction_dir: Path) -> dict[str, Any]:
                             f"allowed {allowed}" + (f"; held: {held}" if held else ""))
     store.write_json("attempt_state.json", {"state": after.value, "at": utc_now()}, role="STATE")
     summary = load_json(attempt_dir / "RUN_SUMMARY.json")
+    if CURRENT.get():
+        summary.update({"currentTrustVectorRef": tv_ref, "currentDecisionRef": cgd_ref})
     summary.update({"g6": {"cRepro": status.value, "reproductionAttempt": reproduction_dir.name,
                            "report": report["metrics"], "independentEnvironments": report["independentEnvironments"],
                            "heldReason": held or None},

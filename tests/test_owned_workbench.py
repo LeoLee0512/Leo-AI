@@ -192,11 +192,16 @@ def test_workbench_shares_the_start_page_painting_and_palette():
     import re
     css = (stage / 'workbench.css').read_text(encoding='utf-8')
     shell = (stage / 'shell.html').read_text(encoding='utf-8')
-    ink = re.search(r'html\[data-leo-theme="ink-autumn"\]\{(.*?)\}', shell, re.S).group(1)
+    # 3.1.0: the start page's design block serves both 淡墨浓秋 and 素白; 素白 then overrides the paper.
+    ink = re.search(r'html:is\(\[data-leo-theme="ink-autumn"\],\[data-leo-theme="plain-white"\]\)\{(.*?)\}', shell, re.S).group(1)
     light = re.search(r':root\{(.*?)\}', css, re.S).group(1)
     token = lambda block, name: re.search(r'--' + name + r':([^;]+);', block).group(1).strip()
     for shell_name, workbench_name in (("bg", "paper"), ("surface", "surface"), ("ink", "ink"), ("accent", "accent"), ("muted", "muted")):
         assert token(ink, shell_name).lower() == token(light, workbench_name).lower(), workbench_name
+    plain_shell = re.search(r'html\[data-leo-theme="plain-white"\]\{(.*?)\}', shell, re.S).group(1)
+    plain_css = re.search(r':root\[data-leo-theme="plain-white"\]\{(.*?)\}', css, re.S).group(1)
+    for shell_name, workbench_name in (("bg", "paper"), ("surface", "surface"), ("ink", "ink"), ("muted", "muted")):
+        assert token(plain_shell, shell_name).lower() == token(plain_css, workbench_name).lower(), 'plain-white ' + workbench_name
     # The retired green workbench palette must not creep back.
     for retired in ("#233d32", "#315943", "#345b44", "#25382f"):
         assert retired not in css.lower()

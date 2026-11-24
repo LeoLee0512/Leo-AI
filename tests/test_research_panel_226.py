@@ -31,7 +31,8 @@ const ctx=vm.createContext({window:{
   setInterval:()=>1,clearInterval:()=>{},
   document:{body,readyState:'complete',getElementById:()=>null,createElement:tag=>new Element(tag)}});
 const buttons=()=>body.querySelectorAll('button');
-function button(label) {const b=buttons().find(n=>n.textContent===label||n.textContent.startsWith(label));assert.ok(b,label);return b;}
+const labelOf=n=>n.textContent||n.dataset.label||'';
+function button(label) {const b=buttons().find(n=>labelOf(n)===label||labelOf(n).startsWith(label));assert.ok(b,label);return b;}
 async function click(label) {button(label).onclick();for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));}
 (async()=>{
   assert.equal(vm.runInContext(source,ctx),true);
@@ -40,7 +41,7 @@ async function click(label) {button(label).onclick();for(let i=0;i<5;i++)await n
   assert.match(text(body),/其他对话/,'tasks of other conversations are listed and marked');
   await click('计算');   // "计算或验证未通过 · …" or any listed task: open it
   await click('运行');
-  const run=text(body.querySelector('.leo-research-body')||body), runLabels=buttons().map(b=>b.textContent);
+  const run=text(body.querySelector('.leo-research-body')||body), runLabels=buttons().map(labelOf);
   await click('验证与结论');
   const verification=text(body.querySelector('.leo-research-body')||body);
   console.log(JSON.stringify({run,verification,labels:runLabels,calls}));
@@ -71,14 +72,15 @@ def test_the_quota_is_stated_before_a_grid_is_reserved():
     out = render({"listLabel": "模型已确认", "task": task("MODEL_CONFIRMED"), "canPrepare": True,
                   "quota": {"capacity": 32, "used": 1, "remaining": 31},
                   "verification": {"verified": False, "allowedClaims": [], "reason": "MODEL_CONFIRMED"}})
-    assert "剩余 31 / 32" in out["run"] and "准备运行确认包" in out["labels"]
+    # 3.2.0: the button itself says a grid is spent.
+    assert "剩余 31 / 32" in out["run"] and "准备运行确认包（用掉 1 个）" in out["labels"]
 
 
 def test_no_preparation_is_offered_once_the_quota_is_spent():
     out = render({"listLabel": "模型已确认", "task": task("MODEL_CONFIRMED"), "canPrepare": True,
                   "quota": {"capacity": 32, "used": 32, "remaining": 0},
                   "verification": {"verified": False, "allowedClaims": [], "reason": "MODEL_CONFIRMED"}})
-    assert "额度已用完" in out["run"] and "准备运行确认包" not in out["labels"]
+    assert "额度已用完" in out["run"] and not any(l.startswith("准备运行确认包") for l in out["labels"])
 
 
 def test_a_stale_plan_offers_a_new_task_instead_of_an_admission():
@@ -98,11 +100,13 @@ def test_a_stopped_run_says_where_it_ended_and_shows_what_it_recorded():
                       "completion": {"state": "STOPPED", "phase": "main", "exitCode": 3}}}})
     assert "结束于「主实验」" in out["run"] and "以此草案新建任务" in out["labels"]
     assert "尚不可下结论" in out["verification"] and "Gate 5" in out["verification"]
-    assert "sLocalizedError" in out["verification"] and "外部精度 · 未通过" in out["verification"]
+    # 3.2.0: the six checks are cards with plain names; the raw codes stay visible next to the words.
+    assert "sLocalizedError" in out["verification"] and "与精确解一致" in out["verification"]
+    assert "未通过" in out["verification"] and "G5b · external" in out["verification"]
 
 
 def test_a_preparing_task_explains_what_is_happening():
     out = render({"listLabel": "正在准备运行确认包", "task": task("PREPARING"), "canPrepare": False,
                   "quota": {"capacity": 32, "used": 1, "remaining": 31},
                   "verification": {"verified": False, "allowedClaims": [], "reason": "PREPARING"}})
-    assert "不会启动训练" in out["run"] and "准备运行确认包" not in out["labels"]
+    assert "不会启动训练" in out["run"] and not any(l.startswith("准备运行确认包") for l in out["labels"])

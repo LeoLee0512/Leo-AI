@@ -15,6 +15,18 @@
       "builtin": true
     },
     {
+      "id": "plain-white",
+      "name": {
+        "zh": "素白",
+        "en": "Plain White"
+      },
+      "primary": "#9C3A28",
+      "accent": "#EDEBE7",
+      "dark_primary": "#D2705A",
+      "dark_accent": "#3A2E24",
+      "builtin": true
+    },
+    {
       "id": "deep-sea-molten-orange",
       "name": {
         "zh": "深海熔橙",

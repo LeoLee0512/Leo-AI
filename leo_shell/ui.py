@@ -128,7 +128,9 @@ class DesktopUI:
         self._extensions = None
         try:
             from .extensions import Extensions
-            self._extensions = Extensions(api, self._paths, self._coordinator._bridge.client_url, logger=self._logger)
+            bridge = self._coordinator._bridge
+            self._extensions = Extensions(api, self._paths, bridge.client_url, logger=self._logger,
+                                          distro=getattr(bridge, "_distro", None))
         except Exception:
             self._logger.exception("approval and schedule services could not start")
         # WebView2 otherwise silently cancels the user-requested knowledge-tree

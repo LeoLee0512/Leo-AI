@@ -114,7 +114,7 @@ PRESETS: tuple[dict, ...] = (
     },
     {
         "id": _LOCAL_PRESET_ID,
-        "label": "本地 Qwen3 · 无需密钥",
+        "label": "本地模型",
         "provider": "local-llama",
         "model": "local-qwen3-4b",
         "base_url": "http://127.0.0.1:8080/v1",
@@ -203,6 +203,14 @@ def _validate_base_url(value: str) -> None:
         raise SettingsInvalid("base_url must not contain userinfo")
     if parts.fragment:
         raise SettingsInvalid("base_url must not contain a fragment")
+    # The key is sent to this host. Loopback is a local model server; a private,
+    # link-local or browser-obfuscated address is not an endpoint Leo will save.
+    try:
+        from .web_links import endpoint_host_forbidden
+        if endpoint_host_forbidden(hostname):
+            raise SettingsInvalid("base_url must be a public address or loopback")
+    except ValueError as exc:
+        raise SettingsInvalid("base_url is not a valid URL") from exc
 
 
 def _profile_from_raw(item: Any) -> Profile | None:

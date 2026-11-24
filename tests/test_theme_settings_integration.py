@@ -37,6 +37,7 @@ from leo_shell.settings_store import SettingsStore
 ROOT = Path(__file__).resolve().parents[1]
 THEMES = {
     "ink-autumn": {"zh": "淡墨浓秋", "en": "Ink Autumn"},
+    "plain-white": {"zh": "素白", "en": "Plain White"},
     "deep-sea-molten-orange": {
         "zh": "深海熔橙", "en": "Deep Sea Molten Orange"
     },
@@ -94,7 +95,7 @@ DRIVER = r"""
   const buttonFor = id => cards().find(button =>
     button.querySelector('b')?.textContent === TEST.themes[id][TEST.locale]);
   const checkCards = () => {
-    assert(cards().length === 3, 'Expected exactly three rendered theme choices');
+    assert(cards().length === 4, 'Expected exactly four rendered theme choices');
     for (const id of Object.keys(TEST.themes)) {
       assert(buttonFor(id), 'Missing bilingual theme label: ' + id);
     }
@@ -118,7 +119,7 @@ DRIVER = r"""
     const selected = id => buttonFor(id)?.classList.contains('active');
     assert(selected('ink-autumn'), 'Ink Autumn was not selected on page load');
     if (!sessionStorage.getItem('leo-theme-test-reloaded')) {
-      for (const id of ['deep-sea-molten-orange', 'amethyst-teal', 'ink-autumn']) {
+      for (const id of ['plain-white', 'deep-sea-molten-orange', 'amethyst-teal', 'ink-autumn']) {
         buttonFor(id).click();
         await waitFor(() => selected(id), 'Clicked choice did not become active: ' + id);
         const persisted = rpc('get_state').appearance;
@@ -259,7 +260,7 @@ def test_actual_settings_theme_picker(tmp_path: Path, page: str, locale: str) ->
     assert observed["labels"] == [theme[locale] for theme in THEMES.values()]
     assert writes == [
         {"theme": theme, "locale": locale}
-        for theme in ("deep-sea-molten-orange", "amethyst-teal", "ink-autumn")
+        for theme in ("plain-white", "deep-sea-molten-orange", "amethyst-teal", "ink-autumn")
     ]
     persisted = json.loads((paths.user / "appearance.json").read_text(encoding="utf-8"))
     assert persisted == {"schema_version": 1, "theme": "ink-autumn", "locale": locale}

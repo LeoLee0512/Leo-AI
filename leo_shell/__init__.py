@@ -7,8 +7,8 @@ bridge client, a serial connection coordinator and a pywebview front end.
 
 from __future__ import annotations
 
-__version__ = "3.0.0"
+__version__ = "3.2.16"
 PRODUCT_NAME = "Leo AI"
-DISPLAY_NAME = "Leo AI 3.0"
+DISPLAY_NAME = "Leo AI 3.2.16"
 
 __all__ = ["__version__"]

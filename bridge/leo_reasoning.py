@@ -9,12 +9,19 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
+import os
+import sys
+import tempfile
+from pathlib import Path
 from urllib.parse import urlsplit
 
 POLICY_VERSION = 1
 CHOICES = ("default", "low", "mid", "high", "xhigh", "extra", "ultra")
 LABELS = ("Default", "Low", "Mid", "High", "Xhigh", "Extra", "Ultra")
-QWEN_BUDGETS = dict(zip(CHOICES[1:], (128, 256, 512, 1024, 2048, 4096)))
+# 3.2.6 · The local model offers the same levels as DeepSeek (owner, 2026-09-30): low / high / ultra,
+# as thinking budgets in tokens. The other choice ids stay defined but unavailable.
+QWEN_BUDGETS = {"low": 256, "high": 1024, "ultra": 4096}
 DEEPSEEK_LEVELS = {"low": "low", "high": "high", "ultra": "max"}
 DEEPSEEK_MODELS = frozenset({"deepseek-v4-flash", "deepseek-v4-pro"})
 
@@ -67,7 +74,7 @@ def describe(provider: str, model: str, base_url: str) -> dict:
         semantics = "Provider default; no explicit reasoning override."
         if choice != "default":
             semantics = "This endpoint/model has no audited independent support for this choice."
-            if family == "qwen3_llamacpp":
+            if family == "qwen3_llamacpp" and choice in QWEN_BUDGETS:
                 available, value = True, QWEN_BUDGETS[choice]
                 semantics = (f"Thinking budget {value} tokens per thinking block; forced closing/UTF-8 overhead may occur. "
                              "Total generated tokens are bounded separately; no length or accuracy guarantee.")
@@ -76,6 +83,8 @@ def describe(provider: str, model: str, base_url: str) -> dict:
                 semantics = f"DeepSeek native reasoning_effort={value}; thinking enabled."
             elif family == "deepseek_v4":
                 semantics = "DeepSeek exposes only low/high/max; this label does not represent another native strength."
+            elif family == "qwen3_llamacpp":
+                semantics = "The local model offers low/high/ultra, the same levels as DeepSeek."
         elif family == "qwen3_llamacpp":
             semantics = "Existing local default: thinking disabled; ordinary output budget remains separate."
         elif family == "deepseek_v4":
@@ -156,4 +165,100 @@ def apply_request(payload: dict, cfg, base: str, model: str) -> dict:
         # Windows endpoint differs from the daemon-side relay endpoint, so a
         # second endpoint revision must not masquerade as the admitted one.
         result["leo_reasoning_level"] = snapshot["choice"]
+    # 3.2.11 · A temperature the person set for this model replaces only the daemon's default one;
+    # callers that ask for their own (titles 0.3, compaction 0.2) keep it.
+    chosen = model_temperature(model)
+    if chosen is not None and "temperature" in result and result["temperature"] == getattr(cfg, "temperature", None):
+        result["temperature"] = chosen
     return result
+
+
+# 3.2.11 · Temperature per model, set from Leo's 「用量」 panel (owner, 2026-09-30). The daemon has one
+# global temperature (OPENAI4S_LLM_TEMPERATURE, default 0.7); every chat request passes apply_request,
+# so a small file next to the daemon's data holds the per-model values. A missing or unreadable file
+# means "use the default"; it never blocks a request.
+TEMPERATURE_FILE = "leo-model-temperatures.json"
+DEFAULT_TEMPERATURE = 0.7
+TEMPERATURE_MIN, TEMPERATURE_MAX = 0.0, 1.5
+
+
+def _temperature_path() -> Path:
+    data = os.environ.get("OPENAI4S_DATA_DIR") or str(Path.home() / ".local/share/leo-ai-studio/data")
+    return Path(data) / TEMPERATURE_FILE
+
+
+def _valid_model(model: object) -> bool:
+    return type(model) is str and 0 < len(model) <= 200 and not any(ord(c) < 32 for c in model)
+
+
+def _valid_temperature(value: object) -> bool:
+    return (type(value) in (int, float) and math.isfinite(value)
+            and TEMPERATURE_MIN <= value <= TEMPERATURE_MAX)
+
+
+def model_temperatures() -> dict:
+    try:
+        data = json.loads(_temperature_path().read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    models = data.get("models") if isinstance(data, dict) and data.get("version") == 1 else None
+    if not isinstance(models, dict):
+        return {}
+    return {model: float(value) for model, value in models.items()
+            if _valid_model(model) and _valid_temperature(value)}
+
+
+def model_temperature(model: str) -> float | None:
+    return model_temperatures().get(model)
+
+
+def set_model_temperature(model: str, value: float | None) -> dict:
+    """Set (or with None, clear) one model's temperature; the file is replaced atomically."""
+    if not _valid_model(model) or (value is not None and not _valid_temperature(value)):
+        raise ReasoningError("TEMPERATURE_INVALID")
+    models = model_temperatures()
+    if value is None:
+        models.pop(model, None)
+    else:
+        models[model] = round(float(value), 2)
+    path = _temperature_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary = tempfile.mkstemp(prefix=".leo-temperatures-", dir=path.parent)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            json.dump({"version": 1, "models": models}, handle, sort_keys=True)
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+    return models
+
+
+def main(argv=None) -> int:
+    """``temperatures`` | ``set-temperature MODEL VALUE`` | ``clear-temperature MODEL`` (run by Leo in WSL)."""
+    args = list(sys.argv[1:] if argv is None else argv)
+    try:
+        if args == ["temperatures"]:
+            models = model_temperatures()
+        elif len(args) == 3 and args[0] == "set-temperature":
+            try:
+                value = float(args[2])
+            except ValueError:
+                raise ReasoningError("TEMPERATURE_INVALID") from None
+            models = set_model_temperature(args[1], value)
+        elif len(args) == 2 and args[0] == "clear-temperature":
+            models = set_model_temperature(args[1], None)
+        else:
+            raise ReasoningError("TEMPERATURE_COMMAND_INVALID")
+    except (ReasoningError, OSError) as exc:
+        code = exc.code if isinstance(exc, ReasoningError) else "TEMPERATURE_STORE_UNAVAILABLE"
+        print(json.dumps({"ok": False, "error": {"code": code, "message": "Model temperature was not changed."}}))
+        return 1
+    print(json.dumps({"ok": True, "data": {"temperatures": models, "default": DEFAULT_TEMPERATURE,
+                                           "range": [TEMPERATURE_MIN, TEMPERATURE_MAX]}}))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -64,6 +64,7 @@ from pinn.governance.trust_loop import (
 )
 from pinn.governance.trust_vector import CLAIM_LEVELS, TrustStatus, claim_gate, seed_set_id
 from pinn.governance import annulus_contract as contract
+from pinn.research.context import CURRENT, actor, data_path
 
 from . import datasets_annulus as ds
 from . import diagnostics_annulus as diagnostics
@@ -71,6 +72,12 @@ from . import gates_annulus as gates
 from . import localized_error_annulus as localized
 from . import pinn_torch_annulus as pinn
 from . import parallel_annulus as parallel
+
+# Product mode (3.2.2): when the Leo research worker runs an attempt it sets a RunContext; every
+# location below then lives in the task's own data root, the code identity is the product's, and the
+# attempt carries its own ledger copy and current-decision pointers so it verifies offline. Without a
+# context (the historical calibration runs r1-r3) nothing here changes behaviour -- the same rule the
+# square runner follows (runner2d, 2.2.11).
 
 #: The TrustStatus -> GateStatus map, identical to the one the square runner uses.
 GATE_FROM_TRUST = {TrustStatus.PASS: GateStatus.PASS, TrustStatus.FAIL: GateStatus.FAIL,
@@ -90,7 +97,7 @@ CONTRACT_PATH = "pinn/governance/annulus_contract.py"
 
 
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return CURRENT.get().code_root if CURRENT.get() else Path(__file__).resolve().parents[2]
 
 
 def log(message: str) -> None:
@@ -98,7 +105,8 @@ def log(message: str) -> None:
 
 
 def load_registry() -> dict[str, str]:
-    return load_json(REGISTRY_PATH) if REGISTRY_PATH.exists() else {}
+    path = data_path(REGISTRY_PATH)
+    return load_json(path) if path.exists() else {}
 
 
 def register_sample_set(manifest: Mapping[str, Any]) -> tuple[str, str]:
@@ -107,8 +115,9 @@ def register_sample_set(manifest: Mapping[str, Any]) -> tuple[str, str]:
     if registry.get(artifact, samples) != samples:
         raise SystemExit(f"registry binds artifact {artifact[:12]} to another sample identity")
     registry[artifact] = samples
-    REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    REGISTRY_PATH.write_text(json.dumps(registry, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    path = data_path(REGISTRY_PATH)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(registry, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     return artifact, samples
 
 
@@ -121,7 +130,7 @@ def write_ledger(path: Path, events: Sequence[Mapping[str, Any]]) -> None:
 
 
 def pool_members(problem_id: str) -> dict[str, Any]:
-    path = PROBLEMS_DIR / f"{problem_id}-claim-pool.json"
+    path = data_path(PROBLEMS_DIR) / f"{problem_id}-claim-pool.json"
     return load_json(path) if path.exists() else {"members": {}}
 
 
@@ -234,7 +243,7 @@ def build_problem_definition(config: Mapping[str, Any], sets: Mapping[str, Mappi
         },
         "status": "FROZEN",
         "frozenAt": frozen_at,
-        "frozenBy": EXECUTOR,
+        "frozenBy": actor(EXECUTOR),
     }
     document["specHash"] = problem_definition_spec_hash(document)
     return document
@@ -262,7 +271,7 @@ def dimension_entry(status: TrustStatus, checks: Sequence[Mapping[str, Any]], ev
     entry: dict[str, Any] = {"status": status.value}
     if status is TrustStatus.NOT_CHECKED:
         return entry
-    entry.update({"evidencePointers": [dict(e) for e in evidence], "judgedAt": utc_now(), "judgedBy": EXECUTOR,
+    entry.update({"evidencePointers": [dict(e) for e in evidence], "judgedAt": utc_now(), "judgedBy": actor(EXECUTOR),
                   "checks": [dict(c) for c in checks]})
     if notes:
         entry["notes"] = notes
@@ -320,7 +329,7 @@ def build_decision(vector_doc: Mapping[str, Any], tv_ref: Mapping[str, str], *, 
                           for level in CLAIM_LEVELS if level not in gate.allowed],
         "weakestLink": {"dimensions": list(gate.weakest_dimensions), "status": gate.weakest_status.value,
                         "evidenceRef": dict(tv_ref)},
-        "generatedAt": utc_now(), "decidedBy": EXECUTOR,
+        "generatedAt": utc_now(), "decidedBy": actor(EXECUTOR),
     }
     errors = validate_claim_gate_decision(decision, vector_doc, pdef, claim_set_events=events,
                                           run_records={run_record["runId"]: run_record})
@@ -334,7 +343,8 @@ class AttemptAnnulus:
 
     def __init__(self, *, config_path: Path, attempt_id: str, problem_id: str, revision: int, out_root: Path,
                  claim_pool_member: str | None = None, seed_offset: int = 0, reproduction_of: str | None = None,
-                 stop_after_gate: int | None = None, device: str = "cpu", workers: int = 1):
+                 stop_after_gate: int | None = None, device: str = "cpu", workers: int = 1,
+                 ledger_path: Path | None = None):
         self.root = repo_root()
         self.config_path = config_path
         self.config = load_json(config_path)
@@ -354,10 +364,15 @@ class AttemptAnnulus:
         # Parallel processes are execution too (parallel_annulus.py): identical runs, side by side.
         self.workers = max(1, int(workers))
         self.store = ArtifactStore(out_root / attempt_id)
-        self.ledger_path = LEDGER_DIR / f"{problem_id}.json"
+        self.ledger_path = ledger_path or data_path(LEDGER_DIR) / f"{problem_id}.json"
         self.dimensions: dict[str, Any] = {}
         self.summary: dict[str, Any] = {"attemptId": attempt_id, "problemId": problem_id, "revision": revision,
                                         "reproductionOf": reproduction_of, "seedOffset": self.seed_offset}
+        if CURRENT.get():
+            # The shared trust-report renderer reads it (the historical runs kept it in identity.json only),
+            # and the desktop's re-check places the attempt's start between the seal and the opening.
+            self.summary["constitutionVersion"] = CONSTITUTION_VERSION
+            self.summary["startedAt"] = utc_now()
         self.state = WorkflowState.DRAFT
         self.events: list[dict[str, Any]] = []
         self.gate_details: dict[str, Any] = {}
@@ -403,8 +418,14 @@ class AttemptAnnulus:
         dirty = workspace_dirty_paths(self.root)
         declared = [str(path).replace("\\", "/") for path in self.config.get("codeIdentityExtraFiles", [])]
         extra = [config_rel, *declared]
-        manifest = code_manifest(self.root, extra)
-        assert_code_identity_complete(manifest, self.root, extra_required=extra)
+        if CURRENT.get():
+            # The product's identity: pinn/ and the governance files plus the product configs and the
+            # desktop's research surfaces (it asserts completeness and cleanliness itself).
+            from pinn.research.worker import scientific_identity
+            manifest = scientific_identity(self.root)
+        else:
+            manifest = code_manifest(self.root, extra)
+            assert_code_identity_complete(manifest, self.root, extra_required=extra)
         self.code_hash = code_hash_from_manifest(manifest)
         self.code_manifest = manifest
         self.environment = environment_fingerprint(accelerator_class=self.accelerator_class())
@@ -424,6 +445,11 @@ class AttemptAnnulus:
                                              "source": "command line (--workers); NOT a config value",
                                              "note": "each seed trains in its own process with the same arguments "
                                                      "it would get sequentially; results are identical bit for bit"}}
+        if CURRENT.get():
+            identity["executionContext"] = CURRENT.get().document()
+            identity["parallelWorkers"] = self.workers
+            if dirty:
+                raise SystemExit("formal product run requires clean code identity")
         self.store.write_json("identity.json", identity, role="IDENTITY")
         self.summary.update({"codeHash": self.code_hash, "environmentId": self.environment_id,
                              "gitHead": identity["gitHead"], "workspaceDirty": bool(dirty),
@@ -441,7 +467,7 @@ class AttemptAnnulus:
 
     def phase_problem(self) -> None:
         members = pool_members(self.problem_id)["members"]
-        frozen_file = PROBLEMS_DIR / f"{self.problem_id}-r{self.revision}.json"
+        frozen_file = data_path(PROBLEMS_DIR) / f"{self.problem_id}-r{self.revision}.json"
         if self.claim_pool_member is None and frozen_file.exists():
             frozen_claim = load_json(frozen_file)["evaluationSets"]["claim"]["sha256"]
             for name, member in members.items():
@@ -540,7 +566,7 @@ class AttemptAnnulus:
             events.append(make_event(prev_event_id=events[-1]["eventId"] if events else "GENESIS",
                                      problemId=self.problem_id, revision=self.revision, specHash=pdef["specHash"],
                                      claimSetSha256=claim_artifact, sampleSetHash=claim_samples, event="SEALED",
-                                     actor=EXECUTOR, at=utc_now()))
+                                     actor=actor(EXECUTOR), at=utc_now()))
             log(f"claim set {claim_artifact[:12]} (samples {claim_samples[:12]}) SEALED")
         write_ledger(self.ledger_path, events)
         self.events = events
@@ -552,7 +578,14 @@ class AttemptAnnulus:
         self.pdef = pdef
         self.pdef_ref = self.store.write_canonical("problem_definition.json", pdef, role="PROBLEM_DEFINITION",
                                                    parents=[r["artifactId"] for r in self.set_refs.values()])
-        self.store.register("claim_set_ledger.json", canonical_sha256(events), role="LEDGER", note=str(self.ledger_path))
+        if CURRENT.get():
+            # Gates 1-3 refer to the sealed version even after OPENED rewrites the current record, and
+            # the attempt keeps its own copy of the ledger so it can be verified without the task.
+            self.pdef_ref = self.store.write_canonical("problem_definition_sealed.json", pdef, role="PROBLEM_DEFINITION",
+                                                       parents=[r["artifactId"] for r in self.set_refs.values()])
+            self.store.write_canonical("claim_set_ledger.json", events, role="LEDGER")
+        else:
+            self.store.register("claim_set_ledger.json", canonical_sha256(events), role="LEDGER", note=str(self.ledger_path))
         self.summary.update({"specHash": pdef["specHash"], "claimSetSha256": claim_artifact,
                              "claimSampleSetHash": claim_samples, "ledgerHead": events[-1]["eventId"],
                              "claimPoolMember": self.claim_pool_member})
@@ -640,7 +673,7 @@ class AttemptAnnulus:
             "codeManifest": self.code_manifest, "environment": self.environment,
             "environmentId": self.environment_id, "seeds": self.seed_values,
             "seedSetId": seed_set_id(self.seed_values), "evaluatedOn": evaluated,
-            "startedAt": self.started_at, "finishedAt": max(self.finished_at, utc_now()), "executedBy": EXECUTOR,
+            "startedAt": self.started_at, "finishedAt": max(self.finished_at, utc_now()), "executedBy": actor(EXECUTOR),
         }
         errors = validate_run_record(record)
         if errors:
@@ -731,10 +764,13 @@ class AttemptAnnulus:
         self.events.append(make_event(prev_event_id=self.events[-1]["eventId"], problemId=self.problem_id,
                                       revision=self.revision, specHash=self.pdef["specHash"],
                                       claimSetSha256=claim_sha, sampleSetHash=claim_samples, event="OPENED",
-                                      codeHash=self.code_hash, actor=EXECUTOR, at=utc_now()))
+                                      codeHash=self.code_hash, actor=actor(EXECUTOR), at=utc_now()))
         write_ledger(self.ledger_path, self.events)
-        self.store.register("claim_set_ledger.json", canonical_sha256(self.events), role="LEDGER",
-                            note=str(self.ledger_path))
+        if CURRENT.get():
+            self.store.write_canonical("claim_set_ledger.json", self.events, role="LEDGER")
+        else:
+            self.store.register("claim_set_ledger.json", canonical_sha256(self.events), role="LEDGER",
+                                note=str(self.ledger_path))
         self.pdef = apply_ledger_state(self.pdef, self.events)
         errors = validate_problem_definition(self.pdef, claim_set_events=self.events, evaluation_sets=self.sets,
                                              sample_set_hashes=load_registry())
@@ -848,6 +884,9 @@ class AttemptAnnulus:
                                  "weakestLink": {"dimensions": list(gate.weakest_dimensions),
                                                  "status": gate.weakest_status.value},
                                  "decisionRef": cgd_ref})
+            if CURRENT.get():
+                # Only an explicit current pointer can supply a product's displayed claim.
+                self.summary.update({"currentTrustVectorRef": tv_ref, "currentDecisionRef": cgd_ref})
         self.summary["finalState"] = final_state.value
         self.store.write_json("RUN_SUMMARY.json", self.summary, role="SUMMARY")
         return self.summary
@@ -961,8 +1000,14 @@ def run_tier1_for_attempt(attempt_dir: Path, *, device: str = "cpu", workers: in
     phys_points, phys_weights = ds.phys_grid(int(config["sets"]["physRadialOrder"]),
                                              int(config["sets"]["physAngularCount"]))
     criterion = config["signatureCriteria"]["sLocalizedError"]
-    current = code_hash_from_manifest(code_manifest(repo_root(), [identity["configPath"],
-                                                                 *config.get("codeIdentityExtraFiles", [])]))
+    if CURRENT.get():
+        from pinn.research.worker import scientific_identity
+        current = code_hash_from_manifest(scientific_identity(repo_root()))
+        if current != identity["codeHash"]:
+            raise SystemExit("Tier-1 refuses: the product code identity changed since the attempt ran")
+    else:
+        current = code_hash_from_manifest(code_manifest(repo_root(), [identity["configPath"],
+                                                                     *config.get("codeIdentityExtraFiles", [])]))
     log(f"Tier-1 Red Team on {attempt_dir.name}: 8 retrains on device={device}, "
         f"baseline seeds {baseline['seeds']}")
     if current != identity["codeHash"]:
@@ -974,7 +1019,7 @@ def run_tier1_for_attempt(attempt_dir: Path, *, device: str = "cpu", workers: in
                                log=log, device=device, workers=workers)
     result.update({"attemptId": summary["attemptId"], "attemptCodeHash": identity["codeHash"],
                    "codeHashAtRedTeam": current, "specHash": pdef["specHash"],
-                   "gate5TrustVector": vector, "executedBy": EXECUTOR, "at": utc_now(),
+                   "gate5TrustVector": vector, "executedBy": actor(EXECUTOR), "at": utc_now(),
                    "claimSetTouched": False,
                    "note": "Tier-1 may maintain or downgrade a dimension, never upgrade one"})
     store = ArtifactStore(attempt_dir)
@@ -984,6 +1029,19 @@ def run_tier1_for_attempt(attempt_dir: Path, *, device: str = "cpu", workers: in
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    values = list(sys.argv[1:] if argv is None else argv)
+    if "--context" in values:
+        # A product task's own locations (pinn.research.reproduce): the same wrapper as the 1D/2D runners.
+        from pinn.research.context import RunContext, using
+        index = values.index("--context")
+        context_file = Path(values[index + 1])
+        del values[index:index + 2]
+        with using(RunContext.from_document(load_json(context_file))):
+            return _main(values)
+    return _main(values)
+
+
+def _main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -999,11 +1057,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     attempt.add_argument("--stop-after-gate", type=int)
     attempt.add_argument("--device", default="cpu")
     attempt.add_argument("--workers", type=int, default=1)
+    attempt.add_argument("--ledger", type=Path, default=None)
 
     tier1 = sub.add_parser("tier1")
     tier1.add_argument("--attempt-dir", type=Path, required=True)
     tier1.add_argument("--device", default="cpu")
     tier1.add_argument("--workers", type=int, default=1)
+
+    judge = sub.add_parser("judge-reproduction")
+    judge.add_argument("--original", type=Path, required=True)
+    judge.add_argument("--reproduction", type=Path, required=True)
 
     pool = sub.add_parser("register-pool")
     pool.add_argument("--problem-id", required=True)
@@ -1017,13 +1080,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                                      revision=args.revision, out_root=args.out_root,
                                      claim_pool_member=args.claim_pool_member, seed_offset=args.seed_offset,
                                      reproduction_of=args.reproduction_of, stop_after_gate=args.stop_after_gate,
-                                     device=args.device, workers=args.workers)
+                                     device=args.device, workers=args.workers, ledger_path=args.ledger)
         summary = attempt_run.run()
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         return 0
     if args.command == "tier1":
         print(json.dumps(run_tier1_for_attempt(args.attempt_dir, device=args.device, workers=args.workers),
                          ensure_ascii=False, indent=2)[:4000])
+        return 0
+    if args.command == "judge-reproduction":
+        from .closure_annulus import judge_reproduction
+        print(json.dumps(judge_reproduction(args.original, args.reproduction)["summaryLine"], ensure_ascii=False))
         return 0
     if args.command == "register-pool":
         run_register_pool(args.problem_id, args.members, args.designated_start, args.config)

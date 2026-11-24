@@ -101,6 +101,20 @@ FAMILY_TEXT = {
                    "T4-boundaryOperatorFourEdges": "精确解代入四条边的边界算子，边界误差为机器精度",
                    "PH4-symmetry": "关于对角线 x = y 交换对称"},
     },
+    # 3.2.2 · The annulus (r3's method). The words differ; every number is still read from the records.
+    "annulus": {
+        "math": "一个二阶椭圆方程配内外两圈上的 Dirichlet 边界条件，问题适定；方程无量纲；制造解确实满足方程与两圈边界。",
+        "physics": "通量平衡、能量恒等式 ∬|∇u|² = ∬f u、正性与离散最大值界都在事先规定的阈值内成立；对称性与单调性在这个非对称的制造解上不适用，已如实登记。",
+        "solution": "u* = (1−s)(s−a²)(1 + 0.2 sin(πx) cos(2πy) + 0.1x − 0.1y)", "problem": "这道环形域 Poisson 问题（0.35 < r < 1）",
+        "equation": "−(u_xx + u_yy) = f，0.35² < x² + y² < 1，内外两圈上 u = 0，f 由制造解给出",
+        "hardBoundary": "把解写成 u = (1−s)(s−a²)·N(x, y)，s = x² + y²，内外两圈上的边界条件自然精确满足。",
+        "claimDir": "work/experiments/annulus/problems", "claimGlob": "*-claim-ANN-*.json",
+        "cannot": "这个方法对其他方程、其他内径或其他区域形状（带角点、不规则边界）同样准确。",
+        "checks": {"M5-geometryBinding": "内外两个圆分别绑定到两个边界条件",
+                   "T4-hardBoundaryBothComponents": "输出形式在内外两圈上精确为 0（硬边界）", "T2-secondDerivativeComponentSeparation": "u_xx 与 u_yy 分开求导（非对称探针能识破 x、y 混淆）",
+                   "PH4-symmetry": "对称性（制造解不对称，不适用）", "PH5-monotonicity": "单调性（不适用）",
+                   "PH8-geometryMembership": "所有检验点都严格落在环形区域内（孔里的点不算）"},
+    },
 }
 
 # The package, file by file, for readers who want to open the records themselves.
@@ -181,8 +195,9 @@ def build_guide(task_dir, task, verification):
     epsilon = (config.get("preregistration") or {}).get("epsilonSpec")
     training = summary.get("training") or {}
     evaluation = summary.get("claimEvaluation") or {}
-    if family == "poisson2d":
-        per_seed = [row.get("AC2D-1") for row in evaluation.get("perSeed") or [] if isinstance(row, dict)]
+    if family in ("poisson2d", "annulus"):
+        key = "AC2D-1" if family == "poisson2d" else "ACA-1"
+        per_seed = [row.get(key) for row in evaluation.get("perSeed") or [] if isinstance(row, dict)]
         per_seed = [v for v in per_seed if isinstance(v, (int, float))]
     else:
         per_seed = evaluation.get("perSeedAC1") or []

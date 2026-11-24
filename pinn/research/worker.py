@@ -17,8 +17,9 @@ from pinn.experiments.common import (code_manifest, code_hash_from_manifest, sha
 
 CONFIG = "pinn/research/poisson1d-config.json"
 CONFIG_2D = "pinn/research/poisson2d-config.json"
-IDENTITY_EXTRAS = (CONFIG, CONFIG_2D, "leo_shell/research.py", "leo_shell/research_draft.py", "leo_shell/api.py",
-                   "stage/research-panel.js")
+CONFIG_ANNULUS = "pinn/research/annulus-config.json"
+IDENTITY_EXTRAS = (CONFIG, CONFIG_2D, CONFIG_ANNULUS, "leo_shell/research.py", "leo_shell/research_draft.py",
+                   "leo_shell/api.py", "stage/research-panel.js")
 
 # The problem families the product runs, keyed by the draft's templateId. Each names its frozen
 # configuration, its runner and where its claim sets live; everything else is the same pipeline.
@@ -32,6 +33,13 @@ FAMILIES = {
                   # Serially ~90 minutes (calibration 2026-09-16); seeds and Tier-1 retrains run side by
                   # side (owner, 2026-09-29), with a 90-minute cap.
                   "budgetSeconds": 5400, "workers": 10},
+    # 3.2.2 · The annulus (owner, 2026-09-29): r3's 240k-step method. r3's chain took ~6 h 20 min with
+    # Tier-1 and the reproduction side by side; the product runs its phases one after another, so ~7-8 h.
+    # The cap is twice that (owner: accuracy, not time), so a slow machine never burns a grid on a time-out.
+    # The historical calibration grids (DAC-M*) are part of the claim history as well.
+    "annulus": {"templateId": "annulus-v1", "config": CONFIG_ANNULUS, "runner": "pinn.experiments_annulus.runner_annulus",
+                "experiments": "experiments/annulus", "claimGlob": ("*-claim-ANN-*.json", "*-claim-DAC-M*.json"),
+                "budgetSeconds": 57600, "workers": 10},
 }
 TEMPLATE_FAMILIES = {spec["templateId"]: name for name, spec in FAMILIES.items()}
 
@@ -78,10 +86,12 @@ def historical_claims(root, research_root, family="poisson1d"):
     from pinn.governance.evaluation_sets import load_evaluation_set
     identities = set()
     history = {}
-    experiments, pattern = FAMILIES[family]["experiments"], FAMILIES[family]["claimGlob"]
+    experiments, patterns = FAMILIES[family]["experiments"], FAMILIES[family]["claimGlob"]
+    patterns = (patterns,) if isinstance(patterns, str) else patterns
     candidates = list((root / experiments).glob("runs/*/sets/claim.json"))
-    candidates += list((root / experiments / "problems").glob(pattern))
-    candidates += list((research_root / "tasks").glob(f"*/work/{experiments}/problems/{pattern}"))
+    for pattern in patterns:
+        candidates += list((root / experiments / "problems").glob(pattern))
+        candidates += list((research_root / "tasks").glob(f"*/work/{experiments}/problems/{pattern}"))
     for path in sorted(candidates):
         doc = read(path)
         identities.update(load_evaluation_set(doc).identities)
@@ -91,8 +101,18 @@ def historical_claims(root, research_root, family="poisson1d"):
     return identities, history
 
 
+ANNULUS_PLACEHOLDER = {"quadratureRadialOrder": 3, "quadratureAngularCount": 5, "angularOffset": 0.1,
+                       "pointwiseCglCount": 4, "pointwiseAngularCount": 5, "pointwiseAngularOffset": 0.2}
+
+
 def _base_sets(family, config, root, label):
     """The train / dev / phys sets a candidate claim grid must stay apart from."""
+    if family == "annulus":
+        from pinn.experiments_annulus import datasets_annulus
+        # The claim entry is replaced by each candidate below; any valid placeholder builds the others.
+        return datasets_annulus.build_sets(config, claim_points=datasets_annulus.claim_member_points(ANNULUS_PLACEHOLDER),
+                                           claim_artifact_id="set-claim-placeholder",
+                                           claim_generator={"generatorId": "placeholder", "generatorVersion": "-"})
     if family == "poisson1d":
         from pinn.experiments import runner, datasets
         protocol = runner.load_candidate_protocol(root)
@@ -109,6 +129,9 @@ def _datasets(family):
     if family == "poisson1d":
         from pinn.experiments import datasets
         return datasets
+    if family == "annulus":
+        from pinn.experiments_annulus import datasets_annulus
+        return datasets_annulus
     from pinn.experiments2d import datasets2d
     return datasets2d
 
@@ -123,14 +146,28 @@ def _attempt(family, root, data, problem_id, *, attempt_id, claim_member, seed_o
               "reproduction_of": reproduction_of}
     if family == "poisson1d":
         return runner.Attempt(**kwargs)
-    return runner.Attempt2D(**kwargs, workers=parallel_workers(family) if workers is None else workers)
+    workers = parallel_workers(family) if workers is None else workers
+    if family == "annulus":
+        # The annulus runner names its ledger itself (inside the task's data root) and does not re-enter;
+        # a reproduction stops after Gate 4, and training is always on the CPU (G6 runs on Environment B).
+        return runner.AttemptAnnulus(config_path=config, attempt_id=attempt_id, problem_id=problem_id, revision=1,
+                                     out_root=data / "attempts", claim_pool_member=claim_member,
+                                     seed_offset=seed_offset,
+                                     reproduction_of=None if reproduction_of is None else Path(reproduction_of).name,
+                                     stop_after_gate=None if reproduction_of is None else 4, device="cpu",
+                                     workers=workers, ledger_path=data / runner.LEDGER_DIR / f"{problem_id}.json")
+    return runner.Attempt2D(**kwargs, workers=workers)
 
 
 def prepare(task_root, root, python_b):
     from pinn.governance.canonical import canonical_bytes, canonical_sha256
     from pinn.governance.evaluation_sets import load_evaluation_set, sample_set_hash
     from pinn.governance.trust_vector import EnvironmentFingerprint, independent_environments
+    # 3.2.0 · Which step preparation is on, for the panel only; it is not evidence and not in work/.
+    step = lambda name: write(task_root / "preparation-progress.json", {"step": name, "at": utc_now()})
+    step("identity")
     manifest = scientific_identity(root)
+    step("environments")
     environment_a = environment_fingerprint()
     environment_b = _environment(python_b, root)
     if not independent_environments(EnvironmentFingerprint.from_mapping(environment_a),
@@ -151,6 +188,7 @@ def prepare(task_root, root, python_b):
     task_id = task_root.name
     problem_id = "pdef-" + task_id
     runner, datasets = _runner(family), _datasets(family)
+    step("claim")
     with locked(task_root.parent.parent / "claim-reservations.lock"), using(context):
         used, history = historical_claims(root, task_root.parent.parent, family)
         config = read(root / spec["config"])
@@ -158,7 +196,9 @@ def prepare(task_root, root, python_b):
         chosen = None
         # A predetermined search over grid sizes, using only geometry and separation, never errors.
         for name, gl, cgl in claim_grid_candidates(family):
-            claim = datasets.claim_pool_manifests({name: (gl, cgl)}, label=problem_id)[name]
+            # An annulus entry carries its six-parameter grid in place of the GL order (quota.py).
+            grid = gl if family == "annulus" else (gl, cgl)
+            claim = datasets.claim_pool_manifests({name: grid}, label=problem_id)[name]
             if set(load_evaluation_set(claim).identities) & used:
                 continue
             # 2D: the attempt refuses a grid whose coordinates sit on a small rational (preregistered rule).
@@ -166,18 +206,26 @@ def prepare(task_root, root, python_b):
                 continue
             base["claim"] = claim
             isolation = datasets.isolation_report(base, min_separation=config["sets"]["minSeparation"])
-            if isolation["disjoint"]:
+            # The annulus report lists errors (disjointness and membership) instead of a flag.
+            if (not isolation["errors"]) if family == "annulus" else isolation["disjoint"]:
                 chosen = (name, gl, cgl, claim)
                 break
         if chosen is None:
             raise ValueError("NO_FRESH_DISJOINT_CLAIM_SET")
         name, gl, cgl, claim = chosen
+        step("plan")
         problems = data / runner.PROBLEMS_DIR
         problems.mkdir(parents=True)
         (problems / f"{problem_id}-claim-{name}.json").write_bytes(canonical_bytes(claim))
-        write(problems / f"{problem_id}-claim-pool.json", {"members": {name: {
-            "glOrder": gl, "cglCount": cgl, "artifactHash": canonical_sha256(claim),
-            "sampleSetHash": sample_set_hash(claim), "designatedRevision": 1, "status": "SEALED"}}})
+        if family == "annulus":
+            # The annulus runner's pool format (runner_annulus.run_register_pool): the grid, not two numbers.
+            member = {"grid": dict(gl), "artifactId": claim["artifactId"], "artifactHash": canonical_sha256(claim),
+                      "sampleSetHash": sample_set_hash(claim), "sampleCount": len(claim["samples"]),
+                      "designatedRevision": 1, "initialStatus": "SEALED"}
+        else:
+            member = {"glOrder": gl, "cglCount": cgl, "artifactHash": canonical_sha256(claim),
+                      "sampleSetHash": sample_set_hash(claim), "designatedRevision": 1, "status": "SEALED"}
+        write(problems / f"{problem_id}-claim-pool.json", {"members": {name: member}})
         attempt = _attempt(family, root, data, problem_id, attempt_id="main", claim_member=name)
         attempt.phase_identity()
         attempt.phase_problem()
@@ -239,11 +287,24 @@ def phase(task_root, root, name):
             result = attempt.run()
             if name == "main" and result["finalState"] != "REPRODUCIBILITY_CHECK":
                 return False
+        elif name == "tier1" and family == "annulus":
+            from pinn.experiments_annulus import closure_annulus
+            runner.run_tier1_for_attempt(original, device="cpu", workers=plan.get("parallelWorkers", 1))
+            closure_annulus.merge_tier1(original)
+            if not read(original / "tier1_redteam.json")["passed"]:
+                return False
         elif name == "tier1":
             runner.run_redteam(original, label="tier1")
             result = read(original / "tier1_redteam.json")
             if not result["passed"]:
                 return False
+        elif name == "g6" and family == "annulus":
+            from pinn.experiments_annulus import closure_annulus, report_annulus
+            closure_annulus.judge_reproduction(original, reproduction)
+            verify_attempt(original)
+            verify_attempt(reproduction)
+            closure_annulus.apply_g6(original, reproduction)
+            report_annulus.write_trust_report(original, root)
         elif name == "g6":
             if family == "poisson1d":
                 from pinn.experiments import report
@@ -286,8 +347,26 @@ def _stop(child):
         child.wait()
 
 
+def _keep_awake(on):
+    """3.2.2 · Keep Windows from sleeping while a run computes (an annulus chain takes hours; r1 once
+    lost a run to sleep). Only the system sleep timer is held; the display may still turn off."""
+    if os.name != "nt":
+        return
+    import ctypes
+    ES_CONTINUOUS, ES_SYSTEM_REQUIRED = 0x80000000, 0x00000001
+    ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS | (ES_SYSTEM_REQUIRED if on else 0))
+
+
 def _execute(task_root, root):
     """Supervisor owns a lock across child phases; cancellation survives app restarts."""
+    _keep_awake(True)
+    try:
+        _execute_locked(task_root, root)
+    finally:
+        _keep_awake(False)
+
+
+def _execute_locked(task_root, root):
     with locked(task_root.parent.parent / "execution.lock"), locked(task_root / "worker.lock"):
         started = time.monotonic()
         write(task_root / "worker-owner.json", {"pid": os.getpid(), "at": utc_now()})
@@ -298,13 +377,16 @@ def _execute(task_root, root):
         if read(task_root / "state.json")["state"] not in ("RUNNING", "CANCELLING"):
             raise ValueError("RUN_NOT_ADMITTED")
         write(task_root / "worker-owner.json", {"pid": os.getpid(), "approvalHash": digest(approval), "at": utc_now()})
+        history = []
         for name in plan["phases"]:
             if (task_root / "cancel-request.json").exists():
                 write(task_root / "completion.json", {"state": "CANCELLED", "allowedClaims": [], "at": utc_now()})
                 return
             if scientific_identity(root) != plan["codeManifest"]:
                 raise ValueError("RUN_CODE_CHANGED")
-            write(task_root / "progress.json", {"phase": name, "at": utc_now()})
+            # The earlier phases' start times stay listed so the panel can show when each one ran.
+            history.append({"phase": name, "startedAt": utc_now()})
+            write(task_root / "progress.json", {"phase": name, "at": history[-1]["startedAt"], "phases": history})
             python = plan["pythonB" if name == "reproduction" else "pythonA"]
             command = [python, "-u", "-m", "pinn.research.worker", "phase", "--task-root", str(task_root),
                        "--code-root", str(root), "--phase", name]

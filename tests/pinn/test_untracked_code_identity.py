@@ -13,6 +13,7 @@ refuses to be computed while one exists, and PRELOCK refuses to let the attempt 
 
 from __future__ import annotations
 
+import ast
 import shutil
 import subprocess
 from pathlib import Path
@@ -223,7 +224,10 @@ def test_the_import_audit_does_not_stop_at_a_package_node():
     package_nodes = [name for name in audit["graph"] if (ROOT / name.replace(".", "/")).is_dir()]
     for name in package_nodes:
         init = ROOT / name.replace(".", "/") / "__init__.py"
-        if init.is_file() and "import" in init.read_text(encoding="utf-8"):
+        # 3.2.2: an import statement, not the word "import" in a docstring (pinn.experiments_annulus's
+        # docstring says "imported and reused" and the package imports nothing).
+        if init.is_file() and any(isinstance(node, (ast.Import, ast.ImportFrom))
+                                  for node in ast.walk(ast.parse(init.read_text(encoding="utf-8")))):
             assert audit["graph"][name], f"{name} is a package whose __init__ imports; it must not read as a leaf"
 
 

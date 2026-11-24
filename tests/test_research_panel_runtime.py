@@ -70,7 +70,8 @@ async function click(text) {button(text).onclick();await new Promise(r=>setImmed
   await click('科研任务');
   await click('创建任务并生成草案');
   assert.deepEqual(calls,['create','draft','get']);
-  assert.match(body.querySelector('.leo-research-status').textContent,/模型名称/);
+  // 3.2.0: the status bar keeps the task's state on the left and the last action's result on the right.
+  assert.match(body.querySelector('.status-note').textContent,/模型名称/);
   assert.ok(button('生成问题草案'),'failed draft remains retryable');
   await click('验证与结论');
   assert.ok(button('前往问题与模型'),'verification view must not strand a draft');

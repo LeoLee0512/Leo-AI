@@ -1,5 +1,6 @@
 """Human-invoked, portable reproduction of an exported task (never reopens D_claim)."""
 import argparse
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -49,7 +50,8 @@ def main():
     # Packages exported before 2.2.11 carry no family: they are 1D.
     family = plan.get("family", "poisson1d")
     experiments, runner = {"poisson1d": ("experiments/poisson1d", "pinn.experiments.runner"),
-                           "poisson2d": ("experiments/poisson2d", "pinn.experiments2d.runner2d")}[family]
+                           "poisson2d": ("experiments/poisson2d", "pinn.experiments2d.runner2d"),
+                           "annulus": ("experiments/annulus", "pinn.experiments_annulus.runner_annulus")}[family]
     for name in ("ledger", "problems"):
         shutil.copytree(package / "work" / experiments / name, data / experiments / name)
     # Execute the copied, verified method, not a newer installed pinn module.
@@ -62,7 +64,16 @@ def main():
         "--problem-id", plan["problemId"], "--revision", "1", "--out-root", str(data / "attempts"),
         "--ledger", str(data / experiments / "ledger" / (plan["problemId"] + ".json")),
         "--claim-pool-member", plan["claimMember"], "--seed-offset", "10000", "--reproduction-of", str(original)]
+    if family == "annulus":
+        # The annulus runner names the reproduction by its attempt and stops it after Gate 4 itself.
+        command[command.index("--reproduction-of") + 1] = Path(original).name
+        command += ["--stop-after-gate", "4", "--workers", str(max(1, (os.cpu_count() or 2) - 2))]
     subprocess.run(command, cwd=source, check=True)
+    if family == "annulus":
+        # C_repro is judged by the copied method against the original attempt (closure_annulus).
+        subprocess.run([sys.executable, "-m", runner, "--context", str(context_file), "judge-reproduction",
+                        "--original", str(original), "--reproduction", str(data / "attempts" / "independent-reproduction")],
+                       cwd=source, check=True)
     return 0
 
 

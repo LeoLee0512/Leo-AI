@@ -50,7 +50,13 @@ const walk=(n,out=[])=>{if(n.className==='artifact-link')out.push(n);for(const c
   assert.deepEqual(links.map(b=>b.textContent),['out/fig.png','data[1].csv','r.csv','ghost.txt']);
   const shown=text(el('messages'));
   assert.ok(!shown.includes('/api/artifacts/'),'no raw artifact address is left in the text');
-  assert.ok(shown.includes('[站点](https://example.com/x)'),'an external link is left as plain text, never opened');
+  // 3.1.0: a web link shows its words; clicking asks Leo to open it (Leo confirms first). It never
+  // navigates the window itself: there is no address on the element.
+  assert.ok(!shown.includes('https://example.com/x'),'the web address is not printed into the answer');
+  const web=(function find(n){if(n.className==='web-link')return n;for(const c of n.children||[]){const f=find(c);if(f)return f;}return null;})(el('messages'));
+  assert.equal(web.textContent,'站点');assert.equal(web.href,undefined);
+  await web.onclick();await flush();
+  assert.deepEqual(calls.filter(c=>c.operation==='open_link').map(c=>c.url),['https://example.com/x']);
   // Reading the conversation's files is the first request; the preview asks for the listed id only.
   await links[0].onclick();await flush();
   assert.equal(el('artifact-dialog').open,true);

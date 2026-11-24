@@ -666,12 +666,33 @@ setup_environment() {
   OPENAI4S_SECRET_STORE="env"
   OPENAI4S_SECRET_ENV="1"
   OPENAI4S_SKILLS_DIR="$source/skills"
-  export PATH PYTHONPATH PYTHONUSERBASE MPLBACKEND OPENAI4S_DATA_DIR OPENAI4S_HOST OPENAI4S_PORT OPENAI4S_NO_OPEN OPENAI4S_KERNEL_SANDBOX OPENAI4S_SECRET_STORE OPENAI4S_SECRET_ENV OPENAI4S_SKILLS_DIR
+  # 3.1.0: 「终端」 runs a typed command as one cell in the conversation's sandboxed kernel (kernel/execute),
+  # through host.bash and the same approval policy as the AI. Leo writes the cell; the page sends text only.
+  OPENAI4S_NOTEBOOK_REPL="1"
+  export PATH PYTHONPATH PYTHONUSERBASE MPLBACKEND OPENAI4S_DATA_DIR OPENAI4S_HOST OPENAI4S_PORT OPENAI4S_NO_OPEN OPENAI4S_KERNEL_SANDBOX OPENAI4S_SECRET_STORE OPENAI4S_SECRET_ENV OPENAI4S_SKILLS_DIR OPENAI4S_NOTEBOOK_REPL
   unset PYTHONHOME
 }
 
 run_cli() {
   "$PY" -m openai4s "$@"
+}
+
+# 3.1.0: the daemon's built-in connectors start as `python -m openai4s.mcp_servers.<name>` with an
+# environment that drops PYTHONPATH, so they could never import the active source. A user-site .pth
+# naming that source fixes it; it is rewritten only when the active source changes, a failure never
+# blocks the start, and deleting the file undoes it.
+link_connector_source() {
+  site_dir="$(env -u PYTHONUSERBASE -u PYTHONPATH "$PY" -c 'import site; print(site.getusersitepackages())' 2>/dev/null)" || return 0
+  case "$site_dir" in "${HOME:-/nonexistent}"/*) ;; *) return 0 ;; esac
+  pth="$site_dir/leo-openai4s.pth"
+  if [ -f "$pth" ] && [ "$(cat "$pth")" = "$SOURCE" ]; then
+    return 0
+  fi
+  if mkdir -p "$site_dir" && printf '%s\n' "$SOURCE" >"$pth.tmp.$$" && mv -f "$pth.tmp.$$" "$pth"; then
+    return 0
+  fi
+  rm -f "$pth.tmp.$$"
+  return 0
 }
 
 run_smoke_isolated() {
@@ -881,6 +902,7 @@ start)
   [ -n "$model" ] || die "MODEL_INVALID" "The selected model is empty."
   new_work
   setup_environment "" ""
+  link_connector_source
   status_out="$WORK_DIR/status.out"
   status_err="$WORK_DIR/status.err"
   daemon_running "$status_out" "$status_err"

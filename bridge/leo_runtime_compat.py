@@ -75,6 +75,29 @@ BROWSE_GUARD = '''    # LEO_BROWSE_GUARD_VERSION = 1
         raise _leo_browse_error
 '''
 
+# 3.2.9 · Web search fix for upstream openai4s/webtools.py. Measured 2026-09-30 from mainland China:
+# DuckDuckGo and Mojeek do not answer (12 s timeout each), and www.bing.com redirects to cn.bing.com,
+# which always sends gzip. Upstream hands the parsers `response.raw` without decoding, so every search
+# came back empty. Decoding is switched on, and Bing (reachable everywhere) is tried first.
+# Unlike the two overlays above this one is optional: when it cannot be applied it is skipped and
+# connecting goes on, because search is not needed to connect.
+WEB_VERSION = 1
+WEB_MARKER = "# LEO_WEB_FIX_VERSION = 1"
+# Audited installed upstream openai4s/webtools.py, exact LF and CRLF bytes.
+WEB_SOURCE_SHA256 = frozenset({
+    "1b1e9fe0a2a0c978a9ffbc17170ea4ecdfb8e2cfa2f309e00bc675758e5379d1",
+    "ee54ade0350adf2eeb68180d274125b721260e051383a1b3d517a7a2dbb50795",
+})
+WEB_DECODE_ANCHOR = "                yield (\n                    response.raw,\n"
+WEB_DECODE = ("                # LEO_WEB_FIX_VERSION = 1\n"
+              "                response.raw.decode_content = True\n")
+WEB_ENGINES_OLD = ('_ENGINES: tuple[tuple[str, object], ...] = (\n'
+                   '    ("duckduckgo", _ddg_html),\n'
+                   '    ("bing", _bing_html),\n')
+WEB_ENGINES_NEW = ('_ENGINES: tuple[tuple[str, object], ...] = (\n'
+                   '    ("bing", _bing_html),\n'
+                   '    ("duckduckgo", _ddg_html),\n')
+
 
 class CompatibilityError(ValueError):
     pass
@@ -150,6 +173,32 @@ def browse_compatible_source(original: bytes) -> bytes:
     return updated
 
 
+def web_compatible_source(original: bytes) -> bytes:
+    """Patch only an audited whole webtools.py; on repeats, undo and recheck all original bytes."""
+    source = original.decode("utf-8")
+    newline = "\r\n" if "\r\n" in source else "\n"
+    decode = WEB_DECODE.replace("\n", newline).encode("utf-8")
+    anchor = WEB_DECODE_ANCHOR.replace("\n", newline).encode("utf-8")
+    engines_old = WEB_ENGINES_OLD.replace("\n", newline).encode("utf-8")
+    engines_new = WEB_ENGINES_NEW.replace("\n", newline).encode("utf-8")
+    if WEB_MARKER in source:
+        if original.count(decode + anchor) != 1 or original.count(engines_new) != 1:
+            raise CompatibilityError("RUNTIME_WEB_OVERLAY_CONFLICT")
+        candidate = original.replace(decode + anchor, anchor, 1).replace(engines_new, engines_old, 1)
+        if hashlib.sha256(candidate).hexdigest() not in WEB_SOURCE_SHA256:
+            raise CompatibilityError("RUNTIME_WEB_SOURCE_UNKNOWN")
+        if web_compatible_source(candidate) != original:
+            raise CompatibilityError("RUNTIME_WEB_OVERLAY_CONFLICT")
+        return original
+    if hashlib.sha256(original).hexdigest() not in WEB_SOURCE_SHA256:
+        raise CompatibilityError("RUNTIME_WEB_SOURCE_UNKNOWN")
+    if original.count(anchor) != 1 or original.count(engines_old) != 1:
+        raise CompatibilityError("RUNTIME_WEB_LAYOUT_CHANGED")
+    updated = original.replace(anchor, decode + anchor, 1).replace(engines_old, engines_new, 1)
+    compile(updated, "leo-runtime-web-overlay", "exec")
+    return updated
+
+
 def _install_overlay(base: Path, target: Path, original: bytes, updated: bytes, *, check: bool) -> dict:
     """Preserve exact originals and atomically replace one already checked file."""
     previous_digest = hashlib.sha256(original).hexdigest()
@@ -211,7 +260,23 @@ def apply_compatibility(base: Path, *, check: bool = False) -> dict:
             "needs_update": host["needs_update"] or browse["needs_update"],
             "source_revision": source_root.name, "source_file": relative.as_posix(),
             "previous_sha256": host["previous_sha256"], "sha256": host["sha256"],
-            "browse_guard": browse["applied"], "browse_guard_details": browse}
+            "browse_guard": browse["applied"], "browse_guard_details": browse,
+            "web_fix": _apply_web_fix(base, source_root, check=check)}
+
+
+def _apply_web_fix(base: Path, source_root: Path, *, check: bool) -> dict:
+    """The optional search fix: its result is reported, and a failure never stops connecting."""
+    web_relative = Path("openai4s/webtools.py")
+    try:
+        target = source_root / web_relative
+        if target.is_symlink() or target.resolve(strict=True) != target:
+            raise CompatibilityError("RUNTIME_WEB_SOURCE_PATH_INVALID")
+        original = target.read_bytes()
+        result = _install_overlay(base, target, original, web_compatible_source(original), check=check)
+    except (CompatibilityError, OSError, SyntaxError, UnicodeDecodeError) as exc:
+        code = str(exc) if isinstance(exc, CompatibilityError) else "RUNTIME_WEB_PREPARATION_FAILED"
+        return {"version": WEB_VERSION, "source_file": web_relative.as_posix(), "applied": False, "skipped": code}
+    return {**result, "version": WEB_VERSION, "source_file": web_relative.as_posix()}
 
 
 def main(argv=None) -> int:

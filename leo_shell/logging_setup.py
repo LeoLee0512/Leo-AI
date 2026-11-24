@@ -30,7 +30,7 @@ _SK_PATTERN = re.compile(r"sk-[A-Za-z0-9_-]{8,}")
 _TOKEN_QUERY_PATTERN = re.compile(r"([?&]token=)[^\s&\"']+", re.IGNORECASE)
 _BEARER_PATTERN = re.compile(r"(Bearer\s+)\S+", re.IGNORECASE)
 _JSON_SECRET_PATTERN = re.compile(
-    r"(\"(?:api_key|password|secret)\"\s*:\s*\")[^\"]*(\")",
+    r"(\"(?:api_key|apikey|apiKey|password|secret|token|access_token|refresh_token)\"\s*:\s*\")[^\"]*(\")",
     re.IGNORECASE,
 )
 

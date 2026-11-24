@@ -7,13 +7,15 @@ keeps a blind set from being re-drawn until a run looks good. The list is finite
 shows how many grids remain before the operator commits one.
 
 Each problem family has its own list and its own count (owner, 2026-09-29): a 1D grid and a 2D
-grid are different objects and never share a sample identity.
+grid are different objects and never share a sample identity. The annulus (3.2.2) has 8 grids
+(owner, 2026-09-29).
 """
 from pathlib import Path
 import re
 
 CLAIM_GRID_CAPACITY = 32
-FAMILIES = ("poisson1d", "poisson2d")
+FAMILIES = ("poisson1d", "poisson2d", "annulus")
+CAPACITY = {"poisson1d": CLAIM_GRID_CAPACITY, "poisson2d": CLAIM_GRID_CAPACITY, "annulus": 8}
 RESERVATION_GLOB = "tasks/*/work/experiments/poisson1d/problems/*-claim-GL*.json"
 REGISTERED_GLOB = "experiments/poisson1d/problems/*-claim-GL*.json"
 _MEMBER = re.compile(r"-claim-(GL\d+-CGL\d+)\.json$")
@@ -22,6 +24,9 @@ _GLOBS = {
     "poisson2d": ("tasks/*/work/experiments/poisson2d/problems/*-claim-D2C-GL*.json",
                   "experiments/poisson2d/problems/*-claim-D2C-GL*.json",
                   re.compile(r"-claim-(D2C-GL\d+-CGL\d+)\.json$")),
+    "annulus": ("tasks/*/work/experiments/annulus/problems/*-claim-ANN-*.json",
+                "experiments/annulus/problems/*-claim-ANN-*.json",
+                re.compile(r"-claim-(ANN-Q\d+-A\d+)\.json$")),
 }
 
 
@@ -41,9 +46,37 @@ def _primes_from(start, count):
 # Later members are larger, so their isolation scan (and preparation) takes longer.
 _CGL_PRIMES_2D = _primes_from(61, CLAIM_GRID_CAPACITY)
 
+# Annulus (3.2.2): each grid is a rotated geometry-native quadrature (GL in the area fraction x
+# trapezoid angles) plus an interior CGL-in-area-fraction pointwise grid, as in the calibration pool
+# DAC-M0..M3 -- whose values these avoid: radial orders 34/36/38/42 and D_phys 40 (so 44..58), angular
+# counts 125/127/129/131 and 33/35/37/39 and D_phys 128 (so primes from 137 and from 41), CGL counts
+# 50/54/56/60 (so 62..76), and every angular offset differs from all calibration and product offsets.
+# Distinct prime angular counts and offsets keep every two grids' nodes apart by construction; the
+# isolation scan at preparation still checks it against the task's own train, dev and phys sets.
+_ANNULUS_ANGULAR = (137, 139, 149, 151, 157, 163, 167, 173)
+_ANNULUS_OFFSET = (0.023, 0.029, 0.031, 0.037, 0.041, 0.043, 0.047, 0.053)
+_ANNULUS_POINTWISE_ANGULAR = (41, 43, 47, 53, 59, 61, 67, 71)
+_ANNULUS_POINTWISE_OFFSET = (0.015, 0.021, 0.025, 0.027, 0.033, 0.035, 0.039, 0.045)
+
+
+def annulus_grid(index):
+    """The index-th annulus product grid, in the calibration pool's member format."""
+    return {"quadratureRadialOrder": 44 + 2 * index, "quadratureAngularCount": _ANNULUS_ANGULAR[index],
+            "angularOffset": _ANNULUS_OFFSET[index], "pointwiseCglCount": 62 + 2 * index,
+            "pointwiseAngularCount": _ANNULUS_POINTWISE_ANGULAR[index],
+            "pointwiseAngularOffset": _ANNULUS_POINTWISE_OFFSET[index]}
+
 
 def claim_grid_candidates(family="poisson1d"):
-    """The predetermined search order: (member name, GL order, CGL count)."""
+    """The predetermined search order: (member name, GL order, CGL count).
+
+    Annulus grids have six parameters, so an annulus entry is (member name, grid, None).
+    """
+    if family == "annulus":
+        for index in range(CAPACITY["annulus"]):
+            grid = annulus_grid(index)
+            yield f"ANN-Q{grid['quadratureRadialOrder']}-A{grid['quadratureAngularCount']}", grid, None
+        return
     if family == "poisson2d":
         for index, prime in enumerate(_CGL_PRIMES_2D):
             gl, cgl = 42 + 2 * index, prime + 1
@@ -69,4 +102,5 @@ def quota(research_root, code_root=None, family="poisson1d"):
         paths += list(Path(code_root).glob(registered))
     taken = {m.group(1) for m in map(member.search, (p.name for p in paths)) if m and m.group(1) in candidates}
     used = len(taken)
-    return {"capacity": CLAIM_GRID_CAPACITY, "used": used, "remaining": CLAIM_GRID_CAPACITY - used, "family": family}
+    capacity = CAPACITY[family]
+    return {"capacity": capacity, "used": used, "remaining": capacity - used, "family": family}

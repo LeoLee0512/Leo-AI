@@ -67,16 +67,24 @@ _READ_ONLY_COMMANDS = tuple(re.compile(p) for p in (
     r"uname( -[a-z]+)?",
     r"(free|df)( -h)?",
     r"which [A-Za-z0-9_.\-]+",
-    r"git (status|branch|diff( --stat)?|log( --oneline)?( -n ?[0-9]{1,3})?)",
+    # git status, diff and log are not here. They run fsmonitor, external diff
+    # and textconv from repository configuration, so they are not read-only.
 ))
 
 
 def is_read_only_command(command):
-    """True only for a short, plain command that exactly matches a known read-only form."""
+    """True only for a short, plain command that exactly matches a known read-only form.
+
+    Only a normal space may be collapsed. ``str.split()`` would also erase newlines, tabs and
+    other Unicode spaces, and bash runs a newline as a second command. The allow/deny decision
+    is applied to the original tool call, so the text that is checked must still be that command.
+    """
     if not isinstance(command, str):
         return False
-    text = " ".join(command.split())
-    if not text or len(text) > 200 or _SHELL_SYNTAX.search(text):
+    if any(character.isspace() and character != " " for character in command):
+        return False
+    text = " ".join(part for part in command.split(" ") if part)
+    if not text or len(text) > 200 or _SHELL_SYNTAX.search(command):
         return False
     return any(form.fullmatch(text) for form in _READ_ONLY_COMMANDS)
 
@@ -113,12 +121,23 @@ def public_request(event, received_at):
 
 
 def standing_pattern(request):
-    """The narrowest-but-useful pattern for "allow this kind in this conversation": the most
-    general suggestion that is not the bare wildcard, else the exact target. With neither there is
-    no pattern short of ``*`` (every call of the tool), which is a mode's rule and not a grant:
-    the caller then allows this one call only."""
-    candidates = [p for p in request.get("patterns") or [] if p and p != "*"]
-    return candidates[-1] if candidates else (request.get("target") or None)
+    """The narrowest pattern for "allow this kind in this conversation".
+
+    Suggestions are listed from the exact call out toward a wildcard. The last
+    non-wildcard used to be kept; for ``git push`` that is ``git *``, which then
+    allows every git subcommand. An exact suggestion is the grant, otherwise the
+    suggestion with the fewest wildcards, otherwise the exact target. With none
+    of those there is no pattern short of ``*``, and the caller allows this one
+    call only.
+    """
+    candidates = [p for p in request.get("patterns") or [] if isinstance(p, str) and p and p != "*"]
+    exact = [p for p in candidates if "*" not in p and "?" not in p]
+    if exact:
+        return exact[0]
+    if candidates:
+        return min(candidates, key=lambda pattern: (pattern.count("*") + pattern.count("?"), -len(pattern)))
+    target = request.get("target") or None
+    return target or None
 
 
 class ModeStore:

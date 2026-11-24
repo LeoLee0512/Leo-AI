@@ -1,0 +1,350 @@
+{
+  "allowedClaims": [
+    "C0",
+    "C1"
+  ],
+  "allowedClaimsFinal": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "attemptId": "exp-geometry1-annulus-poisson-r3",
+  "blockedClaims": [
+    "C2",
+    "C3"
+  ],
+  "claimEvaluation": {
+    "failedMust": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "failedShould": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "perSeed": [
+      {
+        "ACA-1": 0.0001179723202824513,
+        "ACA-2": 0.00019438575617812475,
+        "ACA-3": 2.1157811539269602e-16,
+        "ACA-4": 0.000485869325379578,
+        "ACA-5": 8.894237929942881e-05,
+        "ACA-6": 0.00036696238955788815,
+        "ACA-7": 9.289006634404877e-05,
+        "ACA-8": 0.00018397292252009264,
+        "ACA-9": 0.0003197577451547578
+      },
+      {
+        "ACA-1": 0.00018434340532454718,
+        "ACA-2": 0.00024551788413768673,
+        "ACA-3": 2.115745569232211e-16,
+        "ACA-4": 0.0005034128876167191,
+        "ACA-5": 0.0001711603090055515,
+        "ACA-6": 0.0002890218520672822,
+        "ACA-7": 0.00014627739458913204,
+        "ACA-8": 0.000220064647806755,
+        "ACA-9": 0.0003923049427017218
+      },
+      {
+        "ACA-1": 0.0001638307766821829,
+        "ACA-2": 0.00030333219719571463,
+        "ACA-3": 2.1154112465407643e-16,
+        "ACA-4": 0.001064682442898657,
+        "ACA-5": 2.4870453852513986e-05,
+        "ACA-6": 0.0005290621459219899,
+        "ACA-7": 2.44140336453728e-05,
+        "ACA-8": 0.000365252264914592,
+        "ACA-9": 0.00047233529433801197
+      },
+      {
+        "ACA-1": 9.797570478472603e-05,
+        "ACA-2": 0.0001663297384352566,
+        "ACA-3": 2.115222884020783e-16,
+        "ACA-4": 0.0004796098962029136,
+        "ACA-5": 4.440997368462851e-05,
+        "ACA-6": 0.00018453616869919509,
+        "ACA-7": 3.400586665882026e-05,
+        "ACA-8": 0.00016446440294146922,
+        "ACA-9": 0.0002744770478127451
+      },
+      {
+        "ACA-1": 0.0001547639114136729,
+        "ACA-2": 0.0002800999135684943,
+        "ACA-3": 2.1162897115603046e-16,
+        "ACA-4": 0.0007546769060088032,
+        "ACA-5": 3.3565710969990296e-06,
+        "ACA-6": 0.0003875864668030055,
+        "ACA-7": 3.5314499782581926e-06,
+        "ACA-8": 0.00022830769512583373,
+        "ACA-9": 0.00041269895228195834
+      },
+      {
+        "ACA-1": 0.0001565069285659312,
+        "ACA-2": 0.0002253163048331276,
+        "ACA-3": 2.1157023371606445e-16,
+        "ACA-4": 0.0005783568143614328,
+        "ACA-5": 0.00011575106597366637,
+        "ACA-6": 0.0002981947446145437,
+        "ACA-7": 0.00010963289636416708,
+        "ACA-8": 0.00021760282073611452,
+        "ACA-9": 0.0003883581132966804
+      },
+      {
+        "ACA-1": 0.00017069299868225943,
+        "ACA-2": 0.00029178113142035254,
+        "ACA-3": 2.115382628825069e-16,
+        "ACA-4": 0.0005334992893354461,
+        "ACA-5": 0.00010080131831961894,
+        "ACA-6": 0.000490193899496765,
+        "ACA-7": 8.00913763927961e-05,
+        "ACA-8": 0.00021890523297141633,
+        "ACA-9": 0.000464388884812444
+      },
+      {
+        "ACA-1": 0.00013324244477732938,
+        "ACA-2": 0.0002383666231093208,
+        "ACA-3": 2.1158583899645e-16,
+        "ACA-4": 0.0008385833752456027,
+        "ACA-5": 4.74261458341868e-05,
+        "ACA-6": 0.0004190413257766093,
+        "ACA-7": 3.074177195193691e-05,
+        "ACA-8": 0.00024353895513532203,
+        "ACA-9": 0.0003826540784442863
+      },
+      {
+        "ACA-1": 0.0002812938346749946,
+        "ACA-2": 0.00047194244744317343,
+        "ACA-3": 2.1155807761160832e-16,
+        "ACA-4": 0.0007171439239794257,
+        "ACA-5": 0.0002620809695039053,
+        "ACA-6": 0.00034041332652290086,
+        "ACA-7": 0.00023752213086279618,
+        "ACA-8": 0.00032743259022969455,
+        "ACA-9": 0.0007631058088278335
+      },
+      {
+        "ACA-1": 0.0001050836412173033,
+        "ACA-2": 0.00021386247993452059,
+        "ACA-3": 2.115426560506345e-16,
+        "ACA-4": 0.0005516155257688447,
+        "ACA-5": 5.081294289161646e-05,
+        "ACA-6": 0.0001823534933895349,
+        "ACA-7": 4.241474096782987e-05,
+        "ACA-8": 0.0002001898913361439,
+        "ACA-9": 0.0002638913894658192
+      }
+    ]
+  },
+  "claimPoolMember": "DAC-M2",
+  "claimSampleSetHash": "e70e36e5ee2b8050c8f546bfcb4e8ad83a953fbd28392283b4b25d1e26ddf899",
+  "claimSetLedgerStatusAtStart": "NEVER_SEALED",
+  "claimSetSha256": "2fa600119a7d51ed46b91005b8558644b84bef20e87a7572f8c8be21f9a5139d",
+  "codeHash": "e9fdf023677eb03d98c978bdf0f36c2913d24007f979383a2edf7c13909fa728",
+  "configId": "annulus-poisson-hard-bc-v1-r3-240k",
+  "decisionRef": {
+    "artifactId": "claim_gate_decision.json",
+    "sha256": "d08ecaa33540001d63475e3dbe8962aad854693358b1280b5cfd7eddee1cfb8e"
+  },
+  "decisionRefFinal": {
+    "artifactId": "claim_gate_decision_g6.json",
+    "sha256": "963ed374ad740f253d8f802c784457af93a05fb223982adbe51e21d37ec63dbb"
+  },
+  "environmentId": "2b081306b9720a90f7079cfe9494c39f590c5e715ca595933da0692e8ee55b7a",
+  "evaluationSets": {
+    "claimSampleSetHash": "e70e36e5ee2b8050c8f546bfcb4e8ad83a953fbd28392283b4b25d1e26ddf899",
+    "membership": {
+      "claim": {
+        "counts": {
+          "inHole": 0,
+          "interior": 6900,
+          "onInnerBoundary": 0,
+          "onOuterBoundary": 0,
+          "outsideOuterDisk": 0
+        },
+        "illegal": 0,
+        "radialRange": [
+          0.35102073393520206,
+          0.9996421581484007
+        ],
+        "sampleCount": 6900
+      },
+      "dev": {
+        "counts": {
+          "inHole": 0,
+          "interior": 1024,
+          "onInnerBoundary": 0,
+          "onOuterBoundary": 0,
+          "outsideOuterDisk": 0
+        },
+        "illegal": 0,
+        "radialRange": [
+          0.35160992586564865,
+          0.9999157981388822
+        ],
+        "sampleCount": 1024
+      },
+      "phys": {
+        "counts": {
+          "inHole": 0,
+          "interior": 5120,
+          "onInnerBoundary": 0,
+          "onOuterBoundary": 0,
+          "outsideOuterDisk": 0
+        },
+        "illegal": 0,
+        "radialRange": [
+          0.3511028408664505,
+          0.9996133228081286
+        ],
+        "sampleCount": 5120
+      },
+      "train": {
+        "counts": {
+          "inHole": 0,
+          "interior": 2048,
+          "onInnerBoundary": 0,
+          "onOuterBoundary": 0,
+          "outsideOuterDisk": 0
+        },
+        "illegal": 0,
+        "radialRange": [
+          0.3511170991785465,
+          0.9999818614941826
+        ],
+        "sampleCount": 2048
+      }
+    },
+    "sampleSetHashes": {
+      "claim": "e70e36e5ee2b8050c8f546bfcb4e8ad83a953fbd28392283b4b25d1e26ddf899",
+      "dev": "0dc4f8535a91b8a2f8ae2a5ceb2f517d1dd300f1c1a48a1f46128f1c8e31a1c0",
+      "phys": "b598d02b8dc270694deec60f97cc62011770b9343fb85dd37c3111cd18d58a94",
+      "train": "6e6bcde295d26c6764849df39da107a225b201b5d6512624d1c9eaabee9dd1f5"
+    },
+    "sizes": {
+      "claim": 6900,
+      "dev": 1024,
+      "phys": 5120,
+      "train": 2048
+    }
+  },
+  "finalState": "ACCEPTED",
+  "g6": {
+    "cRepro": "PASS",
+    "heldReason": null,
+    "independentEnvironments": true,
+    "report": {
+      "medianA": 0.00015547313378582874,
+      "medianAbsDiff": 1.8626602268454476e-05,
+      "medianB": 0.0001740997360542832,
+      "successRateA": "10/10",
+      "successRateB": "10/10",
+      "verdictA": "PASS",
+      "verdictB": "PASS"
+    },
+    "reproductionAttempt": "exp-geometry1-annulus-poisson-r3-repro-envb"
+  },
+  "gitHead": "a263edbdf5e1142cf0288ee276c4bc55c4ac0182",
+  "highestAllowedClaim": "C1",
+  "ledgerHead": "7db8c3dbc71675e87fa7efc3ef750f749062d0d45b0c56e2b757906bf1c14579",
+  "preflight": {
+    "allowedIfStoppedHere": [
+      "C0",
+      "C1"
+    ],
+    "checkedBeforeOpening": true,
+    "decision": "valid",
+    "trustVector": "valid (schema 1.2, every registered check recorded)"
+  },
+  "prelock": "PASS",
+  "problemId": "pdef-annulus-poisson-v1",
+  "redTeam": {
+    "tier1": {
+      "allowedClaimsAfter": [
+        "C0",
+        "C1"
+      ],
+      "dimensionImpact": {
+        "external": "PASS",
+        "impl": "PASS",
+        "math": "PASS",
+        "physics": "PASS",
+        "repro": "PASS",
+        "train": "PASS"
+      },
+      "passed": true,
+      "trustVectorAfter": {
+        "external": "PASS",
+        "impl": "PASS",
+        "math": "PASS",
+        "physics": "PASS",
+        "repro": "BLOCKED",
+        "train": "PASS"
+      },
+      "worstCase": {
+        "external": "no applicable Tier-1 perturbation targets this dimension",
+        "impl": "P4: delta_q = 2.227e-04 (<= 1%); residual max ratio float32/float64 = 3.91",
+        "math": "P8: delta_q = 4.529e-05 (<= 1%)",
+        "physics": "no applicable Tier-1 perturbation targets this dimension",
+        "repro": "no applicable Tier-1 perturbation targets this dimension",
+        "train": "P1: delta_q = 9.406e-05 (<= 1%)"
+      }
+    }
+  },
+  "reproductionOf": null,
+  "revision": 3,
+  "seedOffset": 0,
+  "specHash": "4c8dfbc7238deb92684c182f09362125d0a2485cd4574a7168ae68d8d3cf8fa4",
+  "training": {
+    "dispersionOk": true,
+    "divergent": 0,
+    "iqr": 5.546444209585234e-05,
+    "median": 0.00015547313378582874,
+    "medianOk": true,
+    "runs": 10,
+    "status": "PASS",
+    "successRate": "10/10",
+    "successes": 10,
+    "worst": 0.00027675271480876416,
+    "worstOk": true
+  },
+  "trainingDevice": "cpu",
+  "trustVector": {
+    "external": "PASS",
+    "impl": "PASS",
+    "math": "PASS",
+    "physics": "PASS",
+    "repro": "BLOCKED",
+    "train": "PASS"
+  },
+  "trustVectorFinal": {
+    "external": "PASS",
+    "impl": "PASS",
+    "math": "PASS",
+    "physics": "PASS",
+    "repro": "PASS",
+    "train": "PASS"
+  },
+  "weakestLink": {
+    "dimensions": [
+      "repro"
+    ],
+    "status": "BLOCKED"
+  },
+  "workspaceDirty": false
+}

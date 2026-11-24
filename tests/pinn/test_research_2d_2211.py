@@ -107,7 +107,8 @@ def test_the_product_2d_config_is_the_accepted_calibration_method():
 def test_the_prompt_names_both_verified_problems():
     assert "-(u_xx+u_yy)=2*pi^2*sin(pi*x)*sin(pi*y)" in PROMPT and "-u''(x)=pi^2*sin(pi*x)" in PROMPT
     assert "[[x0, x1], [y0, y1]]" in PROMPT and "bottom" in PROMPT
-    assert set(TEMPLATES) == {"poisson1d-v1", "poisson2d-v1"}
+    # 3.2.2 added the annulus as the third template (tests/pinn/test_research_annulus_322.py).
+    assert set(TEMPLATES) == {"poisson1d-v1", "poisson2d-v1", "annulus-v1"}
 
 
 # -- the blind grids --------------------------------------------------------------------------------

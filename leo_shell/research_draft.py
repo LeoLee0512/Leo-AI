@@ -58,10 +58,46 @@ TEMPLATE_EQUATION_FORMS_2D = frozenset(
     | {f"{a}{b}={rhs}" for a, b in (("-u_xx", "-u_yy"), ("-u_yy", "-u_xx")) for rhs in _RHS_2D}
     | {f"{lap}=-{rhs}" for lap in _LAPLACIAN_2D for rhs in _RHS_2D}
     | {f"{lap}+{rhs}=0" for lap in _LAPLACIAN_2D for rhs in _RHS_2D})
+# 3.2.2 · The third verified template: the annular Poisson problem accepted at C2 in revision 3
+# (experiments/annulus, 2026-09-27). Its forcing is manufactured from a non-radial exact solution, so
+# the canonical spelling names that solution; every method value restates pinn/research/annulus-config.json.
+ANNULUS_SOLUTION = "(1-x^2-y^2)*(x^2+y^2-0.35^2)*(1+0.2*sin(pi*x)*cos(2*pi*y)+0.1*x-0.1*y)"
+TEMPLATE_ANNULUS = {"equation": "-(u_xx+u_yy)=f, u*=" + ANNULUS_SOLUTION,
+                    "domain": {"annulus": [0.35, 1]}, "boundary": {"inner": 0, "outer": 0},
+                    "variables": ["x", "y", "u"], "reference": ANNULUS_SOLUTION,
+                    "solver": "PINN hard BC (1-s)(s-a^2)N"}
+TEMPLATE_METHOD_ANNULUS = {
+    "configId": "leo-annulus-poisson-hard-bc-v1",
+    "network": "4 层 × 64 神经元，tanh 激活；输出 u = (1−s)(s−a²)·N(x,y)，s = x² + y²，内外两圈上的值精确为 0（硬边界）",
+    "training": "Adam，学习率 1e-3 在前 12 万步指数衰减至 1e-5、之后保持，固定 24 万步，批量 512，不提前停止",
+    "sampling": "2048 点面积均匀候选池（种子 20261330）中每个种子无放回抽取 1024 个配点",
+    "losses": "只有 PDE 残差（权重 1.0）；边界条件由输出形式精确满足",
+    "seeds": "10 个种子（与已接受的 r3 相同，初始化 / 采样 / 批次种子分别从 20263500 / 20263600 / 20263700 起）；10 个种子并行训练，结果与逐个训练逐位相同",
+    "precision": "CPU，float64，每个训练单线程",
+    "reference": "解析制造解 u* = (1−s)(s−a²)(1 + 0.2 sin(πx) cos(2πy) + 0.1x − 0.1y)，a = 0.35；另有独立极坐标有限差分对照",
+    "acceptance": ("相对 L2 误差 ≤ 1e-3（ACA-1）；ACA-1…ACA-9 冻结阈值，含 4×16 等面积分块的局部误差 ≤ 1e-3（ACA-9，"
+                   "是绑定判据，已接受的 r3 在它上面的余量约 1.31 倍）；最坏种子 ≤ 3 倍 ε；MUST 判据每个种子都须满足"),
+    "validation": "主实验 G1–G5 → Tier-1 扰动（8 组重训）→ 独立环境复现（中位数差 ≤ 1e-4 且 ≤ 0.5 倍中位数）→ G6；整条链约 7–8 小时",
+    "claimRule": "六个可信维度全部 PASS 才允许 C2；任一未过则只报告被阻断的原因",
+}
+_ANNULUS_SOLUTIONS = (ANNULUS_SOLUTION, ANNULUS_SOLUTION.replace("0.35^2", "0.1225"))
+_ANNULUS_LAPLACIAN = ("-(u_xx+u_yy)", "-(u_yy+u_xx)", "-δu", "-∇^2u", "-∇∇u")
+
+
+def _annulus_forms():
+    forms = set()
+    for lap in _ANNULUS_LAPLACIAN:
+        for solution in _ANNULUS_SOLUTIONS:
+            forms.add(normalize_equation_2d(f"{lap}=f, u*={solution}"))
+            forms.add(normalize_equation_2d(f"{lap}=f,u*={solution}"))
+    return frozenset(forms)
+
+
 #: The verified templates, by templateId. A draft is supported only if it matches one exactly.
 TEMPLATES = {
     "poisson1d-v1": {"template": TEMPLATE, "method": TEMPLATE_METHOD, "dimension": 1},
     "poisson2d-v1": {"template": TEMPLATE_2D, "method": TEMPLATE_METHOD_2D, "dimension": 2},
+    "annulus-v1": {"template": TEMPLATE_ANNULUS, "method": TEMPLATE_METHOD_ANNULUS, "dimension": 2},
 }
 PROMPT = '''Extract a scientific problem into ONE JSON object, without markdown or tools.
 You cannot execute code, approve, set Gates or make accuracy claims.
@@ -71,15 +107,22 @@ For a problem in one variable x: domain is two numbers [a, b] or null, and bound
 {left:number, right:number} (the values of u at x=a and x=b) or null.
 For a problem in two variables x, y on a rectangle: domain is [[x0, x1], [y0, y1]] or null, and boundary is
 {left:number, right:number, bottom:number, top:number} (the values of u on x=x0, x=x1, y=y0, y=y1) or null.
+For a problem on an annulus a < sqrt(x^2+y^2) < R: domain is {"annulus": [a, R]} and boundary is
+{inner:number, outer:number} (the values of u on the two circles).
 source is USER or TEMPLATE. USER quote must be an exact substring of the input.
 equation holds the differential equation alone, e.g. -u''(x)=pi^2*sin(pi*x); never write the domain
 or the boundary conditions into equation, they belong in domain and boundary.
-Do not substitute the user's problem. Leo has exactly two verified problems:
+Do not substitute the user's problem. Leo has exactly three verified problems:
 (1) the dimensionless 1D Poisson problem -u''(x)=pi^2*sin(pi*x), 0<x<1, u(0)=u(1)=0;
 (2) the dimensionless 2D Poisson problem -(u_xx+u_yy)=2*pi^2*sin(pi*x)*sin(pi*y) on 0<x<1, 0<y<1,
-with u=0 on all four edges.
+with u=0 on all four edges;
+(3) the dimensionless Poisson problem on the annulus 0.35 < sqrt(x^2+y^2) < 1 with u=0 on both circles,
+whose forcing f=-(u_xx+u_yy) of the exact solution
+u*=(1-x^2-y^2)*(x^2+y^2-0.35^2)*(1+0.2*sin(pi*x)*cos(2*pi*y)+0.1*x-0.1*y); its equation is spelled
+-(u_xx+u_yy)=f, u*=(1-x^2-y^2)*(x^2+y^2-0.35^2)*(1+0.2*sin(pi*x)*cos(2*pi*y)+0.1*x-0.1*y)
+with domain {"annulus": [0.35, 1]} and boundary {"inner": 0, "outer": 0}.
 Only if the user's problem is exactly one of them, use that exact equation spelling.
-For those two problems Leo supplies a frozen, previously validated solver and validation template:
+For those three problems Leo supplies a frozen, previously validated solver and validation template:
 network, optimizer, training steps, collocation sampling, seeds, precision, reference solution
 and acceptance thresholds. Never list any of those as missing; the person reviews them separately.
 missing is only for problem-definition facts the user did not give: equation, domain, boundary
@@ -125,6 +168,17 @@ def equation_matches_template_2d(text):
     return normalize_equation_2d(text) in TEMPLATE_EQUATION_FORMS_2D
 
 
+def equation_matches_template_annulus(text):
+    return normalize_equation_2d(text) in _annulus_forms()
+
+
+def looks_annular(raw):
+    """Which template to explain a mismatch against: the annulus when the draft speaks of circles."""
+    domain, boundary = raw["domain"], raw["boundary"]
+    return ((isinstance(domain, dict) and "annulus" in domain)
+            or (isinstance(boundary, dict) and ("inner" in boundary or "outer" in boundary)))
+
+
 def _numbers(values):
     # bool must not impersonate a numerical domain or boundary value.
     return all(type(v) in (int, float) for v in values)
@@ -142,6 +196,10 @@ def matching_template(raw):
     if (equation_matches_template_2d(raw["equation"]) and domain == TEMPLATE_2D["domain"]
             and boundary == TEMPLATE_2D["boundary"] and _numbers(domain[0] + domain[1] + list(boundary.values()))):
         return "poisson2d-v1"
+    if (equation_matches_template_annulus(raw["equation"]) and domain == TEMPLATE_ANNULUS["domain"]
+            and boundary == TEMPLATE_ANNULUS["boundary"]
+            and _numbers(list(domain["annulus"]) + list(boundary.values()))):
+        return "annulus-v1"
     return None
 
 
@@ -160,7 +218,15 @@ def unsupported_reasons(raw):
     """
     reasons = []
     domain, boundary = raw["domain"], raw["boundary"]
-    if looks_two_dimensional(raw):
+    if looks_annular(raw):
+        if not equation_matches_template_annulus(raw["equation"]):
+            reasons.append("方程不是已验证环形模板的写法：−(u_xx + u_yy) = f，f 由制造解 "
+                           "u* = (1−x²−y²)(x²+y²−0.35²)(1 + 0.2 sin(πx) cos(2πy) + 0.1x − 0.1y) 给出。")
+        if domain != TEMPLATE_ANNULUS["domain"] or not _numbers(list((domain or {}).get("annulus") or [None])):
+            reasons.append("求解区域不是 0.35 < r < 1 的环形。" if domain is not None else "缺少求解区域。")
+        if boundary != TEMPLATE_ANNULUS["boundary"] or (isinstance(boundary, dict) and not _numbers(boundary.values())):
+            reasons.append("边界条件不是内外两圈上 u = 0。" if boundary is not None else "缺少边界条件。")
+    elif looks_two_dimensional(raw):
         if not equation_matches_template_2d(raw["equation"]):
             reasons.append("方程不是已验证二维模板支持的 −(u_xx + u_yy) = 2π² sin(πx) sin(πy)。")
         if domain != TEMPLATE_2D["domain"] or (isinstance(domain, list) and not all(
