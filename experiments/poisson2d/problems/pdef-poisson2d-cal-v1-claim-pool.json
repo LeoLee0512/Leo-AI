@@ -1,0 +1,126 @@
+{
+  "schema": "leo.claimPool/1.0",
+  "problemId": "pdef-poisson2d-cal-v1",
+  "registeredAt": "2026-09-16T12:29:08Z",
+  "constitutionVersion": "1.2",
+  "spatialDimension": 2,
+  "identityRule": "sampleSetHash = canonical_sha256(sorted(sample identities)); burn follows sampleSetHash (ledger L4s/L6/L7/L8)",
+  "gridFamily": "{tensor Gauss-Legendre of order n} U {interior tensor Chebyshev-Gauss-Lobatto of count m}",
+  "burntBefore": {},
+  "members": {
+    "D2C-GL32-CGL50": {
+      "glOrder": 32,
+      "cglCount": 50,
+      "artifactId": "set-claim-pdef-poisson2d-cal-v1-D2C-GL32-CGL50",
+      "artifactHash": "d4d2dd4a4d1c05b6ca31d67d5ee23c04c09481347f6acf51d0b0577ed37ff4e6",
+      "sampleSetHash": "7fbbb775da65cf5535d1414d76ef141fe58e79d41679f06965a05346dbcfabaf",
+      "sampleCount": 3328,
+      "designatedRevision": 1,
+      "antiCollision": {
+        "x": {
+          "minDistance": 4.0874142465546076e-05
+        },
+        "y": {
+          "minDistance": 4.0874142465546076e-05
+        },
+        "minDistance": 4.0874142465546076e-05,
+        "ok": true,
+        "denominatorLimit": 64
+      },
+      "isolationErrors": [],
+      "sharedWithOtherMembers": {
+        "D2C-GL34-CGL54": 0,
+        "D2C-GL36-CGL56": 0,
+        "D2C-GL38-CGL60": 0
+      },
+      "burnt": false,
+      "status": "SEALED"
+    },
+    "D2C-GL34-CGL54": {
+      "glOrder": 34,
+      "cglCount": 54,
+      "artifactId": "set-claim-pdef-poisson2d-cal-v1-D2C-GL34-CGL54",
+      "artifactHash": "c370fc038d3ad3abf7aebee89d07afd9cb9cab420907d03a6cbd5a4b845ea935",
+      "sampleSetHash": "1a3ab243e8e69d59feccfc76dd28be0bb5549074d7cf5588c701ec4dfde8a626",
+      "sampleCount": 3860,
+      "designatedRevision": 2,
+      "antiCollision": {
+        "x": {
+          "minDistance": 8.67672922078011e-06
+        },
+        "y": {
+          "minDistance": 8.67672922078011e-06
+        },
+        "minDistance": 8.67672922078011e-06,
+        "ok": true,
+        "denominatorLimit": 64
+      },
+      "isolationErrors": [],
+      "sharedWithOtherMembers": {
+        "D2C-GL32-CGL50": 0,
+        "D2C-GL36-CGL56": 0,
+        "D2C-GL38-CGL60": 0
+      },
+      "burnt": false,
+      "status": "SEALED"
+    },
+    "D2C-GL36-CGL56": {
+      "glOrder": 36,
+      "cglCount": 56,
+      "artifactId": "set-claim-pdef-poisson2d-cal-v1-D2C-GL36-CGL56",
+      "artifactHash": "038f65e8f8d02e82d519d5330fb57ff85861d0b61363d54b1e9d465e487ac376",
+      "sampleSetHash": "2ee4f78c7119b17b4d3ef9b0a3a9edf042c7c73f1f5d82e08c78eca4f38a7ab5",
+      "sampleCount": 4212,
+      "designatedRevision": 3,
+      "antiCollision": {
+        "x": {
+          "minDistance": 3.2827950352531943e-07
+        },
+        "y": {
+          "minDistance": 3.2827950352531943e-07
+        },
+        "minDistance": 3.2827950352531943e-07,
+        "ok": true,
+        "denominatorLimit": 64
+      },
+      "isolationErrors": [],
+      "sharedWithOtherMembers": {
+        "D2C-GL32-CGL50": 0,
+        "D2C-GL34-CGL54": 0,
+        "D2C-GL38-CGL60": 0
+      },
+      "burnt": false,
+      "status": "SEALED"
+    },
+    "D2C-GL38-CGL60": {
+      "glOrder": 38,
+      "cglCount": 60,
+      "artifactId": "set-claim-pdef-poisson2d-cal-v1-D2C-GL38-CGL60",
+      "artifactHash": "94900d78cee2803d590fe8ce9633f37a3a4b3baacd7356ffaf21657ad4da348c",
+      "sampleSetHash": "3b80436037cb34c1ed442f754abac9584d844e0068353ee50862f61e03611c12",
+      "sampleCount": 4808,
+      "designatedRevision": 4,
+      "antiCollision": {
+        "x": {
+          "minDistance": 6.032029287922347e-06
+        },
+        "y": {
+          "minDistance": 6.032029287922347e-06
+        },
+        "minDistance": 6.032029287922347e-06,
+        "ok": true,
+        "denominatorLimit": 64
+      },
+      "isolationErrors": [],
+      "sharedWithOtherMembers": {
+        "D2C-GL32-CGL50": 0,
+        "D2C-GL34-CGL54": 0,
+        "D2C-GL36-CGL56": 0
+      },
+      "burnt": false,
+      "status": "SEALED"
+    }
+  },
+  "preregistrationSealSpecHash": "05328d507582e20e57d00a339f6cddb783b40be4c138acdd85a31a5540552c6d",
+  "preregistrationSealSpecHashMeaning": "ProblemDefinition revision 1 specHash, frozen before any member was sealed"
+}

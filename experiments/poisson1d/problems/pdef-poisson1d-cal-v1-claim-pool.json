@@ -1,0 +1,65 @@
+{
+  "schema": "leo.claimPool/1.0",
+  "problemId": "pdef-poisson1d-cal-v1",
+  "registeredAt": "2026-09-16T09:37:52Z",
+  "constitutionVersion": "1.2",
+  "identityRule": "sampleSetHash = canonical_sha256(sorted(sample identities)); burn follows sampleSetHash (ledger L4s/L6/L7/L8)",
+  "burntBefore": {},
+  "members": {
+    "GL640-CGL2400": {
+      "glOrder": 640,
+      "cglCount": 2400,
+      "artifactId": "set-claim-pdef-poisson1d-cal-v1-GL640-CGL2400",
+      "artifactHash": "d08488d9db3089f54e8711ffbb98ebad13c7e4844f660a513f16778b9c57e2c5",
+      "sampleSetHash": "3977198983fd86f7bdd83b509b04dfcdb6ed7354c1374f6b1f2c2e9726a49f7c",
+      "sampleCount": 3038,
+      "designatedRevision": 2,
+      "antiCollisionMinDistance": 9.184347405516435e-07,
+      "antiCollisionOk": true,
+      "isolationErrors": [],
+      "sharedWithOtherMembers": {
+        "GL768-CGL2802": 0,
+        "GL896-CGL3200": 0
+      },
+      "burnt": false,
+      "status": "BURNT"
+    },
+    "GL768-CGL2802": {
+      "glOrder": 768,
+      "cglCount": 2802,
+      "artifactId": "set-claim-pdef-poisson1d-cal-v1-GL768-CGL2802",
+      "artifactHash": "349990fc99e2654f6b0b402b85ee804b90a1060811a97760875c3b52fcd3082f",
+      "sampleSetHash": "19a99729d1d6f3b588b36d84c065921eb8ab1e92eb96ff62cb134ab24b3c1fbc",
+      "sampleCount": 3568,
+      "designatedRevision": 3,
+      "antiCollisionMinDistance": 1.9222819419573156e-08,
+      "antiCollisionOk": true,
+      "isolationErrors": [],
+      "sharedWithOtherMembers": {
+        "GL640-CGL2400": 0,
+        "GL896-CGL3200": 0
+      },
+      "burnt": false,
+      "status": "SEALED"
+    },
+    "GL896-CGL3200": {
+      "glOrder": 896,
+      "cglCount": 3200,
+      "artifactId": "set-claim-pdef-poisson1d-cal-v1-GL896-CGL3200",
+      "artifactHash": "de71575d51bd768d8aff48c4e6052fb67acf1c4f38f79beb4626a2ba24059b01",
+      "sampleSetHash": "ccc392809222e7af79c8a1f79a4f241431a76fb78b75b94be619cfb94b351fce",
+      "sampleCount": 4094,
+      "designatedRevision": 4,
+      "antiCollisionMinDistance": 2.786870283155718e-09,
+      "antiCollisionOk": true,
+      "isolationErrors": [],
+      "sharedWithOtherMembers": {
+        "GL640-CGL2400": 0,
+        "GL768-CGL2802": 0
+      },
+      "burnt": false,
+      "status": "SEALED"
+    }
+  },
+  "statusDerivedFromLedgerAt": "2026-09-16"
+}

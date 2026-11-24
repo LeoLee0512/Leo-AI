@@ -1,0 +1,125 @@
+{
+  "recordId": "localized-error-trigger-protocol-20260916",
+  "createdAt": "2026-09-16",
+  "authority": "external review / user ruling 2026-09-16, item 4 (final localized-error protocol decision)",
+  "supersedes": {
+    "record": "experiments/poisson2d/LOCALIZED_ERROR_CALIBRATION.json",
+    "field": "deploymentVerdict.prospectiveProtocol",
+    "note": "the calibration record is evidence and is not rewritten; this file carries the decision that closes it"
+  },
+  "decision": {
+    "summary": "For d >= 2 the failure signature sLocalizedError fires exactly when the localized-error acceptance criterion preregistered for that problem in its ScientificSpec FAILS. For Poisson-2D that criterion is AC2D-9.",
+    "noEmpiricalNullRequired": "The ruling does NOT require fitting a new d >= 2 heuristic threshold from an empirical null distribution before the next experiment; the acceptance criterion carries the requirement instead.",
+    "researchOnly": [
+      "A-maxOverMedian (the inherited 1D statistic, constant 3.0)",
+      "B-robustZ",
+      "C-topKConcentration",
+      "D-referenceConditionedZ (the calibrated best candidate, threshold 26.21)"
+    ],
+    "researchOnlyStatus": "diagnostics and calibration research; none of them is a formal FailureSignature gate",
+    "retired": {
+      "rule": "max block RMS error / median block RMS error > 3.0",
+      "dimensions": "d >= 2",
+      "evidence": "fires on 9/10 seeds of the fully validated run exp2d-poisson-calibration-r1 (statistic 2.946-4.815)",
+      "reported": "still computed and reported beside the trigger as retiredStatistic, never acted on"
+    }
+  },
+  "trigger": {
+    "signature": "sLocalizedError",
+    "dimension": ">= 2",
+    "statistic": "maxTileRmsErrorOverReferenceRms",
+    "statisticDefinition": "max over tiles of sqrt(mean_tile (u_theta - u*)^2) / sqrt(mean_set (u*)^2)",
+    "aggregation": "per seed against the criterion, then the criterion's seedPolicy ('every-seed' for a MUST criterion, the same rule Gate 5b applies): one failing seed is already an acceptance failure and fires the symptom. The median is retained as a reported statistic only.",
+    "evaluationSet": "dev",
+    "claimSetUse": "forbidden: D_claim is opened once for acceptance and is never read for diagnosis or adaptive tuning",
+    "thresholdSource": "the acceptance threshold of the named criterion in the problem's acceptance contract; the symptom may not carry a bound of its own",
+    "independentOfGlobalMetrics": "the trigger does not read relL2: a run whose global metric passes and whose localized criterion fails still fires the signature",
+    "seedPolicy": "every-seed",
+    "operator": "<=",
+    "normalization": "globalReferenceRms",
+    "partition": {
+      "kind": "uniformTiles",
+      "tilesPerAxis": 8
+    },
+    "invalidEvidence": "fail closed (ValidationInputError); invalid evidence is never read as evidence of no localized failure"
+  },
+  "preregistrationRequirement": {
+    "where": "the experiment's frozen configuration, signatureCriteria.sLocalizedError",
+    "when": "before the formal run; the configuration is part of the run's code identity, so a criterion added later cannot reach a completed run",
+    "failClosed": "a d >= 2 run whose signatureCriteria carry no localized acceptance criterion raises at diagnosis time instead of running without the symptom",
+    "requiredFields": [
+      "criterion",
+      "statistic",
+      "normalization",
+      "partitionKind",
+      "tilesPerAxis",
+      "operator",
+      "threshold",
+      "evaluationSet",
+      "preregisteredIn"
+    ],
+    "exampleForPoisson2D": {
+      "criterion": "AC2D-9",
+      "statistic": "maxTileRmsErrorOverReferenceRms",
+      "normalization": "globalReferenceRms",
+      "partitionKind": "uniformTiles",
+      "tilesPerAxis": 8,
+      "operator": "<=",
+      "threshold": 0.001,
+      "evaluationSet": "dev",
+      "preregisteredIn": "experiments/poisson2d/<the next run's preregistration>.md",
+      "note": "every field is verified against pinn/governance/poisson2d_contract.py localized_criterion('AC2D-9')"
+    }
+  },
+  "notAppliedRetroactively": {
+    "run": "exp2d-poisson-calibration-r1",
+    "reason": "its frozen configuration preregistered the inherited 1D symptom rule, not this trigger; introducing a criterion now and pointing it at that run is exactly the post-hoc retrofit this protocol forbids",
+    "machineCheck": "pinn.experiments2d.localized_error.assert_criterion_within_run_identity compares the configuration's bytes against the run's recorded codeManifest",
+    "effectOnC2": "none: AC2D-9 was evaluated as a MUST acceptance criterion in Gate 5b of that run and passed on all ten seeds (worst 1.568e-4 against 1e-3)"
+  },
+  "governanceClassification": {
+    "verdict": "protocol clarification",
+    "amendment": "none; no A-0003",
+    "unchanged": [
+      "FailureSignature names",
+      "RootCause classes",
+      "TrustStatus values",
+      "Claim semantics",
+      "DiagnosisRecord schema"
+    ],
+    "reason": "only the trigger of a symptom criterion changes, and symptom criteria live in the protocol and in each experiment's preregistered signatureCriteria"
+  },
+  "implementation": {
+    "module": "pinn/experiments2d/localized_error.py",
+    "entryPoints": [
+      "preregistered_localized_criterion",
+      "localized_signature",
+      "apply_localized_signature",
+      "assert_criterion_within_run_identity",
+      "localized_acceptance_ratio",
+      "validate_evidence_fields",
+      "criterion_failed"
+    ],
+    "diagnostics": "pinn/experiments2d/diagnostics2d.py emits maxTileRmsErrorOverReferenceRms per seed on D_dev",
+    "runner": "pinn/experiments2d/runner2d.py phase_failure applies the d >= 2 trigger after observed_signatures",
+    "tests": [
+      "tests/pinn/test_localized_error_trigger.py",
+      "tests/pinn/test_localized_error_hardening.py"
+    ],
+    "contract": "pinn/governance/poisson2d_contract.py: LOCALIZED_ERROR_CRITERION, localized_criterion()"
+  },
+  "hardening": {
+    "review": "external review of the exported source package (commit 33dc22b), 2026-09-16",
+    "report": "docs/pinn-trust-loop/LOCALIZED_ERROR_TRIGGER_HARDENING_REVIEW_20260916.md",
+    "findings": {
+      "seedAggregation": "the median-based ensemble rule stayed silent while a minority of seeds failed the criterion (reproduced: 1/10 and 4/10 failing seeds both left fired=False)",
+      "invalidEvidence": "NaN / -Inf / negative statistics returned fired=False, and unequal array lengths were silently truncated by zip, dropping the tail of the error field",
+      "criterionBinding": "a localized statistic could be checked against AC2D-2's looser threshold because only the criterion id and the threshold were validated"
+    },
+    "resolution": {
+      "seedAggregation": "the verdict now uses the criterion's own seed policy -- 'every-seed', the policy Gate 5b already applies to MUST criteria -- and the record keeps perSeedValues, failingSeedIndices, failureCount, failureFraction and the ensemble statistics",
+      "invalidEvidence": "fail closed via the repository's ValidationInputError: finite and non-negative statistics, equal array lengths asserted before any zip, non-empty evidence, homogeneous point dimension >= 2, coordinates inside the unit domain, blocksPerAxis >= 1, non-vanishing reference",
+      "criterionBinding": "one source of truth: pinn.governance.poisson2d_contract.localized_criterion() resolves criterionId -> statisticId, normalization, partitionKind, tilesPerAxis, operator, threshold, level, seedPolicy; every preregistered field is checked against it"
+    }
+  }
+}

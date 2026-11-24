@@ -1,0 +1,348 @@
+{
+  "lockStatusAuthority": "lock.json",
+  "schemaNote": "Article 5 lists 27 keys. 23 are content fields carrying the applicability mechanism; 4 (specId, version, createdAt, lockedAt) are identifiers and lifecycle metadata with no applicability. lockedAt is permanently null here because lifecycle authority lives in lock.json. Fabricating a value for a non-applicable field to pass completeness is a Gate 1 FAIL. Exactly three fields are NOT_APPLICABLE: initialConditions, dimensionalForm, referenceScales.",
+  "specId": "poisson-1d-dirichlet",
+  "version": "1.0",
+  "constitutionVersion": "1.2",
+  "evidenceLevel": "A",
+  "evidenceLevelReason": "An exact closed-form solution exists and is verifiable by substitution; this is the highest evidence level in Article 2.",
+  "protocolRef": "protocol.json",
+  "lockRef": "lock.json",
+  "title": {
+    "applicability": "APPLICABLE",
+    "value": "One-dimensional Poisson equation with homogeneous Dirichlet boundaries"
+  },
+  "scientificQuestion": {
+    "applicability": "APPLICABLE",
+    "value": "Two questions, in this order. (1) Does a PINN solution of -u''(x) = pi^2*sin(pi*x) on [0,1] with u(0)=u(1)=0 meet the pre-registered acceptance criteria AC-1..AC-7 when measured against the analytic solution under the frozen evaluation protocol? (2) Does the Leo AI validation stack accept that solution while rejecting eleven deliberately corrupted variants and abstaining on three under-determined ones? Question 2 is the reason this spec exists; question 1 is the control that makes question 2 interpretable."
+  },
+  "equations": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "governing": "-u''(x) = f(x),  x in (0,1)",
+      "forcing": "f(x) = pi^2 * sin(pi*x)",
+      "type": "linear second-order elliptic two-point boundary value problem",
+      "equationCount": 1,
+      "unknownCount": 1,
+      "wellPosedness": "Determined: one second-order ODE with two Dirichlet conditions yields a unique classical solution (Article 6-1)."
+    }
+  },
+  "dependentVariables": {
+    "applicability": "APPLICABLE",
+    "value": [
+      {
+        "symbol": "u",
+        "meaning": "scalar field",
+        "range": "real",
+        "networkOutputIndex": 0
+      }
+    ]
+  },
+  "independentVariables": {
+    "applicability": "APPLICABLE",
+    "value": [
+      {
+        "symbol": "x",
+        "meaning": "spatial coordinate",
+        "networkInputIndex": 0
+      }
+    ]
+  },
+  "domain": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "interior": "(0, 1)",
+      "closure": "[0, 1]",
+      "boundary": [
+        0.0,
+        1.0
+      ],
+      "dimension": 1
+    }
+  },
+  "geometry": {
+    "applicability": "APPLICABLE",
+    "value": "Unit interval. No internal boundaries, no curvature, no obstacles, no re-entrant corners. Coordinate origin at x=0, positive direction toward x=1; both frozen (Article 6-5)."
+  },
+  "initialConditions": {
+    "applicability": "NOT_APPLICABLE",
+    "reason": "-u''(x) = f(x) is a steady two-point boundary value problem. There is no time coordinate in the independent-variable list, so no initial condition exists to state. Any value written here would be fabricated data under Article 40."
+  },
+  "boundaryConditions": {
+    "applicability": "APPLICABLE",
+    "value": [
+      {
+        "location": "x = 0",
+        "type": "Dirichlet",
+        "operator": "u",
+        "g": 0.0
+      },
+      {
+        "location": "x = 1",
+        "type": "Dirichlet",
+        "operator": "u",
+        "g": 0.0
+      }
+    ],
+    "completeness": "Two conditions for a second-order operator: complete, neither under- nor over-determined (Article 6-2)."
+  },
+  "parameters": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "free": [],
+      "fixed": {
+        "forcing_wavenumber_k": 1,
+        "forcing_amplitude": "pi^2"
+      },
+      "note": "The forcing is fully specified; there is no parameter sweep in this spec. Introducing k as a free parameter would require a new spec version, not an edit to this one (Article 2)."
+    }
+  },
+  "units": {
+    "applicability": "APPLICABLE",
+    "value": "Dimensionless throughout. x, u and f are pure numbers by construction. Dimensional consistency (Article 6-3) is trivially satisfied: every term of -u'' - f carries the same (null) dimension."
+  },
+  "dimensionalForm": {
+    "applicability": "NOT_APPLICABLE",
+    "reason": "The problem is posed dimensionlessly by construction. There is no dimensional parent problem from which this was nondimensionalised, so there is no dimensional form to record. Writing one would require inventing a physical interpretation the spec does not have."
+  },
+  "nondimensionalForm": {
+    "applicability": "APPLICABLE",
+    "value": "-u''(x) = pi^2*sin(pi*x), x in (0,1), u(0)=u(1)=0. This coincides with the as-posed form, because no nondimensionalisation step was performed."
+  },
+  "referenceScales": {
+    "applicability": "NOT_APPLICABLE",
+    "reason": "No nondimensionalisation was performed, so there are no characteristic scales U, L, T to declare. Article 6-4 requires characteristic scales only where dimensionless groups (Re, Pe, Pr, ...) appear; this spec defines none."
+  },
+  "assumptions": {
+    "applicability": "APPLICABLE",
+    "value": [
+      "Classical (strong) solution sought; no weak/variational formulation.",
+      "f is smooth on the closed interval; no distributional sources.",
+      "The domain is fixed; no moving boundary.",
+      "The canonical executor is CPU + float64 throughout: model parameters, training, forward, autograd, baseline, validation and metrics. No mixed precision anywhere in this MVP (protocol section 9.1).",
+      "The network is a deterministic function of its parameters; no dropout or stochastic layers at evaluation time."
+    ]
+  },
+  "targetQuantities": {
+    "applicability": "APPLICABLE",
+    "value": [
+      {
+        "id": "QoI-1",
+        "definition": "integral of u over [0,1]",
+        "exactValue": "2/pi",
+        "exactValueDecimal": 0.6366197723675814,
+        "boundTo": "AC-5"
+      },
+      {
+        "id": "QoI-2",
+        "definition": "u'(0)",
+        "exactValue": "pi",
+        "exactValueDecimal": 3.141592653589793,
+        "boundTo": "AC-6"
+      }
+    ],
+    "note": "Declared before any training, per Article 19. Reporting a metric not listed here as a headline result after the fact is forbidden."
+  },
+  "referenceSolution": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "primary": {
+        "role": "PRIMARY_REFERENCE",
+        "evidenceLevel": "A",
+        "form": "u*(x) = sin(pi*x)",
+        "derivative": "u*'(x) = pi*cos(pi*x)",
+        "verification": "Gate 2a, with pre-registered machine tolerances (protocol section gate2a). Literal equality to zero is NOT required: sin(pi_float64) = 1.224647e-16.",
+        "usedBy": "AC-1 through AC-8 — every accuracy criterion is computed against this and nothing else.",
+        "provenance": {
+          "artifactRole": "REFERENCE",
+          "producerType": "TRUSTED_ANALYTIC_REFERENCE",
+          "captureMethod": "ANALYTIC_EVALUATION",
+          "registeredBy": "pinn.reference.analytic_poisson",
+          "evaluatorSourcePath": "pinn/reference/analytic_poisson.py",
+          "evaluatorCodeSha256": "d792fd0ec91827bb6fcf38039893839024517c603bb4e5efcd0f7fe54b30a06d",
+          "equationBinding": "-u''(x)=pi^2*sin(pi*x);x in (0,1);u(0)=u(1)=0",
+          "specBinding": "poisson-1d-dirichlet@1.0",
+          "transformation": "IDENTITY"
+        }
+      },
+      "numericalBaseline": {
+        "role": "BASELINE_SUBSYSTEM_CHECK",
+        "method": "second-order three-point central finite difference",
+        "purpose": "Verifies that the baseline subsystem itself is sound. It is NOT a substitute for the analytic solution and NEVER enters AC-1..AC-8.",
+        "verification": "Gate 2b, fully defined in protocol.json under fdmProtocol.",
+        "independence": "The baseline module must not import any PINN module; enforced by a dependency-direction check in CI (Article 7)."
+      }
+    }
+  },
+  "trainingDomain": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "collocation": "interior samples in (0,1)",
+      "boundary": [
+        0.0,
+        1.0
+      ],
+      "adaptivePool": "interior samples in (0,1)",
+      "diagnostic": "interior samples in (0,1), diagnostics only — must not trigger early stopping",
+      "isolationRule": "Governed by L1-L4 in protocol.json. L1 covers only holdout GL512/CGL2000 coordinates after excluding spec-known boundary coordinates. Reusing {0,1} for training BC and boundary validation is allowed; any boundary validation metric feeding training control is still L4 leakage."
+    }
+  },
+  "validationDomain": {
+    "applicability": "APPLICABLE",
+    "value": {
+      "quadratureNodes": "512 Gauss-Legendre nodes mapped to [0,1] — AC-1, AC-4, AC-5, AC-7, AC-8, and the holdout residual set",
+      "pointwiseGrid": "2000 Chebyshev-Gauss-Lobatto nodes, x_j = (1 - cos(j*pi/1999))/2 — AC-2",
+      "boundarySet": [
+        0.0,
+        1.0
+      ],
+      "antiCollision": "Both node sets are verified disjoint from every lattice i/d, d <= 64, at tolerance 1e-12 (protocol section antiCollision). N=2001 was rejected during drafting because it contains x=1/2 to within one ULP.",
+      "seed": {
+        "applicability": "NOT_APPLICABLE",
+        "reason": "All evaluation grids are deterministic quadrature and interpolation nodes; no sampling is performed at evaluation time, so there is no seed to record."
+      }
+    }
+  },
+  "validationMetrics": {
+    "applicability": "APPLICABLE",
+    "value": [
+      {
+        "id": "AC-1",
+        "name": "relative L2 of u",
+        "definition": "sqrt( int (u_theta - u*)^2 dx / (int (u*)^2 dx + eps) )",
+        "grid": "GL512"
+      },
+      {
+        "id": "AC-2",
+        "name": "relative Linf of u",
+        "definition": "max_j |u_theta - u*| / (max_j |u*| + eps)",
+        "grid": "CGL2000"
+      },
+      {
+        "id": "AC-3",
+        "name": "boundary error",
+        "definition": "max over x in {0,1} of |u_theta(x) - g(x)|",
+        "grid": "boundarySet"
+      },
+      {
+        "id": "AC-4",
+        "name": "normalised holdout residual",
+        "definition": "sqrt(int R^2 dx) / ||f||_rms",
+        "grid": "GL512"
+      },
+      {
+        "id": "AC-5",
+        "name": "QoI-1 relative error",
+        "definition": "|int u_theta dx - 2/pi| / (2/pi)",
+        "grid": "GL512"
+      },
+      {
+        "id": "AC-6",
+        "name": "QoI-2 relative error",
+        "definition": "|u_theta'(0) - pi| / pi",
+        "grid": "boundarySet"
+      },
+      {
+        "id": "AC-7",
+        "name": "energy identity violation",
+        "definition": "|int (u_theta')^2 dx - int f*u_theta dx| / (pi^2/2)",
+        "grid": "GL512"
+      },
+      {
+        "id": "AC-8",
+        "name": "relative L2 of u'",
+        "definition": "sqrt( int (u_theta' - u*')^2 dx / (int (u*')^2 dx + eps) )",
+        "grid": "GL512"
+      }
+    ],
+    "perFieldReporting": "Only one dependent variable exists, so Article 15 is satisfied trivially. AC-1 and AC-8 are still reported separately rather than combined.",
+    "derivativeEvaluation": "AUTOGRAD_FIRST_ORDER. Finite differences are forbidden; they would mix discretisation error into AC-6, AC-7 and AC-8.",
+    "referenceConstants": {
+      "f_rms": 6.978864199639,
+      "integral_u_star": 0.6366197723675814,
+      "u_star_prime_at_0": 3.141592653589793,
+      "energy_both_sides": 4.934802200545
+    }
+  },
+  "acceptanceCriteria": {
+    "applicability": "APPLICABLE",
+    "declaredBeforeTraining": true,
+    "value": [
+      {
+        "id": "AC-1",
+        "metricRef": "AC-1",
+        "comparator": "<",
+        "threshold": 0.001,
+        "level": "MUST"
+      },
+      {
+        "id": "AC-2",
+        "metricRef": "AC-2",
+        "comparator": "<",
+        "threshold": 0.005,
+        "level": "MUST"
+      },
+      {
+        "id": "AC-3",
+        "metricRef": "AC-3",
+        "comparator": "<",
+        "threshold": 0.0001,
+        "level": "MUST"
+      },
+      {
+        "id": "AC-4",
+        "metricRef": "AC-4",
+        "comparator": "<",
+        "threshold": 0.01,
+        "level": "MUST"
+      },
+      {
+        "id": "AC-5",
+        "metricRef": "AC-5",
+        "comparator": "<",
+        "threshold": 0.001,
+        "level": "MUST"
+      },
+      {
+        "id": "AC-6",
+        "metricRef": "AC-6",
+        "comparator": "<",
+        "threshold": 0.005,
+        "level": "MUST"
+      },
+      {
+        "id": "AC-7",
+        "metricRef": "AC-7",
+        "comparator": "<",
+        "threshold": 0.01,
+        "level": "MUST"
+      },
+      {
+        "id": "AC-8",
+        "metricRef": "AC-8",
+        "comparator": "<",
+        "threshold": 0.005,
+        "level": "SHOULD"
+      }
+    ],
+    "scope": "Run-level. Gate 5 evaluates AC-1..AC-7 (MUST) and AC-8 (SHOULD) for one run, one seed.",
+    "multiSeedNote": "The five-seed robustness requirement is SR-1 at suite level, not a Gate 5 criterion. A seed that fails does not downgrade the C2 status of the seeds that passed (plan section 11.3).",
+    "immutability": "Frozen by lock.json together with protocol.json. Changing a threshold after validation is post-hoc acceptance manipulation (Article 20) and triggers stop-the-line. A revision requires a new version directory, never an in-place edit (Article 59)."
+  },
+  "knownSingularities": {
+    "applicability": "APPLICABLE",
+    "value": "None. u* and f are both C-infinity on the closed interval [0,1]; there are no boundary layers, corner singularities, shocks or discontinuous coefficients. This is a verified statement about this problem, not a declaration that the field is inapplicable."
+  },
+  "knownNumericalRisks": {
+    "applicability": "APPLICABLE",
+    "value": [
+      "Spectral bias: MLPs converge fastest on low-frequency content, which is why adversarial cases B4 and B6 inject k=4 and k=5 modes that a sparse collocation lattice cannot see.",
+      "Collocation aliasing: any residual mode vanishing on every training point is invisible to the PDE loss. For u = sin(pi x) + A sin(m pi x) with collocation at x_i = i/m, the training residual and both boundary values are exactly zero while relative L2 = |A| and the normalised residual = m^2|A|. Mitigated by the holdout residual set (AC-4).",
+      "Validation-grid commensurability: a validation grid containing a low-order rational collides with plausible collocation lattices and can both hide error and false-trigger the leakage check. Mitigated by the anti-collision requirement in protocol.json.",
+      "Boundary/interior loss imbalance: with a small boundary weight the PDE-only solution family is sin(pi*x) + a + b*x, so the boundary term is what pins a and b. Exercised by B3.",
+      "Silent NaN suppression: nan_to_num on a residual converts divergence into an apparently satisfied constraint. Forbidden; NaN/Inf must raise and terminate the run (Gate 4). Exercised by B10."
+    ]
+  },
+  "createdAt": "2026-09-05",
+  "lockedAt": null
+}

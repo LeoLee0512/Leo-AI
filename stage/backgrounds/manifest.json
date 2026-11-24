@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "note": "Rendered by tools/build_backgrounds.py from the untouched masters in assets/backgrounds/. Same dimensions, same crop, same colours; the only transformation is WebP compression.",
+  "backgrounds": [
+    {
+      "key": "ink-autumn-branch",
+      "file": "ink-autumn-branch.webp",
+      "purpose": "Settings / content edge -- the rising branch (05_09_39 source)",
+      "width": 1672,
+      "height": 941,
+      "bytes": 149636,
+      "sha256": "b364cde704a09cbbff192f0c0c82e25c8db5ad8b26b8ff8a38dcf67a12ec6b4d",
+      "master": "ink-autumn-branch.src.png",
+      "master_sha256": "d53c17c9bac6c0e920fd68c8465d26f76562e1cd88fece5c0e06eb06ffcb30b7",
+      "quality": 82,
+      "tint_drift": 0.2362,
+      "grain_drift": 2.4095
+    },
+    {
+      "key": "ink-autumn-tree",
+      "file": "ink-autumn-tree.webp",
+      "purpose": "Home / welcome and knowledge -- the rooted tree (05_09_52 source)",
+      "width": 1672,
+      "height": 941,
+      "bytes": 146686,
+      "sha256": "c5ba1075985b20ca23780f7bb642a907b9f2f3d4061bcb93ada76445a4a6d676",
+      "master": "ink-autumn-tree.src.png",
+      "master_sha256": "fc73555d63c5e80b7e87d672785c4c33342cd752a04bad539f7ec13e00c3e503",
+      "quality": 82,
+      "tint_drift": 0.3645,
+      "grain_drift": 2.5848
+    },
+    {
+      "key": "ink-autumn-branch-warm",
+      "file": "ink-autumn-branch-warm.webp",
+      "purpose": "Sidebar / workspace and splash -- the warm branch (05_10_04 source)",
+      "width": 1672,
+      "height": 941,
+      "bytes": 132688,
+      "sha256": "e69d204c43454a5f49e1e0d36e8f3ebda3fff6bd61fa6a6e8f18b83f190219b4",
+      "master": "ink-autumn-branch-warm.src.png",
+      "master_sha256": "c65b7ae83c1d8938fec707233905449578adb47f12eb20ea17b6f2f5f5cc56b5",
+      "quality": 82,
+      "tint_drift": 0.3377,
+      "grain_drift": 2.3781
+    }
+  ]
+}

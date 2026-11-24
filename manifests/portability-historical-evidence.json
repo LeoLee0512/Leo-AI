@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "_comment": "Human-approved, fail-closed classifications for immutable historical evidence. The scanner still scans each file and emits every matching finding, and the human-readable output keeps every classified finding visible. Classification applies only when file, SHA-256, finding type and occurrence count all match; any byte change invalidates it. Scope (external review ruling 2026-09-16): one literal .md or .json file under governance/ or experiments/ -- never a wildcard, a directory, a machine-path pattern, or any source file, script or executable. 3.0.0 (2026-09-29): the historical evidence files these entries classified were removed from the tree (still in the private Git history), so no classification remains and every finding is live again.",
+  "entries": []
+}

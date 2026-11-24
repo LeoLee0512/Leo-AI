@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "leo.claimRegistration/1",
+  "registeredAt": "2026-09-29",
+  "registeredBy": "Claude (while preparing the owner-approved 3.2.0 sandbox smokes)",
+  "purpose": "The owner's 2D formal run opened this grid in the installed 2.2.11, but the grid was recorded only in the install's user data. A sandbox research root cannot see the install, so the 3.2.0 2D smoke reserved it again; that smoke was cancelled 14 s into its main phase, before its claim set was opened (its ledger holds only SEALED). Registering the grid here puts it in every later preparation's historical claim search, so neither a sandbox nor a fresh install can draw it again. Same situation as GL1056-CGL4004 in 2.2.7, caught earlier.",
+  "claimFile": "experiments/poisson2d/problems/pdef-research-aece08ebc1004fbdb29d70c9e6646f30-claim-D2C-GL44-CGL68.json",
+  "claimFileSha256": "b637de00eb30e6b0bd0410c2f4c09987c0bbf598fa5c0b8b835e49d71a1f0080",
+  "member": "D2C-GL44-CGL68",
+  "glOrder": 44,
+  "cglCount": 68,
+  "sampleSetHash": "8a049db525790779379b6827731dc131f562864bbd875a6c7633bb3b222a2971",
+  "origin": {
+    "kind": "owner's formal run in the installed desktop (copied read-only from its task)",
+    "taskId": "research-aece08ebc1004fbdb29d70c9e6646f30",
+    "finalState": "ACCEPTED",
+    "reservedAt": "2026-09-29T12:06:28Z",
+    "openedAt": "2026-09-29T12:16:39Z",
+    "status": "OPENED by the owner's formal run; BURNT for any later use"
+  },
+  "cancelledSmoke": {
+    "taskId": "research-7f2601b49cf24ebbac5ab280be89ab88",
+    "sourceCommit": "cc610a5ff173d317a3d657e1b486628ed0ad6329",
+    "ledgerEvents": [
+      "SEALED"
+    ],
+    "note": "never opened; throwaway research root"
+  },
+  "installQuotaEffect": "None: the installed desktop already counts this grid from the owner's task (2D 2 used / 30 remaining before the 3.2.0 smoke).",
+  "scientificStanding": "Registration only. The formal run's own evidence stays in the owner's task; nothing here is evidence for a claim."
+}

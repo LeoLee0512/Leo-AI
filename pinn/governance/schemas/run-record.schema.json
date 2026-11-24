@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leo-ai.local/schemas/pinn/run-record-1.0.json",
+  "title": "Leo AI PINN RunRecord (Amendment A-0001, draft 3)",
+  "description": "The identity of one formal run on the axes governance judges it by. codeHash, environmentId and seedSetId are derived: codeHash from the sorted codeManifest, environmentId from the strong fields of the environment fingerprint, seedSetId from the sorted distinct seed values. The derivations are recomputed by pinn.governance.trust_loop.validate_run_record; a hand-filled identity that does not recompute is rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runId", "problemId", "revision", "specHash", "codeHash", "codeManifest", "environment", "environmentId", "seeds", "seedSetId", "startedAt", "finishedAt", "executedBy"],
+  "properties": {
+    "schemaVersion": { "const": "pinn.runRecord/1.0" },
+    "runId": { "type": "string", "pattern": "^run-[a-z0-9][a-z0-9-]*$" },
+    "problemId": { "type": "string", "pattern": "^pdef-[a-z0-9][a-z0-9.-]*$" },
+    "revision": { "type": "integer", "minimum": 1 },
+    "specHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "codeHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "codeManifest": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": { "type": "string", "pattern": "^[A-Za-z0-9._][A-Za-z0-9._/-]*$" },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    "environment": { "$ref": "#/$defs/environment" },
+    "environmentId": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "seeds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "integer", "minimum": 0 } },
+    "seedSetId": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "evaluatedOn": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dev": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "claim": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "startedAt": { "$ref": "#/$defs/dateTime" },
+    "finishedAt": { "$ref": "#/$defs/dateTime" },
+    "executedBy": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["machineId", "osFamily", "acceleratorClass", "frameworkVersion", "blasBackend", "dependencyLockHash", "installationId"],
+      "properties": {
+        "machineId": { "type": "string", "minLength": 1 },
+        "osFamily": { "enum": ["windows", "linux", "macos"] },
+        "acceleratorClass": { "type": "string", "minLength": 1 },
+        "frameworkVersion": { "type": "string", "minLength": 1 },
+        "blasBackend": { "type": "string", "minLength": 1 },
+        "dependencyLockHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "installationId": { "type": "string", "minLength": 1 },
+        "osVersion": { "type": "string" },
+        "pythonVersion": { "type": "string" },
+        "acceleratorDriver": { "type": "string" }
+      }
+    },
+    "dateTime": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    }
+  }
+}

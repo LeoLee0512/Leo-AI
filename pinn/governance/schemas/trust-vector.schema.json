@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leo-ai.local/schemas/pinn/trust-vector-1.2.json",
+  "title": "Leo AI PINN TrustVector (Amendment A-0001, draft 3)",
+  "description": "Six dimensions, each with one status and the named checks it aggregates. Applicability is a separate type: a NOT_APPLICABLE check has no status and never enters the meet. Conditional requirements (checks required for every executed dimension and equal to the spec's check-applicability registry, status never above the meet of the applicable checks and below it only with explanatory notes, INV-A1 no all-NOT_APPLICABLE list, evidence for judged dimensions, nothing for NOT_CHECKED, worstCase whenever perturbations ran, external PASS only on the claim set it names) are enforced by pinn.governance.trust_loop.validate_trust_vector. The vector is only ever consumed as a whole; there is no scalar score.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "recordId", "problemId", "revision", "specHash", "dimensions"],
+  "properties": {
+    "schemaVersion": { "const": "pinn.trustVector/1.2" },
+    "recordId": { "type": "string", "pattern": "^tv-[a-z0-9][a-z0-9-]*$" },
+    "problemId": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 1 },
+    "specHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "supersedesRecordId": { "type": "string", "pattern": "^tv-[a-z0-9][a-z0-9-]*$" },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["math", "impl", "train", "physics", "external", "repro"],
+      "properties": {
+        "math": { "$ref": "#/$defs/dimension" },
+        "impl": { "$ref": "#/$defs/dimension" },
+        "train": { "$ref": "#/$defs/dimension" },
+        "physics": { "$ref": "#/$defs/dimension" },
+        "external": { "$ref": "#/$defs/dimension" },
+        "repro": { "$ref": "#/$defs/dimension" }
+      }
+    }
+  },
+  "$defs": {
+    "dimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["PASS", "PARTIAL", "FAIL", "BLOCKED", "NOT_CHECKED"] },
+        "evidencePointers": { "type": "array", "items": { "$ref": "#/$defs/artifactRef" } },
+        "judgedAt": { "$ref": "#/$defs/dateTime" },
+        "judgedBy": { "type": "string", "minLength": 1 },
+        "notes": { "type": "string" },
+        "perturbationsRun": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^P[0-9]+$" } },
+        "worstCase": { "type": "string", "minLength": 1 },
+        "evaluationSet": { "enum": ["dev", "claim"] },
+        "claimSetSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "checks": { "type": "array", "items": { "$ref": "#/$defs/checkResult" } }
+      }
+    },
+    "checkResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkId", "applicability"],
+      "properties": {
+        "checkId": { "type": "string", "minLength": 1 },
+        "applicability": { "enum": ["APPLICABLE", "NOT_APPLICABLE"] },
+        "status": { "enum": ["PASS", "PARTIAL", "FAIL", "BLOCKED", "NOT_CHECKED"] },
+        "reason": { "type": "string" },
+        "evidencePointers": { "type": "array", "items": { "$ref": "#/$defs/artifactRef" } }
+      }
+    },
+    "artifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifactId", "sha256"],
+      "properties": {
+        "artifactId": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "dateTime": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    }
+  }
+}

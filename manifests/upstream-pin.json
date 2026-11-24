@@ -1,0 +1,6 @@
+{
+  "_comment": "The upstream revision this release is built against. Leo must keep upstream/OpenAI4S byte-clean so it stays pullable; verify_release.py fails if the checkout drifts from this pin or has local modifications.",
+  "repository": "https://github.com/PKU-YuanGroup/OpenAI4S.git",
+  "revision": "a792c38d9984be428437b548db29baab3322f6dc",
+  "committed_at": "2026-08-28T14:17:49+08:00"
+}

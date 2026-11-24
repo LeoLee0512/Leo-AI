@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leo-ai.local/schemas/pinn/lock-v1.3.json",
+  "title": "Leo AI Poisson-1D lock or lock-draft schema",
+  "type": "object",
+  "required": [
+    "lockState",
+    "designRule",
+    "lockVersion",
+    "constitutionVersion",
+    "constitutionPath",
+    "constitutionSha256",
+    "specId",
+    "specVersion",
+    "digestAlgorithm",
+    "canonicalisation",
+    "canonicalisationRules",
+    "canonicalisationNote",
+    "specPath",
+    "specSha256",
+    "protocolPath",
+    "protocolSha256",
+    "adversarialManifestPath",
+    "adversarialManifestSha256",
+    "lockedAt",
+    "lockSha256",
+    "lockSha256Definition",
+    "preconditions",
+    "verification",
+    "postLockRule",
+    "integrityNote"
+  ],
+  "properties": {
+    "lockState": {
+      "enum": [
+        "DRAFT",
+        "LOCKED"
+      ]
+    },
+    "designRule": {
+      "type": "string",
+      "minLength": 20
+    },
+    "lockVersion": {
+      "const": "1"
+    },
+    "constitutionVersion": {
+      "enum": ["1.0", "1.1", "1.2"]
+    },
+    "constitutionPath": {
+      "const": "governance/PINN_RESEARCH_CONSTITUTION.md"
+    },
+    "constitutionSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "specId": {
+      "const": "poisson-1d-dirichlet"
+    },
+    "specVersion": {
+      "const": "1.0"
+    },
+    "digestAlgorithm": {
+      "const": "SHA-256"
+    },
+    "canonicalisation": {
+      "const": "json-dumps-ensure-ascii-false-indent-2-single-lf"
+    },
+    "canonicalisationRules": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "string"
+      }
+    },
+    "canonicalisationNote": {
+      "type": "string"
+    },
+    "specPath": {
+      "const": "spec.json"
+    },
+    "specSha256": {
+      "$ref": "#/$defs/nullableSha256"
+    },
+    "protocolPath": {
+      "const": "protocol.json"
+    },
+    "protocolSha256": {
+      "$ref": "#/$defs/nullableSha256"
+    },
+    "adversarialManifestPath": {
+      "const": "adversarial/core_manifest.json"
+    },
+    "adversarialManifestSha256": {
+      "$ref": "#/$defs/nullableSha256"
+    },
+    "lockedAt": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 20
+        }
+      ]
+    },
+    "lockSha256": {
+      "$ref": "#/$defs/nullableSha256"
+    },
+    "lockSha256Definition": {
+      "type": "object",
+      "required": [
+        "input",
+        "fieldOrder",
+        "formula",
+        "selfReferenceNote",
+        "shellEquivalent"
+      ],
+      "properties": {
+        "input": {
+          "type": "string"
+        },
+        "fieldOrder": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "formula": {
+          "type": "string"
+        },
+        "selfReferenceNote": {
+          "type": "string"
+        },
+        "shellEquivalent": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "preconditions": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification": {
+      "type": "object"
+    },
+    "postLockRule": {
+      "type": "string"
+    },
+    "integrityNote": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "[0-9a-f]{64}"
+    },
+    "nullableSha256": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/sha256"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "leo.claimRegistration/1",
+  "registeredAt": "2026-09-28",
+  "registeredBy": "Claude (owner-approved 2026-09-28)",
+  "purpose": "The 2.2.6 sandbox full-chain smoke reserved and opened this blind claim grid. Registering it here puts it in every later product preparation's historical claim search (pinn/research/worker.py historical_claims) and in the install quota (pinn/research/quota.py REGISTERED_GLOB), so a formal run can never draw it again.",
+  "claimFile": "experiments/poisson1d/problems/pdef-research-037832e8b0e64780941f6c9e862c9a72-claim-GL1024-CGL4002.json",
+  "claimFileSha256": "4b0cead382b285fdf220bb17e68bee2c1aafbb2b183a836f35a8c3f7e831554c",
+  "member": "GL1024-CGL4002",
+  "glOrder": 1024,
+  "cglCount": 4002,
+  "sampleSetHash": "5ed47e5942b42ce356dce012bf69b9a51acaa809cd66bfd3ec7c64b25fa72405",
+  "origin": {
+    "kind": "sandbox smoke (throwaway research root, deleted after the smoke)",
+    "taskId": "research-037832e8b0e64780941f6c9e862c9a72",
+    "problemId": "pdef-research-037832e8b0e64780941f6c9e862c9a72",
+    "sourceCommit": "f951acd73c1e89f8a71ed0e63e53a548a17d5d5b",
+    "codeHash": "a6d1ba6ff781fb1cea85814d8f0bf8073b513afaf7253a4c27cb27ad256e996f",
+    "specHash": "58b71feaa40ca736235d82fb9e935821774875fc3db2a83cb57a1ca22c43047c",
+    "reservedAt": "2026-09-28T19:57:21Z",
+    "status": "OPENED by the smoke's main attempt; BURNT for any formal use"
+  },
+  "scientificStanding": "None. A smoke run exercises the product chain; it is not evidence for any claim and is not pooled with formal runs. Confirmations inside the smoke were automatic because its research root was a throwaway sandbox."
+}

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "leo.claimRegistration/1",
+  "registeredAt": "2026-09-30",
+  "registeredBy": "Claude (owner-approved 2026-09-29: one real annulus smoke before the 3.2.2 release, burning one of the 8 annulus grids)",
+  "purpose": "The 3.2.2 sandbox full-chain smoke reserved and opened this blind annulus claim grid. Registering it here puts it in every later product preparation's historical claim search and in the install quota, so a formal run can never draw it again.",
+  "claimFile": "experiments/annulus/problems/pdef-research-a85658199bb94019a45de77c56ce99d5-claim-ANN-Q44-A137.json",
+  "claimFileSha256": "de9e71184caa4d6edb594cb5566c29baa35f448414cefbd7e5d836304c9fc3e8",
+  "member": "ANN-Q44-A137",
+  "grid": {
+    "angularOffset": 0.023,
+    "pointwiseAngularCount": 41,
+    "pointwiseAngularOffset": 0.015,
+    "pointwiseCglCount": 62,
+    "quadratureAngularCount": 137,
+    "quadratureRadialOrder": 44
+  },
+  "sampleSetHash": "5dba5d24b4fb14e498e2e816e3dbebdafc544b0c0fbf6bb5fc0b26743a3faa83",
+  "claimSetSha256": "de9e71184caa4d6edb594cb5566c29baa35f448414cefbd7e5d836304c9fc3e8",
+  "origin": {
+    "kind": "sandbox smoke (throwaway research root, deleted after the smoke)",
+    "family": "annulus",
+    "taskId": "research-a85658199bb94019a45de77c56ce99d5",
+    "problemId": "pdef-research-a85658199bb94019a45de77c56ce99d5",
+    "sourceCommit": "588d4f4d2dd7c37d8dd1c89505126ca7721d237a",
+    "codeHash": "c90b59609e856b32848dce7dc66453a7f0fec83e065f4ea7f6632700866fc9d3",
+    "specHash": "831b044b5a54c0ceac793bbfccdcfee450134ef6413f6a2988f7a3a539f7ea81",
+    "reservedAt": "2026-09-29T23:21:52Z",
+    "openedAt": "2026-09-30T01:37:50Z",
+    "status": "OPENED by the smoke's main attempt; BURNT for any formal use"
+  },
+  "installQuotaEffect": "Annulus (counted apart from 1D and 2D): 1 used / 7 remaining of 8 once released (ANN-Q44-A137).",
+  "scientificStanding": "None. A smoke run exercises the product chain; it is not evidence for any claim and is not pooled with formal runs."
+}

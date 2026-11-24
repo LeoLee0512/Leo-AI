@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leo-ai.local/schemas/pinn/problem-definition-1.2.json",
+  "title": "Leo AI PINN ProblemDefinition (Amendment A-0001, draft 3)",
+  "description": "Structural rules only, in the jsonschema_lite keyword subset. Conditional requirements, cross references, positivity, the check-applicability registry (INV-A1: every dimension owes at least one applicable check), preregistered thresholds, evaluation-set discipline (train / dev / claim derived from the claim-set ledger, sample-level disjointness through the set manifests) and the specHash binding are enforced by pinn.governance.trust_loop.validate_problem_definition. specHash covers every field except specHash, revision and the claim-set state (evaluationSets.claim / claimSetStatus / claimSetOpenedAtRevision / claimSetHistory), which are bound through the ledger instead.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "problemId",
+    "revision",
+    "pde",
+    "boundaryConditions",
+    "geometry",
+    "parameters",
+    "units",
+    "nondimensionalization",
+    "variables",
+    "referenceSolution",
+    "checkApplicability",
+    "preregistration",
+    "evaluationSets",
+    "specHash",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "pinn.problemDefinition/1.2" },
+    "problemId": { "type": "string", "pattern": "^pdef-[a-z0-9][a-z0-9.-]*$" },
+    "revision": { "type": "integer", "minimum": 1 },
+    "pde": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["form", "transient", "equations"],
+      "properties": {
+        "form": { "enum": ["strong", "weak", "variational"] },
+        "transient": { "type": "boolean" },
+        "equations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "expressionRef", "independentVars", "dependentVars"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "expressionRef": { "$ref": "#/$defs/artifactRef" },
+              "independentVars": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+              "dependentVars": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+            }
+          }
+        }
+      }
+    },
+    "boundaryConditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "type", "regionRef", "expressionRef", "enforcement"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "type": { "enum": ["dirichlet", "neumann", "robin", "periodic", "other"] },
+          "regionRef": { "type": "string", "minLength": 1 },
+          "expressionRef": { "$ref": "#/$defs/artifactRef" },
+          "enforcement": { "enum": ["soft", "hard"] }
+        }
+      }
+    },
+    "initialConditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "regionRef", "expressionRef"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "regionRef": { "type": "string", "minLength": 1 },
+          "expressionRef": { "$ref": "#/$defs/artifactRef" }
+        }
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domainType", "dimension", "regions"],
+      "properties": {
+        "domainType": { "enum": ["interval", "rectangle", "disk", "mesh", "other"] },
+        "dimension": { "type": "integer", "minimum": 1 },
+        "regions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "description"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "description": { "type": "string" },
+              "params": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "value"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "value": { "type": "number" },
+          "unitRef": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system", "entries"],
+      "properties": {
+        "system": { "enum": ["SI", "nondimensional", "other"] },
+        "entries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["quantity", "unit", "symbolRef"],
+            "properties": {
+              "quantity": { "type": "string", "minLength": 1 },
+              "unit": { "type": "string", "minLength": 1 },
+              "symbolRef": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "nondimensionalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applied", "scales"],
+      "properties": {
+        "applied": { "type": "boolean" },
+        "scales": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["quantity", "scaleValue", "unitFrom", "unitTo"],
+            "properties": {
+              "quantity": { "type": "string", "minLength": 1 },
+              "scaleValue": { "type": "number", "minimum": 0 },
+              "unitFrom": { "type": "string", "minLength": 1 },
+              "unitTo": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "variables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "role", "domainRange", "unitRef"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "role": { "enum": ["independent", "dependent"] },
+          "domainRange": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+          "unitRef": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "referenceSolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sources", "primarySourceId"],
+      "properties": {
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sourceId", "method", "evidenceLevel", "independenceDeclaration", "provenance"],
+            "properties": {
+              "sourceId": { "type": "string", "minLength": 1 },
+              "method": { "enum": ["analytical", "manufactured", "numerical", "published"] },
+              "evidenceLevel": { "enum": ["A", "B", "C", "D"] },
+              "independenceDeclaration": { "const": true },
+              "provenance": { "$ref": "#/$defs/artifactRef" }
+            }
+          }
+        },
+        "primarySourceId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "checkApplicability": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["checkId", "dimension", "applicability"],
+        "properties": {
+          "checkId": { "type": "string", "minLength": 1 },
+          "dimension": { "enum": ["math", "impl", "train", "physics", "external", "repro"] },
+          "applicability": { "enum": ["APPLICABLE", "NOT_APPLICABLE"] },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "preregistration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["errorNorm", "epsilonSpec", "seedRuns", "worstSeedFactor", "dispersionLimit"],
+      "properties": {
+        "errorNorm": { "enum": ["relativeL2", "LInf"] },
+        "epsilonSpec": { "type": "number", "minimum": 0 },
+        "seedRuns": { "type": "integer", "minimum": 1 },
+        "seedFactors": { "type": "array", "uniqueItems": true, "items": { "enum": ["init", "sample", "batch"] } },
+        "worstSeedFactor": { "type": "number", "minimum": 0 },
+        "dispersionLimit": { "type": "number", "minimum": 0 },
+        "qoiBand": { "type": "number", "minimum": 0 }
+      }
+    },
+    "evaluationSets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["train", "dev", "claim", "claimSetStatus", "claimSetHistory"],
+      "properties": {
+        "train": { "$ref": "#/$defs/artifactRef" },
+        "dev": { "$ref": "#/$defs/artifactRef" },
+        "claim": { "$ref": "#/$defs/artifactRef" },
+        "phys": { "$ref": "#/$defs/artifactRef" },
+        "minSeparation": { "type": "number", "minimum": 0 },
+        "claimSetStatus": { "enum": ["SEALED", "OPENED"] },
+        "claimSetOpenedAtRevision": { "type": "integer", "minimum": 1 },
+        "claimSetHistory": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sha256", "openedAtRevision"],
+            "properties": {
+              "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "openedAtRevision": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "specHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "status": { "enum": ["DRAFT", "FROZEN"] },
+    "frozenAt": { "$ref": "#/$defs/dateTime" },
+    "frozenBy": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "artifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifactId", "sha256"],
+      "properties": {
+        "artifactId": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "dateTime": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    }
+  }
+}

@@ -1,0 +1,758 @@
+{
+  "lockStatusAuthority": "lock.json",
+  "manifestVersion": "1.0",
+  "suiteVersion": "PINN-CLOSED-LOOP-CORE-1.0",
+  "schemaVersion": "1.0",
+  "conceptualCaseCount": 15,
+  "executableScenarioCount": 18,
+  "categories": [
+    "ANALYTIC",
+    "STRUCTURAL",
+    "PROVENANCE",
+    "BITWISE_TRAINING"
+  ],
+  "testModes": [
+    "WORKFLOW_E2E",
+    "VALIDATOR_COMPONENT",
+    "TRAINING_E2E"
+  ],
+  "expectedVerdictRegistration": {
+    "declaredBeforeFirstExecution": true,
+    "resultIndependent": true,
+    "lockBindingField": "adversarialManifestSha256"
+  },
+  "cases": [
+    {
+      "caseId": "G1",
+      "conceptualIntent": "Accept a correct deterministic implementation over all five preregistered seeds.",
+      "subcases": [
+        {
+          "subcaseId": "G1",
+          "testMode": "TRAINING_E2E",
+          "category": "BITWISE_TRAINING",
+          "construction": {
+            "description": "Correct equation, boundary operator, float64 CPU executor, protocol and five preregistered seeds.",
+            "frozenParameters": {
+              "seeds": [
+                20260904,
+                20260905,
+                20260906,
+                20260907,
+                20260908
+              ],
+              "device": "cpu",
+              "dtype": "float64"
+            }
+          },
+          "trainingApplicable": true,
+          "expected": {
+            "gateStatus": {
+              "G1": "PASS",
+              "G2": "PASS",
+              "G3": "PASS",
+              "G4": "PASS",
+              "G5": "PASS",
+              "G6": "PASS",
+              "G7": "PASS"
+            },
+            "workflowStatus": "ACCEPTED",
+            "claimStatus": {
+              "C0": "SUPPORTED",
+              "C1": "SUPPORTED",
+              "C2": "SUPPORTED",
+              "C3": "SUPPORTED"
+            },
+            "failureRecord": {
+              "required": false,
+              "taxonomy": null,
+              "requirements": []
+            },
+            "stopTheLine": false
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B1",
+      "conceptualIntent": "Reject a sign-flipped PDE both at implementation verification and at isolated prediction validation.",
+      "subcases": [
+        {
+          "subcaseId": "B1a",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "ANALYTIC",
+          "construction": {
+            "description": "Apply Gate 3 manufactured-solution verification to the sign-flipped residual.",
+            "frozenParameters": {
+              "residualLinf": 19.739208802178716,
+              "gateUnderTest": "G3"
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G3": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REJECT_IMPLEMENTATION",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "IMPLEMENTATION",
+              "requirements": [
+                "record sign-flipped residual evidence"
+              ]
+            },
+            "stopTheLine": false
+          }
+        },
+        {
+          "subcaseId": "B1b",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "ANALYTIC",
+          "construction": {
+            "description": "Validate the closed-form wrong predictor -sin(pi*x) without pretending Gate 3 was passed or a workflow reached Gate 5.",
+            "frozenParameters": {
+              "relativeL2": 2.0,
+              "gateUnderTest": "G5"
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G5": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REFUTE_PREDICTION",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "VALIDATION",
+              "requirements": [
+                "record AC-1 failure",
+                "do not fabricate upstream Gate states"
+              ]
+            },
+            "stopTheLine": false
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B2",
+      "conceptualIntent": "Reject a boundary implementation that differs from the frozen specification.",
+      "subcases": [
+        {
+          "subcaseId": "B2",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "STRUCTURAL",
+          "construction": {
+            "description": "Implementation uses u(1)=1 while the spec requires u(1)=0.",
+            "frozenParameters": {
+              "implementedRightBoundary": 1.0,
+              "specifiedRightBoundary": 0.0
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G3": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REJECT_CODE_CONFIG_MISMATCH",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "IMPLEMENTATION",
+              "requirements": [
+                "record boundary code/config mismatch"
+              ]
+            },
+            "stopTheLine": false
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B3",
+      "conceptualIntent": "Show that a PDE-satisfying predictor can still violate the boundary condition.",
+      "subcases": [
+        {
+          "subcaseId": "B3",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "ANALYTIC",
+          "construction": {
+            "description": "Closed-form predictor sin(pi*x)+0.3 has zero PDE residual and boundary error 0.3.",
+            "frozenParameters": {
+              "offset": 0.3,
+              "boundaryError": 0.3,
+              "relativeL2": 0.4242640687119285
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G5": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REJECT_AC_3",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "LOSS_BALANCE",
+              "requirements": [
+                "record unweighted boundary component separately"
+              ]
+            },
+            "stopTheLine": false
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B4",
+      "conceptualIntent": "Reject a near-threshold sparse-collocation null-space mode.",
+      "subcases": [
+        {
+          "subcaseId": "B4",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "ANALYTIC",
+          "construction": {
+            "description": "Use sin(pi*x)+A*sin(4*pi*x) on collocation points {1/4,1/2,3/4}.",
+            "frozenParameters": {
+              "mode": 4,
+              "amplitude": 0.002,
+              "collocation": [
+                0.25,
+                0.5,
+                0.75
+              ],
+              "relativeL2": 0.002,
+              "normalisedResidual": 0.032
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G5": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REJECT_AC_1_AND_AC_4",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "SAMPLING",
+              "requirements": [
+                "record AC-1 failure",
+                "record AC-4 failure"
+              ]
+            },
+            "stopTheLine": false
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B5",
+      "conceptualIntent": "Reject an incorrect coordinate scaling before training.",
+      "subcases": [
+        {
+          "subcaseId": "B5",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "ANALYTIC",
+          "construction": {
+            "description": "Evaluate the manufactured solution with the second-derivative chain factor four omitted.",
+            "frozenParameters": {
+              "missingChainFactor": 4.0,
+              "residualLinf": 29.608813203268074
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G3": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REJECT_SCALING",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "SCALING",
+              "requirements": [
+                "record manufactured-solution residual"
+              ]
+            },
+            "stopTheLine": false
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B6",
+      "conceptualIntent": "Reject a large collocation-aliasing trap invisible on its training lattice.",
+      "subcases": [
+        {
+          "subcaseId": "B6",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "ANALYTIC",
+          "construction": {
+            "description": "Use sin(pi*x)+A*sin(5*pi*x) on collocation points i/5 for i=1..4.",
+            "frozenParameters": {
+              "mode": 5,
+              "amplitude": 0.2,
+              "collocation": [
+                0.2,
+                0.4,
+                0.6,
+                0.8
+              ],
+              "relativeL2": 0.2,
+              "normalisedResidual": 5.0
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G5": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REJECT_AC_1_AND_AC_4",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "SAMPLING",
+              "requirements": [
+                "record low collocation residual beside holdout failure"
+              ]
+            },
+            "stopTheLine": false
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B7",
+      "conceptualIntent": "Detect direct injection of a holdout coordinate into training.",
+      "subcases": [
+        {
+          "subcaseId": "B7",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "STRUCTURAL",
+          "construction": {
+            "description": "Inject an interior GL512 or CGL2000 coordinate into a training-side set.",
+            "frozenParameters": {
+              "leakageCheck": "L1",
+              "boundaryCoordinatesExempt": [
+                0.0,
+                1.0
+              ]
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G5": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "DETECT_VALIDATION_LEAKAGE",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "VALIDATION",
+              "requirements": [
+                "record injected set and coordinate",
+                "record L1"
+              ]
+            },
+            "stopTheLine": true
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B8",
+      "conceptualIntent": "Stop a workflow whose frozen acceptance threshold is modified after lock.",
+      "subcases": [
+        {
+          "subcaseId": "B8",
+          "testMode": "WORKFLOW_E2E",
+          "category": "STRUCTURAL",
+          "construction": {
+            "description": "Start from a valid synthetic lock fixture and change AC-1 from 1e-3 to 2e-3.",
+            "frozenParameters": {
+              "originalThreshold": 0.001,
+              "tamperedThreshold": 0.002
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G1": "FAIL",
+              "G2": "BLOCKED",
+              "G3": "BLOCKED",
+              "G4": "BLOCKED",
+              "G5": "BLOCKED",
+              "G6": "BLOCKED",
+              "G7": "BLOCKED"
+            },
+            "workflowStatus": "STOPPED_THE_LINE",
+            "claimStatus": {
+              "C2": "BLOCKED"
+            },
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "SPEC",
+              "requirements": [
+                "record expected and observed spec digest"
+              ]
+            },
+            "stopTheLine": true
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B9",
+      "conceptualIntent": "Reject post-processed, missing-provenance and manual-import artifacts without self-promotion.",
+      "subcases": [
+        {
+          "subcaseId": "B9a",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "PROVENANCE",
+          "construction": {
+            "description": "Submit a smoothed and boundary-overwritten artifact with a forged RAW role.",
+            "frozenParameters": {
+              "transformations": [
+                "GAUSSIAN_SMOOTH",
+                "BOUNDARY_OVERWRITE"
+              ],
+              "claimedRole": "RAW_MODEL_PREDICTION"
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G5": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REJECT_PROVENANCE",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "PROVENANCE",
+              "requirements": [
+                "ignore hand-written eligibility",
+                "record destructive lineage"
+              ]
+            },
+            "stopTheLine": true
+          }
+        },
+        {
+          "subcaseId": "B9b",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "PROVENANCE",
+          "construction": {
+            "description": "Submit prediction bytes with required provenance fields absent.",
+            "frozenParameters": {
+              "missing": [
+                "producerType",
+                "registeredBy",
+                "evaluatorCodeSha256"
+              ]
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G5": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REJECT_PROVENANCE",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "PROVENANCE",
+              "requirements": [
+                "record missing provenance fields"
+              ]
+            },
+            "stopTheLine": true
+          }
+        },
+        {
+          "subcaseId": "B9c",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "PROVENANCE",
+          "construction": {
+            "description": "Submit numerically correct bytes through MANUAL_IMPORT and attempt to set eligibility true.",
+            "frozenParameters": {
+              "producerType": "MANUAL_IMPORT",
+              "forgedValidationInputEligible": true
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G5": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REJECT_MANUAL_SELF_PROMOTION",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "PROVENANCE",
+              "requirements": [
+                "derive both eligibility flags as false"
+              ]
+            },
+            "stopTheLine": true
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B10",
+      "conceptualIntent": "Terminate rather than silently repair a non-finite residual.",
+      "subcases": [
+        {
+          "subcaseId": "B10",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "STRUCTURAL",
+          "construction": {
+            "description": "Inject NaN at a registered training step and prohibit nan_to_num recovery.",
+            "frozenParameters": {
+              "injectedValue": "NaN",
+              "repairForbidden": "nan_to_num"
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G4": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C1": "NOT_APPLICABLE",
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "TERMINATE_NONFINITE",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "NUMERICAL",
+              "requirements": [
+                "record first non-finite step",
+                "do not continue"
+              ]
+            },
+            "stopTheLine": true
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "B11",
+      "conceptualIntent": "Reject a single-grid strawman that has no refinement evidence.",
+      "subcases": [
+        {
+          "subcaseId": "B11",
+          "testMode": "VALIDATOR_COMPONENT",
+          "category": "STRUCTURAL",
+          "construction": {
+            "description": "Provide only an N=4 FDM result and make no measured-order value.",
+            "frozenParameters": {
+              "nSequence": [
+                4
+              ],
+              "requiredNSequence": [
+                32,
+                64,
+                128,
+                256,
+                512,
+                1024,
+                2048
+              ]
+            }
+          },
+          "trainingApplicable": false,
+          "expected": {
+            "gateStatus": {
+              "G2": "FAIL"
+            },
+            "workflowStatus": "NOT_APPLICABLE",
+            "claimStatus": {
+              "C2": "NOT_APPLICABLE"
+            },
+            "componentDecision": "REJECT_MISSING_REFINEMENT_EVIDENCE",
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "BASELINE",
+              "requirements": [
+                "state convergence order does not exist",
+                "do not invent an out-of-range order"
+              ]
+            },
+            "stopTheLine": false
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "U1",
+      "conceptualIntent": "Allow the sole Level-D exploratory path while blocking an accuracy claim.",
+      "subcases": [
+        {
+          "subcaseId": "U1",
+          "testMode": "WORKFLOW_E2E",
+          "category": "STRUCTURAL",
+          "construction": {
+            "description": "Use an honestly locked Level-D spec with no analytic or numerical reference.",
+            "frozenParameters": {
+              "evidenceLevel": "D",
+              "exploratory": true
+            }
+          },
+          "trainingApplicable": true,
+          "expected": {
+            "gateStatus": {
+              "G1": "PASS",
+              "G2": "FAIL",
+              "G3": "PASS",
+              "G4": "PASS",
+              "G5": "BLOCKED",
+              "G6": "PASS"
+            },
+            "workflowStatus": "REPRODUCIBILITY_CHECK",
+            "claimStatus": {
+              "C0": "SUPPORTED",
+              "C1": "SUPPORTED",
+              "C2": "BLOCKED"
+            },
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "BASELINE",
+              "requirements": [
+                "record absent independent reference",
+                "mark EXPLORATORY"
+              ]
+            },
+            "stopTheLine": false
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "U2",
+      "conceptualIntent": "Block a C2 claim when a report-critical checkpoint is missing.",
+      "subcases": [
+        {
+          "subcaseId": "U2",
+          "testMode": "WORKFLOW_E2E",
+          "category": "PROVENANCE",
+          "construction": {
+            "description": "After a valid through-G5 fixture, remove the checkpoint required by Gate 6.",
+            "frozenParameters": {
+              "missingArtifact": "checkpoint",
+              "reproducibilityLimited": true
+            }
+          },
+          "trainingApplicable": true,
+          "expected": {
+            "gateStatus": {
+              "G1": "PASS",
+              "G2": "PASS",
+              "G3": "PASS",
+              "G4": "PASS",
+              "G5": "PASS",
+              "G6": "FAIL",
+              "G7": "BLOCKED"
+            },
+            "workflowStatus": "FAILURE_RECORDED",
+            "claimStatus": {
+              "C1": "SUPPORTED",
+              "C2": "BLOCKED"
+            },
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "INFRASTRUCTURE",
+              "requirements": [
+                "record missing checkpoint",
+                "mark REPRODUCIBILITY_LIMITED"
+              ]
+            },
+            "stopTheLine": true
+          }
+        }
+      ]
+    },
+    {
+      "caseId": "U3",
+      "conceptualIntent": "Block a C2 claim when environment and commit evidence are absent.",
+      "subcases": [
+        {
+          "subcaseId": "U3",
+          "testMode": "WORKFLOW_E2E",
+          "category": "STRUCTURAL",
+          "construction": {
+            "description": "After a valid through-G5 fixture, omit commitHash and softwareEnvironment.",
+            "frozenParameters": {
+              "missingFields": [
+                "commitHash",
+                "softwareEnvironment"
+              ],
+              "reproducibilityLimited": true
+            }
+          },
+          "trainingApplicable": true,
+          "expected": {
+            "gateStatus": {
+              "G1": "PASS",
+              "G2": "PASS",
+              "G3": "PASS",
+              "G4": "PASS",
+              "G5": "PASS",
+              "G6": "FAIL",
+              "G7": "BLOCKED"
+            },
+            "workflowStatus": "FAILURE_RECORDED",
+            "claimStatus": {
+              "C1": "SUPPORTED",
+              "C2": "BLOCKED"
+            },
+            "failureRecord": {
+              "required": true,
+              "taxonomy": "INFRASTRUCTURE",
+              "requirements": [
+                "record missing environment evidence",
+                "mark REPRODUCIBILITY_LIMITED"
+              ]
+            },
+            "stopTheLine": true
+          }
+        }
+      ]
+    }
+  ]
+}
